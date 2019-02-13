@@ -125,8 +125,8 @@ public class PlayerHandler {
 	
 	/**
 	 * Searches for UUID by given player name
-	 * @param name
-	 * @return
+	 * @param name Name of player to return
+	 * @return UUID of given player or null
 	 */
 	public UUID getUUID(String name)
 	{

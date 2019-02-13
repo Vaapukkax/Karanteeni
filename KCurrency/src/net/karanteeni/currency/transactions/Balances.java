@@ -1,6 +1,7 @@
 package net.karanteeni.currency.transactions;
 
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -22,9 +23,18 @@ public class Balances {
 			if(!confirmAccountExistance(uuid))
 				return null;
 			
-			return KCurrency.getDatabaseConnector().getDouble(
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+
+					KCurrency.getBalanceName()+" FROM "+
+					KCurrency.getTableName()+" WHERE "+
+					KCurrency.getUUIDName()+"='"+uuid+"'");
+			st.close();
+			if(rs.first())
+				return rs.getDouble(1);
+			return Double.NaN;
+			/*return KCurrency.getDatabaseConnector().getDouble(
 					"SELECT "+KCurrency.getBalanceName()+" FROM "+KCurrency.getTableName()+" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'", 
-					KCurrency.getBalanceName());
+					KCurrency.getBalanceName());*/
 		} catch (Exception e) {
 			return Double.NaN;
 		}
@@ -43,10 +53,20 @@ public class Balances {
 			if(!confirmAccountExistance(uuid))
 				return null;
 			
-			return KCurrency.getDatabaseConnector().getDouble(
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+
+					KCurrency.getBalanceName()+" FROM "+
+					KCurrency.getTableName()+" WHERE "+
+					KCurrency.getUUIDName()+"='"+uuid+"'");
+			st.close();
+			if(rs.first())
+				return rs.getDouble(1);
+			return Double.NaN;
+			
+			/*return KCurrency.getDatabaseConnector().getDouble(
 					"SELECT "+KCurrency.getBalanceName()+" FROM "+KCurrency.getTableName()+" WHERE " + KCurrency.getUUIDName() + "='"+
 					uuid+"'", 
-					KCurrency.getBalanceName());
+					KCurrency.getBalanceName());*/
 		} catch (Exception e) {
 			return Double.NaN;
 		}
@@ -63,10 +83,14 @@ public class Balances {
 		try {
 			if(!confirmAccountExistance(uuid))
 				return false;
-			
-			KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+uuid+"'", 
-					amount);
-			return true;
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+					" SET " + KCurrency.getBalanceName() + " = " + amount +
+					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+			st.close();
+			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+uuid+"'", 
+					amount);*/
+			return c > 0;
 		} catch (Exception e) {
 			return false;
 		}
@@ -86,10 +110,15 @@ public class Balances {
 			if(!confirmAccountExistance(uuid))
 				return false;
 			
-			KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+					" SET " + KCurrency.getBalanceName() + " = " + amount +
+					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+			st.close();
+			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
-					amount);
-			return true;
+					amount);*/
+			return c>0;
 		} catch (Exception e) {
 			return false;
 		}
@@ -109,9 +138,16 @@ public class Balances {
 			
 			double balance = getBalance(uuid);
 			
-			KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+					" SET " + KCurrency.getBalanceName() + " = " + (amount+balance) +
+					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+			st.close();
+			if(c==0)
+				return null;
+			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
-					balance+amount);
+					balance+amount);*/
 			return balance+amount;
 		} catch (Exception e) {
 			return Double.NaN;
@@ -133,9 +169,17 @@ public class Balances {
 				return null;
 			
 			double balance = getBalance(uuid);
-			KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
+			
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+					" SET " + KCurrency.getBalanceName() + " = " + (balance+amount) +
+					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+			st.close();
+			if(c==0)
+				return null;
+			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
-					balance+amount);
+					balance+amount);*/
 			return balance+amount;
 		} catch (Exception e) {
 			return Double.NaN;
@@ -156,9 +200,17 @@ public class Balances {
 			
 			double balance = getBalance(uuid);
 			
-			KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+					" SET " + KCurrency.getBalanceName() + " = " + (balance-amount) +
+					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+			st.close();
+			if(c==0)
+				return null;
+			
+			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
-					balance-amount);
+					balance-amount);*/
 			return balance-amount;
 		} catch (Exception e) {
 			return Double.NaN;
@@ -179,9 +231,18 @@ public class Balances {
 				return null;
 			
 			double balance = getBalance(uuid);
-			KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
+			
+			Statement st = KCurrency.getDatabaseConnector().getStatement();
+			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+					" SET " + KCurrency.getBalanceName() + " = " + (balance-amount) +
+					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+			st.close();
+			if(c==0)
+				return null;
+			
+			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
-					balance-amount);
+					balance-amount);*/
 			return balance-amount;
 		} catch (Exception e) {
 			return Double.NaN;
@@ -199,9 +260,12 @@ public class Balances {
 		
 		//check if this player is already in the database
 		try {
-			ResultSet set = db.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
+			Statement st = db.getStatement();
+			ResultSet set = st.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
 					" WHERE "+KCurrency.getUUIDName()+"='"+uuid+"';");
-			
+			st.close();
+			/*ResultSet set = db.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
+					" WHERE "+KCurrency.getUUIDName()+"='"+uuid+"';");*/
 			if(set.next())
 				return true;
 		} catch (Exception e1) {
@@ -211,13 +275,16 @@ public class Balances {
 		//Add player to database
 		try {
 			//Insert player to database with UUID and default balance amount
-			KCurrency.getDatabaseConnector().runQuery("INSERT INTO " + KCurrency.getTableName() + " (" + 
+			Statement st = db.getStatement();
+			st.executeUpdate("INSERT INTO " + KCurrency.getTableName() + " (" + 
 					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + uuid + "', " + 
 					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");
+			/*KCurrency.getDatabaseConnector().runQuery("INSERT INTO " + KCurrency.getTableName() + " (" + 
+					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + uuid + "', " + 
+					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");*/
 			return true;
 		} catch (Exception e) {
-			Bukkit.broadcastMessage("§4Failed to generate balance information to database, please contanct server staff IMMEDIATELY!");
-			Bukkit.broadcastMessage("§4Virhe tilin luomisessa tietokantaan, otathan yhteyttä palvelimen ylläpitoon VÄLITTÖMÄSTI!");
+			Bukkit.broadcastMessage("Â§4Failed to generate balance information to database, please contanct server staff IMMEDIATELY!");
 			e.printStackTrace();
 		}
 		

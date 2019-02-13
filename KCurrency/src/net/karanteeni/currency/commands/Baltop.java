@@ -34,10 +34,11 @@ public class Baltop extends net.karanteeni.core.command.AbstractCommand {
 		
 		//Get the balances from database
 		try {
+			/*
 			players = db.getUUIDList("SELECT * FROM " + KCurrency.getTableName() + " ORDER BY " + KCurrency.getBalanceName() + ";", 
 					KCurrency.getUUIDName());
 			balances = db.getDoubleList("SELECT * FROM " + KCurrency.getTableName() + " ORDER BY " + KCurrency.getBalanceName() + ";", 
-					KCurrency.getBalanceName());
+					KCurrency.getBalanceName());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
