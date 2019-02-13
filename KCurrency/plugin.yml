@@ -1,0 +1,36 @@
+main: net.karanteeni.currency.KCurrency
+name: KCurrency
+version: 1.0
+author: Nuubles
+description: The plugin which handles all money related tasks
+api-version: 1.13
+depend: [KaranteeniCore]
+
+permissions:
+  #all permissions
+  kcurrency.baltop:
+    description: check the baltop
+  kcurrency.pay: 
+    descrption: pay another player with X amount of money
+  kcurrency.bal.own: 
+    descrption: check your own balance
+  kcurrency.bal.other: 
+    descrption: check someone elses balance
+  kcurrency.eco.take: 
+    descrption: take money away from player
+  kcurrency.eco.give: 
+    descrption: give money to player
+  #wildcards
+  kcurrency.bal.*:
+    children:
+      kcurrency.bal.own: true
+      kcurrency.bal.other: true
+  kcurrency.eco.*:
+    children:
+      kcurrency.eco.take: true     
+      kcurrency.eco.give: true
+  kcurrency.*:
+    kcurrency.bal.*: true
+    kcurrency.eco.*: true
+    kcurrency.baltop: true
+    kcurrency.pay: true

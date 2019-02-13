@@ -1,0 +1,14 @@
+main: net.karanteeni.nature.Katura
+name: Katura
+version: 1.0
+author: Nuubles
+description: The nature modifiers and actions for Karanteeni
+api-version: 1.13
+depend: [KaranteeniCore]
+
+
+permissions:
+  katura.dropspawner.silk:
+    description: Drop broken spawner if player has silk pickaxe
+  katura.dropspawner.always:
+    description: Drop broken spawner if broken with picaxe

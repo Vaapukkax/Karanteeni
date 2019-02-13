@@ -1,0 +1,7 @@
+main: net.karanteeni.tester.TesterMain
+name: KaranteeniPluginTester
+version: 1.0
+author: Nuubles
+description: The Core plugin for other Karanteeni plugins
+api-version: 1.13
+depend: [KaranteeniCore]

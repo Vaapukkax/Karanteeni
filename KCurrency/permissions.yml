@@ -1,0 +1,6 @@
+kcurrency.baltop: check the baltop values
+kcurrency.pay: pay another player with X amount of money
+kcurrency.bal.own: check your own balance
+kcurrency.bal.other: check someone elses balance
+kcurrency.eco.take: take money away from player
+kcurrency.eco.give: give money to player
