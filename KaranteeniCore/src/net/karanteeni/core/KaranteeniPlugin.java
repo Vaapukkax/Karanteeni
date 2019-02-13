@@ -81,9 +81,10 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		translator = new Translator();
 		cfgm = new ConfigManager();
+		
 		//Connect to database
 		if(dbConnector == null)
-			dbConnector = new DatabaseConnector("localhost", "Karanteeni", "root", "", 3306);
+			dbConnector = createDatabaseConnector();
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		
 		defaultMessages = new DefaultMessages();
@@ -95,6 +96,51 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 		blockManager = new BlockManager();
 		playerHandler = new PlayerHandler();
 		itemManager = new ItemManager();
+	}
+	
+	/**
+	 * Connects to mysql database according to config
+	 * @return
+	 */
+	private DatabaseConnector createDatabaseConnector()
+	{
+		//Load host, database, username, password and port from config
+		if(!this.getConfig().isSet("Database.host"))
+		{
+			this.getConfig().set("Database.host", "localhost");
+			this.saveConfig();
+		}
+		String host = this.getConfig().getString("Database.host");
+		
+		if(!this.getConfig().isSet("Database.database"))
+		{
+			this.getConfig().set("Database.database", "Karanteeni");
+			this.saveConfig();
+		}
+		String database = this.getConfig().getString("Database.database");
+		
+		if(!this.getConfig().isSet("Database.user"))
+		{
+			this.getConfig().set("Database.user", "root");
+			this.saveConfig();
+		}
+		String user = this.getConfig().getString("Database.user");
+		
+		if(!this.getConfig().isSet("Database.password"))
+		{
+			this.getConfig().set("Database.password", "");
+			this.saveConfig();
+		}
+		String password = this.getConfig().getString("Database.password");
+		
+		if(!this.getConfig().isSet("Database.port"))
+		{
+			this.getConfig().set("Database.port", 3306);
+			this.saveConfig();
+		}
+		int port = this.getConfig().getInt("Database.port");
+		
+		return new DatabaseConnector(host, database, user, password, port);
 	}
 	
 	/**

@@ -1,6 +1,9 @@
 package net.karanteeni.core.players;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,15 +81,15 @@ public class PlayerHandler {
 		
 		
 		try {
-			db.runQuery(query);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+			Statement st = db.getStatement();
+			st.execute(query);
+			st.close();
+			//db.runQuery(query);
+		/*} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			e.printStackTrace();*/
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -103,8 +106,14 @@ public class PlayerHandler {
 		UUID uuid = null;
 		
 		try {
-			 uuid = UUID.fromString(db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + " WHERE " + PlayerDataKeys.NAME + "='"+name+"';", 
-					PlayerDataKeys.UUID.toString()));
+			PreparedStatement st = db.prepareStatement(
+					"SELECT "+PlayerDataKeys.UUID+" FROM " + PlayerDataKeys.PLAYER_TABLE + " WHERE " + PlayerDataKeys.NAME+"=?;");
+			
+			st.setString(1, name);
+			ResultSet rs = st.executeQuery();
+			if(rs.first())
+				uuid = UUID.fromString(rs.getString(1));
+			st.close();
 		}catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -189,8 +198,12 @@ public class PlayerHandler {
 		if(!db.isConnected()) return null;
 		
 		try {
-			return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.NAME.toString());
+			Statement st = db.getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.NAME+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';");
+			st.close();
+			if(rs.first())
+				return rs.getString(1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -211,8 +224,14 @@ public class PlayerHandler {
 		if(!db.isConnected()) return null;
 		
 		try {
-			return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.DISPLAY_NAME.toString());
+			Statement st = db.getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.DISPLAY_NAME+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';");
+			if(rs.first())
+				return rs.getString(1);
+			st.close();
+			/*return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';", PlayerDataKeys.DISPLAY_NAME.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -231,8 +250,14 @@ public class PlayerHandler {
 		if(!db.isConnected()) return null;
 		
 		try {
-			return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LAST_IP.toString());
+			Statement st = db.getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.LAST_IP+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';");
+			if(rs.first())
+				return rs.getString(1);
+			st.close();
+			/*return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LAST_IP.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -251,8 +276,14 @@ public class PlayerHandler {
 		if(!db.isConnected()) return null;
 		
 		try {
-			return db.getLong("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LAST_ONLINE.toString());
+			Statement st = db.getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.LAST_ONLINE+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';");
+			if(rs.first())
+				return rs.getLong(1);
+			st.close();
+			/*return db.getLong("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LAST_ONLINE.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -261,7 +292,7 @@ public class PlayerHandler {
 	}
 	
 	/**
-	 * Returns the level of player
+	 * Returns the rank level of player
 	 * @param uuid
 	 * @return
 	 */
@@ -271,8 +302,14 @@ public class PlayerHandler {
 		if(!db.isConnected()) return null;
 		
 		try {
-			return db.getInteger("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LEVEL.toString());
+			Statement st = db.getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.LEVEL+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';");
+			if(rs.first())
+				return rs.getInt(1);
+			st.close();
+			/*return db.getInteger("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LEVEL.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -291,8 +328,14 @@ public class PlayerHandler {
 		if(!db.isConnected()) return null;
 		
 		try {
-			return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.GLOBAL_RANK.toString());
+			Statement st = db.getStatement();
+			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.GLOBAL_RANK+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';");
+			if(rs.first())
+				return rs.getString(1);
+			st.close();
+			/*return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
+					" WHERE UUID='"+uuid+"';", PlayerDataKeys.GLOBAL_RANK.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

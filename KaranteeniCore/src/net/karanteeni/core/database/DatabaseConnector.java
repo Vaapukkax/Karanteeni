@@ -2,16 +2,13 @@ package net.karanteeni.core.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 
 public class DatabaseConnector {
 	private Connection connection;
@@ -84,6 +81,39 @@ public class DatabaseConnector {
 	}
 	
 	/**
+	 * Returns a new statement to connect to database
+	 * @return
+	 */
+	public Statement getStatement()
+	{
+		try {
+			if(connection == null || connection.isClosed())
+				return null;
+			return connection.createStatement();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	/**
+	 * Returns a preparedstatement with given sql
+	 * @param sql Sql used in the statement
+	 * @return Prepared statement
+	 */
+	public PreparedStatement prepareStatement(String sql)
+	{
+		try {
+			if(connection == null || connection.isClosed())
+				return null;
+			return connection.prepareStatement(sql);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}	
+	}
+	
+	/**
 	 * Gets a list of strings from database
 	 * @param query
 	 * @param columnName
@@ -92,7 +122,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	public List<String> getStringList(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
+	/*public List<String> getStringList(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
@@ -109,7 +139,7 @@ public class DatabaseConnector {
 			
 			return resultList;
 		}
-	}
+	}*/
 	
 	/**
 	 * Gets a list of UUIDs from database
@@ -120,7 +150,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	public List<UUID> getUUIDList(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
+	/*public List<UUID> getUUIDList(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
@@ -137,7 +167,7 @@ public class DatabaseConnector {
 			
 			return resultList;
 		}
-	}
+	}*/
 	
 	/**
 	 * Gets a uuid from database
@@ -148,7 +178,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	public UUID getUUID(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
+	/*public UUID getUUID(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
@@ -162,7 +192,7 @@ public class DatabaseConnector {
 			
 			return null;
 		}
-	}
+	}*/
 	
 	/**
 	 * Gets a list of doubles from database in the given column
@@ -173,7 +203,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	public List<Double> getDoubleList(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
+	/*public List<Double> getDoubleList(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
@@ -190,7 +220,7 @@ public class DatabaseConnector {
 			
 			return resultList;
 		}
-	}
+	}*/
 	
 	/**
 	 * Gets a string from database
@@ -201,7 +231,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	public String getString(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
+	/*public String getString(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
@@ -217,7 +247,7 @@ public class DatabaseConnector {
 			
 			return null;
 		}
-	}
+	}*/
 	
 	/**
 	 * Gets a long value from database
@@ -228,7 +258,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	public Long getLong(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
+	/*public Long getLong(String query, String columnName) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
@@ -291,7 +321,7 @@ public class DatabaseConnector {
 		{
 			statement.executeUpdate("UPDATE " + table + " SET " + columnName + " = " + newValue + " WHERE " + condition + ";");
 		}
-	}
+	}*/
 	
 	/*public String removeSqlInjection(String text)
 	{
@@ -306,6 +336,7 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
+	@Deprecated
 	public int runQuery(String query) throws SQLException, ClassNotFoundException, Exception
 	{
 		if(connection == null || connection.isClosed())
@@ -322,6 +353,7 @@ public class DatabaseConnector {
 	 * @param query
 	 * @return
 	 */
+	@Deprecated
 	public ResultSet executeQuery(String query) throws SQLException, ClassNotFoundException, Exception
 	{
 		synchronized(this)
@@ -333,7 +365,7 @@ public class DatabaseConnector {
 		}
 	}
 	
-	public List<Location> getLocationList(String query) throws SQLException, ClassNotFoundException, Exception
+	/*public List<Location> getLocationList(String query) throws SQLException, ClassNotFoundException, Exception
 	{
 		synchronized(this)
 		{
@@ -382,7 +414,7 @@ public class DatabaseConnector {
 			}
 		}
 		return null;
-	}
+	}*/
 	
 	/**
 	 * Saves a location to database

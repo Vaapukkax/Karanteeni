@@ -1,6 +1,8 @@
 package net.karanteeni.core.players;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -57,9 +59,11 @@ public class onJoin implements Listener{
 		
 		//check if this player is already in the database
 		try {
-			ResultSet set = db.executeQuery("SELECT * FROM " + PlayerHandler.PlayerDataKeys.PLAYER_TABLE + 
+			Statement st = db.getStatement();
+			ResultSet set = st.executeQuery("SELECT * FROM " + PlayerHandler.PlayerDataKeys.PLAYER_TABLE + 
 					" WHERE "+PlayerHandler.PlayerDataKeys.UUID+"='"+player.getUniqueId()+"';");
 			
+			st.close();
 			if(set.next())
 				return;
 		} catch (Exception e1) {
@@ -74,17 +78,21 @@ public class onJoin implements Listener{
 			PlayerHandler.PlayerDataKeys.DISPLAY_NAME + ", " + 
 			PlayerHandler.PlayerDataKeys.NAME + ", " + 
 			PlayerHandler.PlayerDataKeys.LEVEL + 
-			") VALUES ('" + 
-			player.getUniqueId() + "', '" + 
-			player.getAddress().getAddress().toString().replace("/", "") + "', " + 
-			System.currentTimeMillis() + ", '" + 
-			player.getDisplayName() + "', '" + 
-			player.getName() + "', " + 
-			0 + ");";
+			") VALUES (?,?,?,?,?,?);";
 		
 		//Save the players data to the database
 		try {
-			db.runQuery(query);
+			PreparedStatement st = db.prepareStatement(query);
+			st.setString(1, player.getUniqueId().toString());
+			st.setString(2, player.getAddress().toString().replace("/", ""));
+			st.setLong(3, System.currentTimeMillis());
+			st.setString(4, player.getDisplayName());
+			st.setString(5, player.getName());
+			st.setInt(6, 0);
+			
+			st.executeQuery(query);
+			st.close();
+			//db.runQuery(query);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
