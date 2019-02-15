@@ -42,8 +42,9 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
   public void registerTranslations() 
   {
     MyPlugin.getTranslator().registerTranslation(
-    MyPlugin.getPlugin(MyPlugin.class), "sample-text", "This is sample text");
-    MyPlugin.getPlugin(MyPlugin.class), "cmd-args", "Translated command arguments!");
+      MyPlugin.getPlugin(MyPlugin.class), "sample-text", "This is sample text");
+    MyPlugin.getTranslator().registerTranslation(
+      MyPlugin.getPlugin(MyPlugin.class), "cmd-args", "Translated command arguments!");
   }
 }
 ```
