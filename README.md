@@ -1,9 +1,9 @@
 # Karanteeni
 This README file is made to help understand how KaranteeniCore should be used
 
-##Code examples of KaranteeniCore
-###How to extend KaranteeniCore
-```
+## Code examples of KaranteeniCore
+### How to extend KaranteeniCore
+```java
 public class MyPlugin extends KaranteeniPlugin
 {
   public MyPlugin()
@@ -14,9 +14,9 @@ public class MyPlugin extends KaranteeniPlugin
 }
 ```
 
-###Creating commands and using translation engine
+### Creating commands and using translation engine
 MyCommand.java
-```
+```java
 public class MyCommand extends AbstractCommand implements TranslationContainer
 {
   public MyCommand()
@@ -46,15 +46,15 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
 }
 ```
 
-###Getting default messages (strings)
-```
+### Getting default messages (strings)
+```java
 MyPlugin.getDefaultMsgs().noPermission(CommandSender);
 MyPlugin.getDefaultMsgs().playerNotFound(CommandSender);
 MyPlugin.getDefaultMsgs().defaultNotForConsole();
 ```
 
-###Accessing database
-```
+### Accessing database
+```java
 MyPlugin.getDatabaseConnector();
 ```
 
