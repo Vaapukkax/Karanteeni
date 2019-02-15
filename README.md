@@ -26,7 +26,8 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
   }
   
   @Override
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+  public boolean onCommand(CommandSender sender, Command command, String label, String[] args) 
+  {
     //Returns a translation based on the users language if player
     sender.sendMessage(MyPlugin.getTranslator().getTranslation(MyPlugin.getPlugin(MyPlugin.class),
       sender, "sample-text"));
@@ -38,11 +39,12 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
   }
   
   @Override
-	public void registerTranslations() {
-		MyPlugin.getTranslator().registerTranslation(
-      MyPlugin.getPlugin(MyPlugin.class), "sample-text", "This is sample text");
-      MyPlugin.getPlugin(MyPlugin.class), "cmd-args", "Translated command arguments!");
-	}
+  public void registerTranslations() 
+  {
+    MyPlugin.getTranslator().registerTranslation(
+    MyPlugin.getPlugin(MyPlugin.class), "sample-text", "This is sample text");
+    MyPlugin.getPlugin(MyPlugin.class), "cmd-args", "Translated command arguments!");
+  }
 }
 ```
 
