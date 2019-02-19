@@ -36,7 +36,8 @@ public class DatabaseConnector {
 		try{
 			openConnection();
 			statement = connection.createStatement();
-			Bukkit.getConsoleSender().sendMessage(String.format("§aSuccessfully connected to database: %1$s, host: %2$s, username: %3$s, port: %4$s!", 
+			Bukkit.getConsoleSender().sendMessage(String.format(
+					"§aSuccessfully connected to database: %1$s, host: %2$s, username: %3$s, port: %4$s!", 
 					database, host, username, port));
 		} catch(Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, "COULD NOT CONNECT TO DATABASE! SOME OPERATIONS WILL NOT WORK!", e);

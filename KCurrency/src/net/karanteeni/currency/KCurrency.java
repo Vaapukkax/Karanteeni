@@ -1,6 +1,7 @@
 package net.karanteeni.currency;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -129,9 +130,10 @@ public class KCurrency extends KaranteeniPlugin {
 	private boolean generateBalanceTable()
 	{
 		DatabaseConnector db = KCurrency.getDatabaseConnector();
-		
+
 		try {
-			db.runQuery(
+			Statement st = db.getStatement();
+			st.executeUpdate(
 					"CREATE TABLE IF NOT EXISTS "+getTableName()+" ("+
 					getUUIDName()+" VARCHAR(60) NOT NULL, " + 
 					getBalanceName() + " DECIMAL(20, 3) NOT NULL DEFAULT 0," + 
@@ -140,15 +142,11 @@ public class KCurrency extends KaranteeniPlugin {
 						PlayerHandler.PlayerDataKeys.PLAYER_TABLE
 						+"("+PlayerHandler.PlayerDataKeys.UUID+")"+
 						" ON DELETE CASCADE ON UPDATE CASCADE "+");");
+			st.close();
 			return true;
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

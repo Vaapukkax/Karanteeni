@@ -1,6 +1,7 @@
 package net.karanteeni.currency.events;
 
 import java.sql.ResultSet;
+import java.sql.Statement;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -36,9 +37,11 @@ public class JoinEvent implements Listener{
 		
 		//check if this player is already in the database
 		try {
-			ResultSet set = db.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
+			Statement st = db.getStatement();
+			ResultSet set = st.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
 					" WHERE "+KCurrency.getUUIDName()+"='"+player.getUniqueId()+"';");
 			
+			st.close();
 			if(set.next())
 				return;
 		} catch (Exception e1) {
@@ -47,8 +50,9 @@ public class JoinEvent implements Listener{
 		
 		//Add player to database
 		try {
+			Statement st = db.getStatement();
 			//Insert player to database with UUID and default balance amount
-			KCurrency.getDatabaseConnector().runQuery("INSERT INTO " + KCurrency.getTableName() + " (" + 
+			st.executeUpdate("INSERT INTO " + KCurrency.getTableName() + " (" + 
 					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + player.getUniqueId() + "', " + 
 					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");
 		} catch (Exception e) {
