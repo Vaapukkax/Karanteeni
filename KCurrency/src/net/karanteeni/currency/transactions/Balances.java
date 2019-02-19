@@ -13,7 +13,7 @@ import net.karanteeni.currency.KCurrency;
 public class Balances {
 
 	/**
-	 * Returns the balance of a player
+	 * Returns the balance of a player or Double.NaN if not found
 	 * @param uuid
 	 * @return
 	 */
@@ -47,7 +47,13 @@ public class Balances {
 	 */
 	public Double getBalance(String name)
 	{
-		try {
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
+		
+		if(!confirmAccountExistance(uuid))
+			return null;
+		
+		return getBalance(uuid);
+		/*try {
 			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 			
 			if(!confirmAccountExistance(uuid))
@@ -62,14 +68,14 @@ public class Balances {
 			if(rs.first())
 				return rs.getDouble(1);
 			return Double.NaN;
-			
+			*/
 			/*return KCurrency.getDatabaseConnector().getDouble(
 					"SELECT "+KCurrency.getBalanceName()+" FROM "+KCurrency.getTableName()+" WHERE " + KCurrency.getUUIDName() + "='"+
 					uuid+"'", 
 					KCurrency.getBalanceName());*/
-		} catch (Exception e) {
+		/*} catch (Exception e) {
 			return Double.NaN;
-		}
+		}*/
 	}
 	
 	/**
@@ -104,7 +110,13 @@ public class Balances {
 	 */
 	public boolean setBalance(String name, double amount)
 	{
-		try {
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
+		
+		if(!confirmAccountExistance(uuid))
+			return false;
+		
+		return setBalance(uuid, amount);
+		/*try {
 			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 			
 			if(!confirmAccountExistance(uuid))
@@ -118,10 +130,10 @@ public class Balances {
 			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
 					amount);*/
-			return c>0;
+/*			return c>0;
 		} catch (Exception e) {
 			return false;
-		}
+		}*/
 	}
 	
 	/**
@@ -162,6 +174,13 @@ public class Balances {
 	 */
 	public Double addToBalance(String name, double amount)
 	{
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
+		
+		if(!confirmAccountExistance(uuid))
+			return null;
+		
+		return addToBalance(uuid, amount);
+		/*
 		try {
 			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 			
@@ -180,10 +199,10 @@ public class Balances {
 			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
 					balance+amount);*/
-			return balance+amount;
+		/*	return balance+amount;
 		} catch (Exception e) {
 			return Double.NaN;
-		}
+		}*/
 	}
 	
 	/**
@@ -225,7 +244,13 @@ public class Balances {
 	 */
 	public Double removeFromBalance(String name, double amount)
 	{
-		try {
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
+		if(!confirmAccountExistance(uuid))
+			return null;
+		
+		return removeFromBalance(uuid, amount);
+		
+		/*try {
 			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 			if(!confirmAccountExistance(uuid))
 				return null;
@@ -243,10 +268,10 @@ public class Balances {
 			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
 					uuid+"'", 
 					balance-amount);*/
-			return balance-amount;
+			/*return balance-amount;
 		} catch (Exception e) {
 			return Double.NaN;
-		}
+		}*/
 	}
 	
 	/**

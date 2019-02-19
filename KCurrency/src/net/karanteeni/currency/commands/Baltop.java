@@ -18,6 +18,7 @@ public class Baltop extends net.karanteeni.core.command.AbstractCommand {
 		super(KCurrency.getPlugin(KCurrency.class), command, usage, description, permissionMessage);
 	}
 
+	@Deprecated
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		
