@@ -98,31 +98,33 @@ public class ParticleShape implements Iterable<Point3D>{
 	
 	public final void setRotation(double yaw, double pitch, double roll, double scale) {
         // Convert to radians
-	    yaw = Math.toRadians(yaw);
-	    pitch = Math.toRadians(pitch);
-	    roll = Math.toRadians(roll);
-        // Store the values so we don't have to calculate them again for every single point.
-	    double cp = Math.cos(pitch);
-	    double sp = Math.sin(pitch);
-	    double cy = Math.cos(yaw);
-	    double sy = Math.sin(yaw);
-	    double cr = Math.cos(roll);
-	    double sr = Math.sin(roll);
-	    double x, bx, y, by, z, bz;
+		yaw = Math.toRadians(yaw);
+		pitch = Math.toRadians(pitch);
+		roll = Math.toRadians(roll);
+		
+		//Precalc the necessary variables
+		double cy = Math.cos(yaw);
+		double sy = Math.sin(yaw);
+		double cp = Math.cos(pitch);
+		double sp = Math.sin(pitch);
+		double cr = Math.cos(roll);
+		double sr = Math.sin(roll);
+		
 	    for (Point3D point : points.getValues()) {
-	        x = point.getX();
-	        bx = x;
-	        y = point.getY();
-	        by = y;
-	        z = point.getZ();
-	        bz = z;
-	        x = ((x*cy-bz*sy)*cr+by*sr)*scale;
-	        y = ((y*cp+bz*sp)*cr-bx*sr)*scale;
-	        z = ((z*cp-by*sp)*cy+bx*sy)*scale;
-	        //Update the Point3D to new coordinates
-	        point.setX(x);
-	        point.setY(y);
-	        point.setZ(z);
+	    	double tempx = point.getX(), x = point.getX();
+	    	double tempy = point.getY(), y = point.getY();
+	    	double tempz = point.getZ(), z = point.getZ();
+	    	y = cy * y - sy * z;
+		    z = cy * z + sy * tempy;
+		    tempz = z;
+		    z = cp * z - sp * x;
+		    x = cp * x + sp * tempz;
+		    tempx = x;
+		    x = cr * x - sr * y;
+		    y = cr * y + sr * tempx;
+	    	point.setX(x*scale);
+	    	point.setY(y*scale);
+	    	point.setZ(z*scale);
 	    }
 	}
 	

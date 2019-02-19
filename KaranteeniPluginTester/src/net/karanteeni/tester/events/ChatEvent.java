@@ -87,7 +87,8 @@ public class ChatEvent implements Listener{
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(-0.5,0.5,-0.5));
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(0.5,0.5,0.5));
 			pshape = new ParticleShape(shape, event.getPlayer().getLocation());
-			pshape.setRotation(45, 45, 0, 1);
+			pshape.setRotation(45, 35.3, 30, 2);
+			//pshape.setRotation(0, 30, 0, 2);
 			/*Point3D loc = new Point3D(event.getPlayer().getLocation().getX(),event.getPlayer().getLocation().getY(),event.getPlayer().getLocation().getZ());
 			pshape.startAnimation(
 					null, 
