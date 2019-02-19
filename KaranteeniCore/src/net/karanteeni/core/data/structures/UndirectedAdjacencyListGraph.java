@@ -115,7 +115,7 @@ public class UndirectedAdjacencyListGraph<A>
 		  if(a2 == null && vertex.getValue().equals(second))
 			  a2 = vertex;
 		  
-		  if(a1 == null && a2 == null)
+		  if(a1 != null && a2 != null)
 		  {
 			  Edge<A> edge = new Edge<A>(a1,a2); 
 			  edgeList.insertLast(edge);

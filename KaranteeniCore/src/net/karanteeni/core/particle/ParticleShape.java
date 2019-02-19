@@ -11,7 +11,6 @@ import net.karanteeni.core.data.math.MineMath;
 import net.karanteeni.core.data.math.Point3D;
 import net.karanteeni.core.data.structures.Edge;
 import net.karanteeni.core.data.structures.UndirectedAdjacencyListGraph;
-import net.karanteeni.core.data.structures.Vertex;
 import net.karanteeni.core.timers.KaranteeniTimer;
 
 public class ParticleShape implements Iterable<Point3D>{
@@ -20,6 +19,7 @@ public class ParticleShape implements Iterable<Point3D>{
 	private Vector startRotation;
 	private Location startLocation;
 	private Animator animator = null;
+	private StaticDrawer drawer = null;
 	private Animatable shapeDrawer;
 
 	/** Current rotation of the shape */
@@ -92,7 +92,38 @@ public class ParticleShape implements Iterable<Point3D>{
 	public final void rotate(double x, double y, double z)
 	{
 		rotation.add(new Vector(x,y,z));
-		setRotation(rotation.getX(),rotation.getY(),rotation.getZ());
+		//setRotation(rotation.getX(),rotation.getY(),rotation.getZ());
+		setRotation(rotation.getX(),rotation.getY(),rotation.getZ(),1);
+	}
+	
+	public final void setRotation(double yaw, double pitch, double roll, double scale) {
+        // Convert to radians
+	    yaw = Math.toRadians(yaw);
+	    pitch = Math.toRadians(pitch);
+	    roll = Math.toRadians(roll);
+        // Store the values so we don't have to calculate them again for every single point.
+	    double cp = Math.cos(pitch);
+	    double sp = Math.sin(pitch);
+	    double cy = Math.cos(yaw);
+	    double sy = Math.sin(yaw);
+	    double cr = Math.cos(roll);
+	    double sr = Math.sin(roll);
+	    double x, bx, y, by, z, bz;
+	    for (Point3D point : points.getValues()) {
+	        x = point.getX();
+	        bx = x;
+	        y = point.getY();
+	        by = y;
+	        z = point.getZ();
+	        bz = z;
+	        x = ((x*cy-bz*sy)*cr+by*sr)*scale;
+	        y = ((y*cp+bz*sp)*cr-bx*sr)*scale;
+	        z = ((z*cp-by*sp)*cy+bx*sy)*scale;
+	        //Update the Point3D to new coordinates
+	        point.setX(x);
+	        point.setY(y);
+	        point.setZ(z);
+	    }
 	}
 	
 	/**
@@ -101,7 +132,7 @@ public class ParticleShape implements Iterable<Point3D>{
 	 * @param y rotation on y
 	 * @param z rotation on z
 	 */
-	public final void setRotation(double x, double y, double z)
+	/*public final void setRotation(double x, double y, double z)
 	{
 		// the numbers are the angles on which you want to rotate your animation.
 		double xangle = x; // note that here we do have to convert to radians.
@@ -127,9 +158,10 @@ public class ParticleShape implements Iterable<Point3D>{
 			pts.getValue().setY(vec.getY());
 			pts.getValue().setZ(vec.getZ());
 		}
-	}
+	}*/
+
 	
-	private final Vector rotateAroundAxisX(Vector v, double cos, double sin) {
+	/*private final Vector rotateAroundAxisX(Vector v, double cos, double sin) {
         double y = v.getY() * cos - v.getZ() * sin;
         double z = v.getY() * sin + v.getZ() * cos;
         return v.setY(y).setZ(z);
@@ -145,7 +177,7 @@ public class ParticleShape implements Iterable<Point3D>{
         double x = v.getX() * cos - v.getY() * sin;
         double y = v.getX() * sin + v.getY() * cos;
         return v.setX(x).setY(y);
-    }
+    }*/
 
     /**
      * Starts to animate the particleshape to a location
@@ -184,8 +216,66 @@ public class ParticleShape implements Iterable<Point3D>{
     	animator = null;
     }
     
-    public final void draw()
+    public final void drawOnce()
     {
+    	//Draw the corners of the shape
+		for(Point3D p : ParticleShape.this.points.getValues())
+		{
+			ParticleShape.this.drawPoint(new Location(
+					startLocation.getWorld(), 
+					p.getX()+startLocation.getX(), 
+					p.getY()+startLocation.getY(), 
+					p.getZ()+startLocation.getZ()), true);
+		}
+		
+		//Draw the edges of the shape
+		for(Edge<Point3D> edge : ParticleShape.this.points.getEdges())
+		{
+			//Draw multiple points on an edge
+			for(float prg = 0; prg <= 1; prg += 0.1)
+			{
+    			Point3D p = MineMath.getLocationBetweenPoints(
+    					edge.getFrom().getValue(), edge.getTo().getValue(), prg);
+        		
+    			ParticleShape.this.drawPoint(new Location(
+    					startLocation.getWorld(), 
+    					p.getX()+startLocation.getX(), 
+    					p.getY()+startLocation.getY(), 
+    					p.getZ()+startLocation.getZ()), true);
+			}
+		}
+    }
+    
+    /**
+     * Starts to draw the particle shape with given methods
+     * @param plugin
+     * @param shapeDrawer
+     */
+    public void show(
+    		KaranteeniPlugin plugin, 
+    		Animatable shapeDrawer)
+    {
+    	//This is used to draw the particles in the locations
+    	this.shapeDrawer = shapeDrawer;
+    	//If timer exists, stop the timer
+    	if(animator != null)
+    		KaranteeniPlugin.getTimerHandler().unregisterTimer(animator);
+    	
+    	//Create new class to draw the object
+    	drawer = new StaticDrawer();
+    	//Register the timer to animate the object
+    	KaranteeniPlugin.getTimerHandler().registerTimer(drawer, 4);
+    }
+    
+    /**
+     * Stops the static draw of the particle shape
+     */
+    public void hide()
+    {
+    	if(drawer == null)
+    		return;
+    	KaranteeniPlugin.getTimerHandler().unregisterTimer(drawer);
+    	drawer = null;
     	
     }
     
@@ -203,11 +293,57 @@ public class ParticleShape implements Iterable<Point3D>{
     }
     
     /**
+     * Draws the shape to a static location until cancelled
+     * @author Nuubles
+     *
+     */
+    private class StaticDrawer implements KaranteeniTimer 
+    {
+		@Override
+		public void runTimer() {
+			//Draw the corners of the shape
+    		for(Point3D p : ParticleShape.this.points.getValues())
+    		{
+    			ParticleShape.this.drawPoint(new Location(
+    					ParticleShape.this.startLocation.getWorld(), 
+    					p.getX()+startLocation.getX(), 
+    					p.getY()+startLocation.getY(), 
+    					p.getZ()+startLocation.getZ()), true);
+    		}
+    		
+    		//Draw the edges of the shape
+    		for(Edge<Point3D> edge : ParticleShape.this.points.getEdges())
+    		{
+    			//Draw multiple points on an edge
+    			for(float prg = 0; prg <= 1; prg += 0.1)
+    			{
+	    			Point3D p = MineMath.getLocationBetweenPoints(
+	    					edge.getFrom().getValue(), edge.getTo().getValue(), prg);
+	        		
+	    			ParticleShape.this.drawPoint(new Location(
+	    					ParticleShape.this.startLocation.getWorld(), 
+	    					p.getX()+startLocation.getX(), 
+	    					p.getY()+startLocation.getY(), 
+	    					p.getZ()+startLocation.getZ()), true);
+    			}
+    		}
+		}
+
+		@Override
+		public void timerStopped() {
+		}
+
+		@Override
+		public void timerWait() {
+		}
+    }
+    
+    /**
      * Animator designated to animating the particleshape to different location
      * @author Nuubles
      *
      */
-    private class Animator implements KaranteeniTimer{
+    private class Animator implements KaranteeniTimer {
 
     	/** Destination where the animator aims to go */
     	private Point3D destination = null;
@@ -276,7 +412,7 @@ public class ParticleShape implements Iterable<Point3D>{
     		ParticleShape.this.setRotation(
     				currentRotation.getX(), 
     				currentRotation.getY(), 
-    				currentRotation.getZ());
+    				currentRotation.getZ(), 1);
     	}
     	
     	/**
@@ -289,9 +425,9 @@ public class ParticleShape implements Iterable<Point3D>{
     		{
     			ParticleShape.this.drawPoint(new Location(
     					currLocation.getWorld(), 
-    					p.getX(), 
-    					p.getY(), 
-    					p.getZ()), true);
+    					p.getX()+startLocation.getX(), 
+    					p.getY()+startLocation.getY(), 
+    					p.getZ()+startLocation.getZ()), true);
     		}
     		
     		//Draw the edges of the shape
@@ -305,9 +441,9 @@ public class ParticleShape implements Iterable<Point3D>{
 	        		
 	    			ParticleShape.this.drawPoint(new Location(
 	    					currLocation.getWorld(), 
-	    					p.getX(), 
-	    					p.getY(), 
-	    					p.getZ()), true);
+	    					p.getX()+startLocation.getX(), 
+	    					p.getY()+startLocation.getY(), 
+	    					p.getZ()+startLocation.getZ()), true);
     			}
     		}
     	}
@@ -330,6 +466,10 @@ public class ParticleShape implements Iterable<Point3D>{
     						this.destination.getX(),
     						this.destination.getY(),
     						this.destination.getZ()));
+    		
+    		//Update position and rotation of shape to main class
+    		ParticleShape.this.startLocation = currLocation;
+    		ParticleShape.this.rotation = destrot;
     	}
 
     	@Override
