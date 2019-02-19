@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.bukkit.util.Vector;
 
-import net.karanteeni.core.math.Point3D;
+import net.karanteeni.core.data.math.Point3D;
 
 /**
  * A particle shape structure which consists of multiple particle

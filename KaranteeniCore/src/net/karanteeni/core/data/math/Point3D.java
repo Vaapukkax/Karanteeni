@@ -1,4 +1,4 @@
-package net.karanteeni.core.math;
+package net.karanteeni.core.data.math;
 
 import org.bukkit.util.Vector;
 
@@ -148,6 +148,21 @@ public class Point3D {
 	 */
 	public double getZ()
 	{ return z; }
+	
+	/**
+	 * Returns true if the other object is at the same coordinates as this one
+	 */
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o instanceof Point3D)
+		{
+			Point3D p = (Point3D)o;
+			return (x==p.getX() && y==p.getY() && z==p.getZ());
+		}
+		
+		return false;
+	}
 	
 	/**
 	 * Returns the point as a string
