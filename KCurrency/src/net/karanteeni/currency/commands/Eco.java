@@ -34,8 +34,17 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		//Check that all arguments exist
 		if(args.length == 3)
 		{
-			if(args[0].equalsIgnoreCase("give"))
+			if(this.getRealParam(args[0]).equalsIgnoreCase("give"))
 			{
+				if(!sender.hasPermission("kcurrency.eco.give"))
+				{
+					KCurrency.getMessager().sendMessage(
+							sender, 
+							Sounds.NO.get(), 
+							KCurrency.getDefaultMsgs().noPermission(sender));
+					return true;
+				}
+				
 				UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
 				//Check if player was found
 				if(uuid == null)
@@ -91,8 +100,17 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 					}
 				}
 			}
-			else if(args[0].equalsIgnoreCase("take"))
+			else if(this.getRealParam(args[0]).equalsIgnoreCase("take"))
 			{
+				if(!sender.hasPermission("kcurrency.eco.take"))
+				{
+					KCurrency.getMessager().sendMessage(
+							sender, 
+							Sounds.NO.get(), 
+							KCurrency.getDefaultMsgs().noPermission(sender));
+					return true;
+				}
+				
 				UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
 				//Check if player was found
 				if(uuid == null)
@@ -147,8 +165,17 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 					}
 				}
 			}
-			else if(args[0].equalsIgnoreCase("set"))
+			else if(this.getRealParam(args[0]).equalsIgnoreCase("set"))
 			{
+				if(!sender.hasPermission("kcurrency.eco.set"))
+				{
+					KCurrency.getMessager().sendMessage(
+							sender, 
+							Sounds.NO.get(), 
+							KCurrency.getDefaultMsgs().noPermission(sender));
+					return true;
+				}
+				
 				UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
 				//Check if player was found
 				if(uuid == null)

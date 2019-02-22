@@ -28,13 +28,14 @@ public class Balances {
 					KCurrency.getBalanceName()+" FROM "+
 					KCurrency.getTableName()+" WHERE "+
 					KCurrency.getUUIDName()+"='"+uuid+"'");
-			st.close();
+			
 			if(rs.first())
-				return rs.getDouble(1);
+			{
+				double bal = rs.getDouble(1);
+				st.close();
+				return bal;
+			}
 			return Double.NaN;
-			/*return KCurrency.getDatabaseConnector().getDouble(
-					"SELECT "+KCurrency.getBalanceName()+" FROM "+KCurrency.getTableName()+" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'", 
-					KCurrency.getBalanceName());*/
 		} catch (Exception e) {
 			return Double.NaN;
 		}
@@ -53,29 +54,6 @@ public class Balances {
 			return null;
 		
 		return getBalance(uuid);
-		/*try {
-			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
-			
-			if(!confirmAccountExistance(uuid))
-				return null;
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			ResultSet rs = st.executeQuery("SELECT "+
-					KCurrency.getBalanceName()+" FROM "+
-					KCurrency.getTableName()+" WHERE "+
-					KCurrency.getUUIDName()+"='"+uuid+"'");
-			st.close();
-			if(rs.first())
-				return rs.getDouble(1);
-			return Double.NaN;
-			*/
-			/*return KCurrency.getDatabaseConnector().getDouble(
-					"SELECT "+KCurrency.getBalanceName()+" FROM "+KCurrency.getTableName()+" WHERE " + KCurrency.getUUIDName() + "='"+
-					uuid+"'", 
-					KCurrency.getBalanceName());*/
-		/*} catch (Exception e) {
-			return Double.NaN;
-		}*/
 	}
 	
 	/**
@@ -94,8 +72,6 @@ public class Balances {
 					" SET " + KCurrency.getBalanceName() + " = " + amount +
 					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
 			st.close();
-			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+uuid+"'", 
-					amount);*/
 			return c > 0;
 		} catch (Exception e) {
 			return false;
@@ -116,24 +92,6 @@ public class Balances {
 			return false;
 		
 		return setBalance(uuid, amount);
-		/*try {
-			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
-			
-			if(!confirmAccountExistance(uuid))
-				return false;
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
-					" SET " + KCurrency.getBalanceName() + " = " + amount +
-					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
-			st.close();
-			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
-					uuid+"'", 
-					amount);*/
-/*			return c>0;
-		} catch (Exception e) {
-			return false;
-		}*/
 	}
 	
 	/**
@@ -157,9 +115,6 @@ public class Balances {
 			st.close();
 			if(c==0)
 				return null;
-			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
-					uuid+"'", 
-					balance+amount);*/
 			return balance+amount;
 		} catch (Exception e) {
 			return Double.NaN;
@@ -180,29 +135,6 @@ public class Balances {
 			return null;
 		
 		return addToBalance(uuid, amount);
-		/*
-		try {
-			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
-			
-			if(!confirmAccountExistance(uuid))
-				return null;
-			
-			double balance = getBalance(uuid);
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
-					" SET " + KCurrency.getBalanceName() + " = " + (balance+amount) +
-					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
-			st.close();
-			if(c==0)
-				return null;
-			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
-					uuid+"'", 
-					balance+amount);*/
-		/*	return balance+amount;
-		} catch (Exception e) {
-			return Double.NaN;
-		}*/
 	}
 	
 	/**
@@ -226,10 +158,7 @@ public class Balances {
 			st.close();
 			if(c==0)
 				return null;
-			
-			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
-					uuid+"'", 
-					balance-amount);*/
+
 			return balance-amount;
 		} catch (Exception e) {
 			return Double.NaN;
@@ -249,29 +178,6 @@ public class Balances {
 			return null;
 		
 		return removeFromBalance(uuid, amount);
-		
-		/*try {
-			UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
-			if(!confirmAccountExistance(uuid))
-				return null;
-			
-			double balance = getBalance(uuid);
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
-					" SET " + KCurrency.getBalanceName() + " = " + (balance-amount) +
-					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
-			st.close();
-			if(c==0)
-				return null;
-			
-			/*KCurrency.getDatabaseConnector().updateDouble(KCurrency.getTableName(), KCurrency.getBalanceName(), KCurrency.getUUIDName()+"='"+
-					uuid+"'", 
-					balance-amount);*/
-			/*return balance-amount;
-		} catch (Exception e) {
-			return Double.NaN;
-		}*/
 	}
 	
 	/**
@@ -283,25 +189,11 @@ public class Balances {
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return false;
 		
-		//check if this player is already in the database
-		try {
-			Statement st = db.getStatement();
-			ResultSet set = st.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
-					" WHERE "+KCurrency.getUUIDName()+"='"+uuid+"';");
-			st.close();
-			/*ResultSet set = db.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
-					" WHERE "+KCurrency.getUUIDName()+"='"+uuid+"';");*/
-			if(set.next())
-				return true;
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
 		//Add player to database
 		try {
 			//Insert player to database with UUID and default balance amount
 			Statement st = db.getStatement();
-			st.executeUpdate("INSERT INTO " + KCurrency.getTableName() + " (" + 
+			st.executeUpdate("INSERT IGNORE INTO " + KCurrency.getTableName() + " (" + 
 					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + uuid + "', " + 
 					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");
 			/*KCurrency.getDatabaseConnector().runQuery("INSERT INTO " + KCurrency.getTableName() + " (" + 

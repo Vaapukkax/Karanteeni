@@ -13,11 +13,12 @@ import org.bukkit.command.CommandSender;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.database.DatabaseConnector;
 import net.karanteeni.core.information.sounds.Sounds;
+import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.currency.KCurrency;
 
 /**
- * Returns top 10 player from page N from the database
+ * Returns top N players from page M from the database
  * @author Nuubles
  *
  */
@@ -52,13 +53,13 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		{
 			try
 			{
-				page = Integer.parseInt(args[0])*10;
+				page = Integer.parseInt(args[0]);
 			}
 			catch(Exception e)
 			{
 				//Incorrect data given, return
 				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
-						KCurrency.getTranslator().getTranslation(
+						Prefix.NEGATIVE + KCurrency.getTranslator().getTranslation(
 								plugin, 
 								sender, 
 								"invalid-arguments"));
@@ -70,16 +71,17 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		//Check that page count retrieval was successful
 		if(maxPages == -1) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.ERROR.get(), 
-					KCurrency.getDefaultMsgs().databaseError(sender));
+					Prefix.NEGATIVE + KCurrency.getDefaultMsgs().databaseError(sender));
 			return true;
 		}
 		
 		//Check that player gave correct page within range
 		if(page < 1 || page > maxPages)
 		{
+			//Show user the min-max page range
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
-					KCurrency.getTranslator().getTranslation(
-							plugin, sender, "invalid-page"));
+					Prefix.NEGATIVE + KCurrency.getTranslator().getTranslation(
+							plugin, sender, "invalid-page").replace("%max%", Integer.toString(this.getPageCount())));
 			return true;
 		}
 		
@@ -95,7 +97,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 	 * @param rowCount
 	 * @return
 	 */
-	private List<Entry<String,Double>> getBaltop(int page, int rowCount)
+	private List<Entry<String,Double>> getBaltop(int offset, int rowCount)
 	{
 		DatabaseConnector db = KCurrency.getDatabaseConnector();
 		List<Entry<String,Double>> balances = new ArrayList<Entry<String,Double>>();
@@ -104,21 +106,23 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		try {
 			Statement st = db.getStatement();
 			//Select from N the next 10 rows
+			//NORMAL SQL
+			/*ResultSet rs = st.executeQuery("select player.name, "+KCurrency.getBalanceName()+
+							" from "+ KCurrency.getTableName() + ", player" +
+							" order by "+ KCurrency.getBalanceName() +
+							" offset "+(offset-1)+" rows" +
+							" fetch next "+rowCount+" rows only;");*/
+			
+			//MySQL
 			ResultSet rs = st.executeQuery("select player.name, "+KCurrency.getBalanceName()+
-							"from "+ KCurrency.getTableName() + ", player" +
-							"order by "+ KCurrency.getBalanceName() +
-							"offset "+(page-1)+" rows" +
-							"fetch next "+rowCount+" rows only;");
+					" from "+ KCurrency.getTableName() + ", player" +
+					" order by "+ KCurrency.getBalanceName() +
+					" limit "+rowCount+ 
+					" offset "+offset+";");
 			
 			//Add the top rowCount rows to the list
 			while(rs.next())
 				balances.add(new SimpleEntry<String,Double>(rs.getString(1), rs.getDouble(2)));
-			
-			/*
-			players = db.getUUIDList("SELECT * FROM " + KCurrency.getTableName() + " ORDER BY " + KCurrency.getBalanceName() + ";", 
-					KCurrency.getUUIDName());
-			balances = db.getDoubleList("SELECT * FROM " + KCurrency.getTableName() + " ORDER BY " + KCurrency.getBalanceName() + ";", 
-					KCurrency.getBalanceName());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -135,7 +139,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 	{
 		int messageRows = this.getMessageRowCount(); //Amount of rows in one baltop message
 		//Get the amount of baltop rows specified in the config
-		List<Entry<String,Double>> balances = getBaltop(page, messageRows);
+		List<Entry<String,Double>> balances = getBaltop((page-1)*messageRows, messageRows);
 		
 		String balTopText = KCurrency.getTranslator().getTranslation(
 				plugin, sender, "toprow").replace("%page%", Integer.toString(page));
@@ -147,7 +151,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 			//Add a row of balances to the message
 			balTopText += "\n" +
 					KCurrency.getTranslator().getTranslation(plugin, sender, "baltop-entry")
-						.replace("%row%", Integer.toString(page*messageRows + ++row))
+						.replace("%row%", Integer.toString((page-1)*messageRows + ++row))
 						.replace("%player%", pair.getKey())
 						.replace("%amount%", Double.toString(pair.getValue()));
 		}

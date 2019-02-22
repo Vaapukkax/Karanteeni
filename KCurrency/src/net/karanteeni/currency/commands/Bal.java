@@ -74,8 +74,8 @@ public class Bal extends AbstractCommand implements TranslationContainer{
 			KCurrency.getMessager().sendMessage(sender, Sounds.NONE.get(),
 				plugin.getConfigHandler().getPrefix() + 
 				KCurrency.getTranslator().getTranslation(plugin, (Player)sender, "check-balance-own")
-				.replace("%amount%", KCurrency.getBalances().getBalance(((Player)sender).getUniqueId()).toString())
-				.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
+					.replace("%amount%", KCurrency.getBalances().getBalance(((Player)sender).getUniqueId()).toString())
+					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
 			);
 		}
 		
