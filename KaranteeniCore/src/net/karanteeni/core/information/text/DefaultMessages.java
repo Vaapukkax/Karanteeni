@@ -6,12 +6,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.karanteeni.core.KaranteeniCore;
+import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.translation.TranslationContainer;
 
 public class DefaultMessages implements TranslationContainer{
 	
 	private static final String noPermission = "no-permission";
 	private static final String playerNotFound = "player-not-found";
+	private static final String databaseError = "database-error-occurred";
 	
 	/**
 	 * Register this class' translations
@@ -23,6 +25,8 @@ public class DefaultMessages implements TranslationContainer{
 				noPermission, "You don't have permissions to this command!");
 		KaranteeniCore.getTranslator().registerRandomTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
 				playerNotFound, "Couldn't find a player named %player%!");
+		KaranteeniCore.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
+				databaseError, "A database error occurred, please contact staff and try again later.");
 	}
 	
 	/**
@@ -39,6 +43,11 @@ public class DefaultMessages implements TranslationContainer{
 		return "Console cannot execute this command (with these arguments)!";
 	}
 	
+	public String defaultDatabaseError()
+	{
+		return "A database error occurred, please contact staff and try again later.";
+	}
+	
 	/**
 	 * Return the no permission message
 	 * @param player
@@ -46,7 +55,8 @@ public class DefaultMessages implements TranslationContainer{
 	 */
 	public String noPermission(Locale locale)
 	{
-		return KaranteeniCore.getTranslator().getRandomTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), locale, noPermission);
+		return KaranteeniCore.getTranslator().getRandomTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, noPermission);
 	}
 	
 	/**
@@ -55,11 +65,11 @@ public class DefaultMessages implements TranslationContainer{
 	 * @param notFoundName
 	 * @return
 	 */
-	public String playerNotFound(Player player, String notFoundName)
+	/*public String playerNotFound(Player player, String notFoundName)
 	{
 		return KaranteeniCore.getTranslator().getRandomTranslation(
 				KaranteeniCore.getPlugin(KaranteeniCore.class), player, playerNotFound).replace("%player%", notFoundName);
-	}
+	}*/
 	
 	/**
 	 * Return the default permission of not found player
@@ -81,9 +91,12 @@ public class DefaultMessages implements TranslationContainer{
 	public String noPermission(CommandSender sender)
 	{
 		if(sender instanceof Player)
-			return KaranteeniCore.getTranslator().getRandomTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, noPermission);
+			return KaranteeniCore.getTranslator().getRandomTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, noPermission);
 		else
-			return KaranteeniCore.getTranslator().getRandomTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), new Locale("en", "US"), noPermission);
+			return KaranteeniCore.getTranslator().getRandomTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), 
+					KaranteeniPlugin.getTranslator().getDefaultLocale(), noPermission);
 	}
 	
 	/**
@@ -99,6 +112,34 @@ public class DefaultMessages implements TranslationContainer{
 					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, playerNotFound).replace("%player%", notFoundName);
 		else
 			return KaranteeniCore.getTranslator().getRandomTranslation(
-					KaranteeniCore.getPlugin(KaranteeniCore.class), new Locale("en", "US"), playerNotFound).replace("%player%", notFoundName);
+					KaranteeniCore.getPlugin(KaranteeniCore.class), 
+					KaranteeniPlugin.getTranslator().getDefaultLocale(), playerNotFound).replace("%player%", notFoundName);
+	}
+	
+	/**
+	 * Returns the default message for database error events
+	 * @param sender
+	 * @return
+	 */
+	public String databaseError(CommandSender sender)
+	{
+		if(sender instanceof Player)
+			return KaranteeniCore.getTranslator().getTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, databaseError);
+		else
+			return KaranteeniCore.getTranslator().getTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), 
+					KaranteeniPlugin.getTranslator().getDefaultLocale(), databaseError);
+	}
+	
+	/**
+	 * Returns the default message for database error events
+	 * @param locale
+	 * @return
+	 */
+	public String databaseError(Locale locale)
+	{
+		return KaranteeniCore.getTranslator().getTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, databaseError);
 	}
 }
