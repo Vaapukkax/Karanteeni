@@ -1,3 +1,5 @@
+#Matti Turpeinen
+
 # Karanteeni
 This README file is made to help understand how KaranteeniCore should be used
 
