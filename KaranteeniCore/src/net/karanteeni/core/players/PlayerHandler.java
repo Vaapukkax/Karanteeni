@@ -27,12 +27,8 @@ public class PlayerHandler {
 	public static enum PlayerDataKeys
 	{
 		UUID("UUID"),
-		LAST_IP("lastip"),
-		LAST_ONLINE("lastonline"),
 		DISPLAY_NAME("displayname"),
 		NAME("name"),
-		LEVEL("level"),
-		GLOBAL_RANK("globalrank"),
 		PLAYER_TABLE("player");
 		
 		String key;
@@ -68,12 +64,8 @@ public class PlayerHandler {
 		String query = 
 				"CREATE TABLE IF NOT EXISTS "+PlayerDataKeys.PLAYER_TABLE+" ("
 				+ PlayerDataKeys.UUID+ " VARCHAR(60) NOT NULL, \n"
-				+ PlayerDataKeys.LAST_IP + " VARCHAR(45) NOT NULL, \n"
-				+ PlayerDataKeys.LAST_ONLINE  + " BIGINT, \n"
 				+ PlayerDataKeys.DISPLAY_NAME + " VARCHAR(128), \n"
 				+ PlayerDataKeys.NAME + " VARCHAR(16) NOT NULL, \n"
-				+ PlayerDataKeys.LEVEL + " INT(8), \n"
-				+ PlayerDataKeys.GLOBAL_RANK + " VARCHAR(25), \n"
 				+ "PRIMARY KEY("+PlayerDataKeys.UUID+"), \n"
 				+ "UNIQUE(" + PlayerDataKeys.DISPLAY_NAME + "), \n"
 				+ "UNIQUE(" + PlayerDataKeys.NAME + ")\n"
@@ -244,7 +236,7 @@ public class PlayerHandler {
 	 * @param uuid
 	 * @return
 	 */
-	public String getOfflineIP(UUID uuid)
+	/*public String getOfflineIP(UUID uuid)
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return null;
@@ -256,21 +248,19 @@ public class PlayerHandler {
 			if(rs.first())
 				return rs.getString(1);
 			st.close();
-			/*return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LAST_IP.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return null;
-	}
+	}*/
 	
 	/**
 	 * Returns the last online time from player
 	 * @param uuid
 	 * @return
 	 */
-	public Long getLastOnline(UUID uuid)
+	/*public Long getLastOnline(UUID uuid)
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return null;
@@ -282,21 +272,19 @@ public class PlayerHandler {
 			if(rs.first())
 				return rs.getLong(1);
 			st.close();
-			/*return db.getLong("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LAST_ONLINE.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return null;
-	}
+	}*/
 	
 	/**
 	 * Returns the rank level of player
 	 * @param uuid
 	 * @return
 	 */
-	public Integer getLevel(UUID uuid)
+	/*public Integer getLevel(UUID uuid)
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return null;
@@ -308,21 +296,19 @@ public class PlayerHandler {
 			if(rs.first())
 				return rs.getInt(1);
 			st.close();
-			/*return db.getInteger("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.LEVEL.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return null;
-	}
+	}*/
 	
 	/**
 	 * Returns the global rank of the player
 	 * @param uuid
 	 * @return
 	 */
-	public String getGlobalRank(UUID uuid)
+	/*public String getGlobalRank(UUID uuid)
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return null;
@@ -334,12 +320,10 @@ public class PlayerHandler {
 			if(rs.first())
 				return rs.getString(1);
 			st.close();
-			/*return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
-					" WHERE UUID='"+uuid+"';", PlayerDataKeys.GLOBAL_RANK.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
 		return null;
-	}
+	}*/
 }

@@ -17,7 +17,7 @@ public class Time {
 	private static String[] YEAR_NAME = new String[] {"year", "vuotta", "y"};
 	private static String[] MONTH_NAME = new String[] {"month", "months", "mon", "kuukautta"};
 	private static String[] WEEK_NAME = new String[] {"week","w","viikkoa"};
-	private static String[] DAY_NAME = new String[] {"d","day","days","p‰iv‰‰"};
+	private static String[] DAY_NAME = new String[] {"d","day","days","p√§iv√§√§"};
 	private static String[] HOUR_NAME = new String[] {"h","hour","tuntia"};
 	private static String[] MINUTE_NAME = new String[] {"min","minute","minuuttia"};
 	private static String[] SECOND_NAME = new String[] {"s","second","sekuntia"};
