@@ -30,7 +30,8 @@ permissions:
       kcurrency.eco.take: true     
       kcurrency.eco.give: true
   kcurrency.*:
-    kcurrency.bal.*: true
-    kcurrency.eco.*: true
-    kcurrency.baltop: true
-    kcurrency.pay: true
+    children:
+      kcurrency.bal.*: true
+      kcurrency.eco.*: true
+      kcurrency.baltop: true
+      kcurrency.pay: true

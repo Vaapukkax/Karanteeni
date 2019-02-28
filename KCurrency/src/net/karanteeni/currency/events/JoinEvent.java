@@ -1,6 +1,5 @@
 package net.karanteeni.currency.events;
 
-import java.sql.ResultSet;
 import java.sql.Statement;
 
 import org.bukkit.Bukkit;
@@ -36,28 +35,31 @@ public class JoinEvent implements Listener{
 		if(!db.isConnected()) return;
 		
 		//check if this player is already in the database
-		try {
+		/*try {
 			Statement st = db.getStatement();
 			ResultSet set = st.executeQuery("SELECT * FROM " + KCurrency.getTableName() + 
 					" WHERE "+KCurrency.getUUIDName()+"='"+player.getUniqueId()+"';");
 			
-			st.close();
 			if(set.next())
+			{
+				set.close();
+				st.close();
 				return;
+			}
 		} catch (Exception e1) {
 			e1.printStackTrace();
-		}
+		}*/
 		
 		//Add player to database
 		try {
 			Statement st = db.getStatement();
 			//Insert player to database with UUID and default balance amount
-			st.executeUpdate("INSERT INTO " + KCurrency.getTableName() + " (" + 
+			st.executeUpdate("INSERT IGNORE INTO " + KCurrency.getTableName() + " (" + 
 					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + player.getUniqueId() + "', " + 
 					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");
+			st.close();
 		} catch (Exception e) {
 			Bukkit.broadcastMessage("§4Failed to generate balance information to database, please contanct server staff IMMEDIATELY!");
-			Bukkit.broadcastMessage("§4Virhe tilin luomisessa tietokantaan, otathan yhteytt� palvelimen ylläpitoon VÄLITTÖMÄSTI!");
 			e.printStackTrace();
 		}
 	}

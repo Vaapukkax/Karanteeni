@@ -63,7 +63,40 @@ public class ChatEvent implements Listener{
 		if(pshape == null)
 		{
 			UndirectedAdjacencyListGraph<Point3D> shape = new UndirectedAdjacencyListGraph<Point3D>();
-			shape.insertVertex(new Point3D(-0.5,-0.5,-0.5));
+			Point3D top = new Point3D(0,2,0);
+			Point3D bottom = new Point3D(0,-2,0);
+			
+			shape.insertVertex(top);
+			shape.insertVertex(bottom);
+			
+			shape.insertVertex(new Point3D(-1,0,0));
+			shape.insertVertex(new Point3D(-0.5,0,Math.sqrt(3)/2));
+			shape.insertVertex(new Point3D(0.5,0,Math.sqrt(3)/2));
+			shape.insertVertex(new Point3D(1,0,0));
+			shape.insertVertex(new Point3D(0.5,0,-Math.sqrt(3)/2));
+			shape.insertVertex(new Point3D(-0.5,0,-Math.sqrt(3)/2));
+			
+			shape.insertEqualsUndirectedEdge(top, new Point3D(-1,0,0));
+			shape.insertEqualsUndirectedEdge(top, new Point3D(-0.5,0,Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(top, new Point3D(0.5,0,Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(top, new Point3D(1,0,0));
+			shape.insertEqualsUndirectedEdge(top, new Point3D(0.5,0,-Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(top, new Point3D(-0.5,0,-Math.sqrt(3)/2));
+			
+			shape.insertEqualsUndirectedEdge(bottom, new Point3D(-1,0,0));
+			shape.insertEqualsUndirectedEdge(bottom, new Point3D(-0.5,0,Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(bottom, new Point3D(0.5,0,Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(bottom, new Point3D(1,0,0));
+			shape.insertEqualsUndirectedEdge(bottom, new Point3D(0.5,0,-Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(bottom, new Point3D(-0.5,0,-Math.sqrt(3)/2));
+			
+			shape.insertEqualsUndirectedEdge(new Point3D(-1,0,0), new Point3D(-0.5,0,Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0,Math.sqrt(3)/2), new Point3D(0.5,0,Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0,Math.sqrt(3)/2), new Point3D(1,0,0));
+			shape.insertEqualsUndirectedEdge(new Point3D(1,0,0), new Point3D(0.5,0,-Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0,-Math.sqrt(3)/2), new Point3D(-0.5,0,-Math.sqrt(3)/2));
+			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0,-Math.sqrt(3)/2), new Point3D(-1,0,0));
+			/*shape.insertVertex(new Point3D(-0.5,-0.5,-0.5));
 			shape.insertVertex(new Point3D(0.5,-0.5,-0.5));
 			shape.insertVertex(new Point3D(-0.5,0.5,-0.5));
 			shape.insertVertex(new Point3D(-0.5,-0.5,0.5));
@@ -85,9 +118,14 @@ public class ChatEvent implements Listener{
 			
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(0.5,-0.5,-0.5));
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(-0.5,0.5,-0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(0.5,0.5,0.5));
+			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(0.5,0.5,0.5));*/
+			/*Point3D p1 = new Point3D(0,1,0);
+			Point3D p2 = new Point3D(0,-1,0);
+			shape.insertVertex(p1);
+			shape.insertVertex(p2);
+			shape.insertEqualsUndirectedEdge(p1, p2);*/
 			pshape = new ParticleShape(shape, event.getPlayer().getLocation());
-			pshape.setRotation(45, 35.3, 30, 2);
+			pshape.setRotation(0, 0, 0, 4);
 			//pshape.setRotation(0, 30, 0, 2);
 			/*Point3D loc = new Point3D(event.getPlayer().getLocation().getX(),event.getPlayer().getLocation().getY(),event.getPlayer().getLocation().getZ());
 			pshape.startAnimation(
@@ -97,11 +135,13 @@ public class ChatEvent implements Listener{
 					new Vector(1,1,1), 
 					ParticleShape.ANIMATION.LINEAR, 
 					5000l);*/
-			pshape.show(TesterMain.getPlugin(TesterMain.class), new ParticlePlayer());
+			//pshape.show(TesterMain.getPlugin(TesterMain.class), new ParticlePlayer());
+			pshape.startAnimation(plugin, 
+					new ParticlePlayer(), pshape.getLocation().toVector(), new Vector(0,90,0), ParticleShape.ANIMATION.LINEAR, 5000);
 		}
 		else
 		{
-			pshape.hide();
+			pshape.stopAnimation();
 			pshape = null;
 		}
 	}
@@ -117,7 +157,7 @@ public class ChatEvent implements Listener{
 		@Override
 		public void playCornerParticle(Location arg0) {
 			//Draw the flame particle to corners
-			arg0.getWorld().spawnParticle(Particle.FLAME, arg0, 1, 0d, 0d, 0d, 0d);
+			arg0.getWorld().spawnParticle(Particle.TOTEM, arg0, 1, 0d, 0d, 0d, 0d);
 		}
 
 		@Override

@@ -140,7 +140,7 @@ public class EntityManager {
 	 * @param radius
 	 * @return
 	 */
-	public List<Monster> getNearbyMonster(Location location, double radius)
+	public List<Monster> getNearbyMonsters(Location location, double radius)
 	{
 		Collection<Entity> ents = location.getWorld().getNearbyEntities(location, radius, radius, radius);
 		List<Monster> animals = new ArrayList<Monster>();
@@ -160,7 +160,7 @@ public class EntityManager {
 	 * @param z
 	 * @return
 	 */
-	public List<Monster> getNearbyMonster(Location location, double x, double y, double z)
+	public List<Monster> getNearbyMonsters(Location location, double x, double y, double z)
 	{
 		Collection<Entity> ents = location.getWorld().getNearbyEntities(location, x, y, z);
 		List<Monster> animals = new ArrayList<Monster>();

@@ -1,8 +1,13 @@
 package net.karanteeni.foxet;
 
-import net.karanteeni.core.KaranteeniCore;
+import net.karanteeni.core.KaranteeniPlugin;
 
-public class Foxet extends KaranteeniCore {
+public class Foxet extends KaranteeniPlugin {
+	
+	public Foxet()
+	{
+		super(true);
+	}
 	
 	@Override
 	public void onEnable()
