@@ -2,7 +2,6 @@ package net.karanteeni.nature.block.events;
 
 import java.util.ArrayList;
 
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
@@ -16,6 +15,7 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import net.karanteeni.core.block.BlockCollection;
 import net.karanteeni.core.block.BlockType;
 import net.karanteeni.nature.Katura;
 import net.minecraft.server.v1_13_R2.BlockPosition;
@@ -97,15 +97,23 @@ public class ChopTree implements Listener{
 	 */
 	public boolean processTree(Block block, Player player)
 	{
-		ArrayList<Block> blocks = getTreeBlocks(block, null);
-		Material leafType = getLeafType(block.getType());
+		ArrayList<Block> connected = new ArrayList<Block>();
+		//Get all of the same logtypes from the tree
+		BlockCollection blocks = BlockCollection.scanBlockTypes(block, true, false, connected);
+		Material leafType = getLeafType(block.getType()); //Get tree leaf type
+		boolean containsLeaves = false; //Does the tree contain leaves
 		
-		//Check if this tree contains leaves
-		if(!containsLeaves(blocks, leafType))
-			return false;
+		for(Block b : connected)
+			if(b.getType() == leafType)
+				containsLeaves = true;
+		if(!containsLeaves) 
+			return false; //Tree does not contain leaves, don't chop
+
+		//What is the type of the sapling to be placed
+		Material saplingType = getSaplingType(block.getType());		
 		
 		//What is the type of the sapling to be placed
-		Material saplingType = getSaplingType(block.getType());
+		//Material saplingType = getSaplingType(block.getType());
 		ArrayList<Block> futureSaplings = getSaplingBlocks(blocks);
 		
 		//Timer to break all the blocks
@@ -160,37 +168,11 @@ public class ChopTree implements Listener{
 	}
 	
 	/**
-	 * Tarkistaa onko puussa lehti� kiinni jotta sen voi hakata
+	 * Gets the blocks suitable for sapling from collection
 	 * @param blocks
 	 * @return
 	 */
-	private boolean containsLeaves(ArrayList<Block> blocks, Material leafType)
-	{
-		for(int i = blocks.size()-1; i > 0; i--)
-		{
-			if(blocks.get(i).getLocation().add(1,0,0).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(-1,0,0).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(0,1,0).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(0,0,1).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(0,0,-1).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(1,1,0).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(-1,1,0).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(0,1,1).getBlock().getType().equals(leafType) ||
-					blocks.get(i).getLocation().add(0,1,-1).getBlock().getType().equals(leafType))
-			{
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Hakee saplingiksi sopivat blockit jonosta
-	 * @param blocks
-	 * @return
-	 */
-	private ArrayList<Block> getSaplingBlocks(ArrayList<Block> blocks)
+	private ArrayList<Block> getSaplingBlocks(BlockCollection blocks)
 	{
 		int lowestLoc = 255;
 		ArrayList<Block> saplings = new ArrayList<Block>();
@@ -199,93 +181,23 @@ public class ChopTree implements Listener{
 		{
 			if(blocks.get(i).getLocation().getBlockY() < lowestLoc)
 			{
-				//L�ydettiin uusi pohjataso, tyhjenent��n lista ja asetetaan matalin taso uudelleen
+				//Found a new lowest level, reset the list
 				lowestLoc = blocks.get(i).getLocation().getBlockY();
 				saplings.clear();
 				
-				//Lis�� tarkastettu block saplinglistaan
+				//Add checked block to blocklist
 				if(BlockType.GROWABLE.contains(blocks.get(i).getLocation().add(0,-1,0).getBlock().getType()))
 					saplings.add(blocks.get(i));
 			}
 			else if(blocks.get(i).getLocation().getBlockY() == lowestLoc &&
 					BlockType.GROWABLE.contains(blocks.get(i).getLocation().add(0,-1,0).getBlock().getType()))
 			{
-				//T�m� block on sopiva saplingiksi
+				//This block is suitable for sapling
 				saplings.add(blocks.get(i));
 			}
 		}
 		
 		return saplings;
-	}
-	
-	
-	//ArrayList<Block> blocks = new ArrayList<Block>();
-	/**
-	 * Hakee kaikki annetun blockin kaltaiset blockit
-	 * @param b
-	 * @param blocks t�ytyy olla NULL
-	 * @return
-	 */
-	private ArrayList<Block> getTreeBlocks(Block b, ArrayList<Block> blocks)
-	{
-		ArrayList<Location> locs = new ArrayList<Location>();
-		//ArrayList<Block> blocks = new ArrayList<Block>();
-		//Jos blocksia ei ole niin luodaan uusi
-		if(blocks == null)
-			blocks = new ArrayList<Block>();
-		
-		//Lis�t��n nykyinen block listaan jo valmiiksi
-		if(!blocks.contains(b))
-			blocks.add(b);
-		
-		//Looppaa sivut
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()+1, b.getLocation().getBlockY(), b.getLocation().getBlockZ()));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()-1, b.getLocation().getBlockY(), b.getLocation().getBlockZ()));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ()+1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX(), b.getLocation().getBlockY(), b.getLocation().getBlockZ()-1));
-		
-		//Looppaa ymp�rilt� kulmat
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()+1, b.getLocation().getBlockY(), b.getLocation().getBlockZ()+1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()-1, b.getLocation().getBlockY(), b.getLocation().getBlockZ()-1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()+1, b.getLocation().getBlockY(), b.getLocation().getBlockZ()-1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()-1, b.getLocation().getBlockY(), b.getLocation().getBlockZ()+1));
-		
-		//Looppaa ylh��lt�
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX(), b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()));
-		
-		//Looppaa ylh��lt� rinki
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()+1, b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()-1, b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX(), b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()+1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX(), b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()-1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()+1, b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()+1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()-1, b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()-1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()+1, b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()-1));
-		locs.add(new Location(b.getWorld(), b.getLocation().getBlockX()-1, b.getLocation().getBlockY()+1, b.getLocation().getBlockZ()+1));
-		
-		if(blocks.size() > 1024)
-			return blocks;
-		
-		//K�yd��n kaikki sijainnit l�pi
-		for(Location loc : locs)
-		{
-			//Lis�t��n sijainnissa oleva block jos on oikeaa tyyppi�, sek� 
-			if(loc.getBlock().getType().equals(b.getType()) && !blocks.contains(loc.getBlock()))
-			{
-				ArrayList<Block> bls = getTreeBlocks(loc.getBlock(), blocks);
-				
-				//K�yd��n l�pi ja tarkistetaan ettei t�t� ole viel� t�ss�
-				for(int i = 0; i < bls.size(); i++)
-				{
-					if(!blocks.contains(bls.get(0)))
-						blocks.add(bls.get(i));
-					else
-						break;
-				}
-			}
-		}
-		
-		return blocks;
 	}
 	
 	/**
