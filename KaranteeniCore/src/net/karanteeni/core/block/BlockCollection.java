@@ -60,19 +60,21 @@ public class BlockCollection implements Iterable<Block>{
 	 * Scans all the blocks of same type in 3D space
 	 * @param block
 	 * @param corners
+	 * @param goDown Scan blocks downwards
 	 * @return
 	 */
-	public static BlockCollection scanBlockTypes(Block block, boolean corners)
-	{ return scanBlockTypes(block,corners,null); }
+	public static BlockCollection scanBlockTypes(Block block, boolean corners, boolean goDown)
+	{ return scanBlockTypes(block,corners,goDown, null); }
 	
 	/**
 	 * Scans all the blocks of same type in 3D space
 	 * @param block
 	 * @param corners
+	 * @param goDown Scan blocks downwards
 	 * @param connectedBlocks blocks that are not the same type but are connected to the structure anyways
 	 * @return
 	 */
-	public static BlockCollection scanBlockTypes(Block block, boolean corners, ArrayList<Block> connectedBlocks)
+	public static BlockCollection scanBlockTypes(Block block, boolean corners, boolean goDown,ArrayList<Block> connectedBlocks)
 	{
 		BlockCollection coll = new BlockCollection();
 		
@@ -85,17 +87,21 @@ public class BlockCollection implements Iterable<Block>{
 			coll.add(b);
 			
 			//Check all blocks around the current block
-			for(int i = -1; i <= 1; ++i)
-			for(int j = -1; j <= 1; ++j)
-			for(int n = -1; n <= 1; ++n)
+			for(int x = -1; x <= 1; ++x)
+			for(int y = -1; y <= 1; ++y)
+			for(int z = -1; z <= 1; ++z)
 			{
-				if(i == 0 && j == 0 && n == 0)
+				if(x == 0 && y == 0 && z == 0)
 					continue;
 				
-				Block cBlock = b.getLocation().add(i, j, n).getBlock();
+				Block cBlock = b.getLocation().add(x, y, z).getBlock();
 				
 				//If no corners are allowed, skip them
-				if(!(corners || (i == 0 && j == 0 )||( i == 0 && n == 0 )||(n == 0 && j == 0)))
+				if(!(corners || (x == 0 && y == 0 )||( x == 0 && z == 0 )||(z == 0 && y == 0)))
+					continue;
+				
+				//Check if we can scan downwards
+				if(!goDown && cBlock.getLocation().add(x, y, z).getBlockY() < block.getLocation().getBlockY())
 					continue;
 				
 				//Blocks are same type, continue
