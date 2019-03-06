@@ -29,7 +29,7 @@ public class YamlConfig {
 			//Check that groupfile exists
 			if(!file.exists())
 				if(!dir.mkdirs() && !file.createNewFile())
-					Bukkit.getLogger().log(Level.SEVERE, "FAILED TO CREATE NECESSARY GROUP FILES!");
+					Bukkit.getLogger().log(Level.SEVERE, "FAILED TO CREATE NECESSARY DESTINATION FILES!");
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -43,6 +43,13 @@ public class YamlConfig {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Checks that the yml is created, loaded and file exists
+	 * @return
+	 */
+	public boolean isValid()
+	{ return (cconfig != null && file.exists()); }
 	
 	/**
 	 * Save the fileconfiguration

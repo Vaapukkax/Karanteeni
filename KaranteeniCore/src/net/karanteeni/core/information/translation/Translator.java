@@ -55,6 +55,10 @@ public class Translator {
 					first = false;
 				}
 			}
+			else //Log illegal config log
+				Bukkit.getLogger().log(
+						Level.CONFIG, 
+						"Illegal locale variable \""+locale+"\"! Please use format x-x!");
 		}
 	}
 	
