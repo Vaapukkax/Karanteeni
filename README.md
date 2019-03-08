@@ -1,7 +1,10 @@
 # Matti Turpeinen
 
 ## Rekrytoijalle:
-Tällä sivulla tekemä koodi on itseni tekemää Eclipsen IDE-ympäristössä. Koska koodi on vapaa-ajalla suoritettua, ei se ole varsinaisesti täysin kaikkialla paljaaltaan käyttökelpoista, vaan tämä on suunniteltu yhteen käyttöympäristöön. Projekti päivittyy jatkuvasti riippuen siitä, miten itselläni riittää aika opinnoilta - KaranteeniCore toimii muiden projektien pohjana, joten jos jotain katsoo suosittelen sitä vilkaisemaan!
+Tällä sivulla tekemä koodi on itseni itselleni tekemää Eclipse Javan IDE-ympäristössä. Koska koodi on vapaa-ajalla suoritettua, ei se ole varsinaisesti täysin kaikkialla paljaaltaan käyttökelpoista, vaan tämä on suunniteltu yhteen käyttöympäristöön (joka on laajennettavissa muokkaamatta projektien koodia suoraan). Projekti päivittyy jatkuvasti riippuen siitä, miten itselläni riittää aika opinnoilta. 
+KaranteeniCore toimii muiden projektien pohjana, joten jos jotain katsoo suosittelen sitä vilkaisemaan!
+
+Mikäli haluatte esimerkkejä yliopistossa suoritetuista harjoituksista tai vapaavalintaisista tehtävistä, ottakaa minuun yhteyttä sähköpostilla tai tekstiviestillä!
 
 # Karanteeni
 This README file is made to help understand how KaranteeniCore should be used
