@@ -3,6 +3,7 @@ package net.karanteeni.core.particle;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -21,7 +22,6 @@ public class ParticleShape implements Iterable<Point3D>{
 	private Animator animator = null;
 	private StaticDrawer drawer = null;
 	private Animatable shapeDrawer;
-
 	/** Current rotation of the shape */
 	private Vector rotation = new Vector(0,0,0);
 	
@@ -45,6 +45,8 @@ public class ParticleShape implements Iterable<Point3D>{
 		this.points = new UndirectedAdjacencyListGraph<Point3D>();
 		for(Point3D p : points)
 			this.points.insertVertex(p);
+		this.startRotation = rotation; //Initialize start rotation
+		this.rotation = new Vector(0,0,0);
 		this.rotate(rotation.getX(), rotation.getY(), rotation.getZ());
 	}
 	
@@ -104,10 +106,11 @@ public class ParticleShape implements Iterable<Point3D>{
 	}
 	
 	public final void setRotation(double yaw, double pitch, double roll, double scale) {
-        // Convert to radians
-		yaw = Math.toRadians(yaw);
-		pitch = Math.toRadians(pitch);
-		roll = Math.toRadians(roll);
+		
+		// Convert to radians
+		yaw = Math.toRadians(yaw-this.rotation.getX());
+		pitch = Math.toRadians(pitch-this.rotation.getY());
+		roll = Math.toRadians(roll-this.rotation.getZ());
 		
 		//Precalc the necessary variables
 		double cy = Math.cos(yaw);
@@ -116,12 +119,6 @@ public class ParticleShape implements Iterable<Point3D>{
 		double sp = Math.sin(pitch);
 		double cr = Math.cos(roll);
 		double sr = Math.sin(roll);
-		
-		//Normalize the rotations
-		//double d = Math.sqrt(yaw*yaw+pitch*pitch+roll*roll);
-		//Vector p = new Vector(yaw/d, pitch/d, roll/d);
-		//Vector p = new Vector(yaw, pitch, roll);
-		//p.normalize();
 		
 	    for (Point3D point : points.getValues()) {
 	    	double tempx = point.getX(), x = point.getX();
@@ -140,6 +137,10 @@ public class ParticleShape implements Iterable<Point3D>{
 	    	point.setY(y*scale);
 	    	point.setZ(z*scale);
 	    }
+	    
+	    this.rotation.setX(Math.toDegrees(yaw)+this.rotation.getX());
+	    this.rotation.setY(Math.toDegrees(pitch)+this.rotation.getY());
+	    this.rotation.setZ(Math.toDegrees(roll)+this.rotation.getZ());
 	}
 	
 	/**
@@ -206,8 +207,14 @@ public class ParticleShape implements Iterable<Point3D>{
     		Vector destination, 
     		Vector rotation, 
     		ANIMATION style, 
-    		long length)
+    		long length,
+    		short updateFrequency)
     {
+    	if(updateFrequency < 1)
+    		updateFrequency = 1;
+    	else if(updateFrequency > 20)
+    		updateFrequency = 20;
+    	
     	//This is used to draw the particles in the locations
     	this.shapeDrawer = shapeDrawer;
     	//If timer exists, stop the timer
@@ -217,7 +224,7 @@ public class ParticleShape implements Iterable<Point3D>{
     	//Create new class to animate the object
     	animator = new Animator(destination, rotation, style, length);
     	//Register the timer to animate the object
-    	KaranteeniPlugin.getTimerHandler().registerTimer(animator, 4);
+    	KaranteeniPlugin.getTimerHandler().registerTimer(animator, updateFrequency);
     }
     
     /**
@@ -393,12 +400,8 @@ public class ParticleShape implements Iterable<Point3D>{
     		//Get the current state of animation as a percentage
     		float currState = (float)(animationEndTime-System.currentTimeMillis())/animationLength; 
     		
-    		//Stop the animation if progress is going over limit
-    		if(currState < 0)
-    		{
-    			ParticleShape.this.stopAnimation();
-    			return;
-    		}
+    		if(currState > 1)
+    			currState = 1f;
     		
     		//Calculate the location of the point in 3D line
     		Location l = ParticleShape.this.startLocation;
@@ -418,6 +421,7 @@ public class ParticleShape implements Iterable<Point3D>{
     				new Vector(v.getX(),v.getY(),v.getZ()), 
     				new Vector(destrot.getX(),destrot.getY(),destrot.getZ()), 
     				currState);
+    		
     		//Update the current rotation
     		currentRotation.setX(newLoc.getX());
     		currentRotation.setY(newLoc.getY());
@@ -428,6 +432,13 @@ public class ParticleShape implements Iterable<Point3D>{
     				currentRotation.getX(), 
     				currentRotation.getY(), 
     				currentRotation.getZ(), 1);
+    		
+    		//Stop the animation if progress is going over limit
+    		if(currState < 0)
+    		{
+    			ParticleShape.this.stopAnimation();
+    			return;
+    		}
     	}
     	
     	/**
