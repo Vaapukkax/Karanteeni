@@ -61,7 +61,7 @@ public class ChatEvent implements Listener{
 		//TesterMain.getMessager().sendBossbar(players, Sounds.NONE.get(), 5f, 3, true, bar, texts);
 		
 		/* LUO PARTICLESHAPE KUUTION MUODOSSA */
-		/*if(pshape == null)
+		if(pshape == null)
 		{
 			UndirectedAdjacencyListGraph<Point3D> shape = new UndirectedAdjacencyListGraph<Point3D>();
 			Point3D top = new Point3D(0,2,0);
@@ -96,55 +96,19 @@ public class ChatEvent implements Listener{
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0,Math.sqrt(3)/2), new Point3D(1,0,0));
 			shape.insertEqualsUndirectedEdge(new Point3D(1,0,0), new Point3D(0.5,0,-Math.sqrt(3)/2));
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0,-Math.sqrt(3)/2), new Point3D(-0.5,0,-Math.sqrt(3)/2));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0,-Math.sqrt(3)/2), new Point3D(-1,0,0));*/
-			/*shape.insertVertex(new Point3D(-0.5,-0.5,-0.5));
-			shape.insertVertex(new Point3D(0.5,-0.5,-0.5));
-			shape.insertVertex(new Point3D(-0.5,0.5,-0.5));
-			shape.insertVertex(new Point3D(-0.5,-0.5,0.5));
-			shape.insertVertex(new Point3D(-0.5,0.5,0.5));
-			shape.insertVertex(new Point3D(0.5,-0.5,0.5));
-			shape.insertVertex(new Point3D(0.5,0.5,-0.5));
-			shape.insertVertex(new Point3D(0.5,0.5,0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,-0.5,-0.5), new Point3D(0.5,-0.5,-0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,-0.5,-0.5), new Point3D(-0.5,-0.5,0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,-0.5,-0.5), new Point3D(-0.5,0.5,-0.5));
-			
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,-0.5,0.5), new Point3D(0.5,-0.5,-0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,-0.5,0.5), new Point3D(-0.5,-0.5,0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,-0.5,0.5), new Point3D(0.5,0.5,0.5));
-			
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0.5,0.5), new Point3D(-0.5,-0.5,0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0.5,0.5), new Point3D(-0.5,0.5,-0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0.5,0.5), new Point3D(0.5,0.5,0.5));
-			
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(0.5,-0.5,-0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(-0.5,0.5,-0.5));
-			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0.5,-0.5), new Point3D(0.5,0.5,0.5));*/
-			/*Point3D p1 = new Point3D(0,1,0);
-			Point3D p2 = new Point3D(0,-1,0);
-			shape.insertVertex(p1);
-			shape.insertVertex(p2);
-			shape.insertEqualsUndirectedEdge(p1, p2);*/
-			/*pshape = new ParticleShape(shape, event.getPlayer().getLocation());
-			pshape.setRotation(0, 0, 0, 4);*/
-			//pshape.setRotation(0, 30, 0, 2);
-			/*Point3D loc = new Point3D(event.getPlayer().getLocation().getX(),event.getPlayer().getLocation().getY(),event.getPlayer().getLocation().getZ());
-			pshape.startAnimation(
-					null, 
-					new ParticlePlayer(), 
-					loc, 
-					new Vector(1,1,1), 
-					ParticleShape.ANIMATION.LINEAR, 
-					5000l);*/
-			//pshape.show(TesterMain.getPlugin(TesterMain.class), new ParticlePlayer());
-			/*pshape.startAnimation(plugin, 
-					new ParticlePlayer(), pshape.getLocation().toVector(), new Vector(0,90,0), ParticleShape.ANIMATION.LINEAR, 5000);
+			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0,-Math.sqrt(3)/2), new Point3D(-1,0,0));
+			pshape = new ParticleShape(shape, event.getPlayer().getLocation());
+			pshape.setRotation(0, 0, 0, 4);
+			Point3D loc = new Point3D(event.getPlayer().getLocation().getX(),event.getPlayer().getLocation().getY(),event.getPlayer().getLocation().getZ());
+
+			pshape.startAnimation(plugin, 
+					new ParticlePlayer(), pshape.getLocation().toVector(), new Vector(0,0,180), ParticleShape.ANIMATION.LINEAR, 10000, (short)2);
 		}
 		else
 		{
 			pshape.stopAnimation();
 			pshape = null;
-		}*/
+		}
 		
 		if(event.getPlayer().hasPermission("tester.bibsery"))
 			Bukkit.broadcastMessage("Has permission bibsery!");
