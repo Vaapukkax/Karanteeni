@@ -11,7 +11,7 @@ import org.bukkit.plugin.Plugin;
 public class YamlConfig {
 	private File file;
 	private FileConfiguration cconfig;
-	
+	private static String FILE_FAILURE = "Failed to create necessary destination files!";
 	
 	/**
 	 * Creates a new config file
@@ -28,10 +28,44 @@ public class YamlConfig {
 		try{
 			//Check that groupfile exists
 			if(!file.exists())
-				if(!dir.mkdirs() && !file.createNewFile())
-					Bukkit.getLogger().log(Level.SEVERE, "FAILED TO CREATE NECESSARY DESTINATION FILES!");
+			{
+				dir.mkdirs();
+				file.createNewFile();
+			}
+		} catch(Exception e) {
+			Bukkit.getLogger().log(Level.SEVERE, FILE_FAILURE, e);
+		}
+		
+		cconfig = new YamlConfiguration();
+		
+		try{
+			//Load the file from computer
+			cconfig.load(file);
 		} catch(Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Creates a new config file to plugin defaultdatafolder
+	 * @param plugin
+	 * @param fileName
+	 */
+	public YamlConfig(Plugin plugin, String fileName)
+	{
+		//Create the files necessary
+		this.file = new File(plugin.getDataFolder().toString(), fileName);
+		File dir = new File(plugin.getDataFolder().toString());
+		
+		try{
+			//Check that groupfile exists
+			if(!file.exists())
+			{
+				dir.mkdirs();
+				file.createNewFile();
+			}
+		} catch(Exception e) {
+			Bukkit.getLogger().log(Level.SEVERE, FILE_FAILURE, e);
 		}
 		
 		cconfig = new YamlConfiguration();
@@ -54,12 +88,14 @@ public class YamlConfig {
 	/**
 	 * Save the fileconfiguration
 	 */
-	public void save()
+	public boolean save()
 	{
 		try{
 			cconfig.save(file);
+			return true;
 		} catch(Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 	

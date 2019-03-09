@@ -1,5 +1,7 @@
 package net.karanteeni.core;
 
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +86,11 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 		
 		//Connect to database
 		if(dbConnector == null)
+		{
 			dbConnector = createDatabaseConnector();
+			if(dbConnector.isConnected())
+				createServerTable();
+		}
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		
 		defaultMessages = new DefaultMessages();
@@ -96,6 +102,22 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 		blockManager = new BlockManager();
 		playerHandler = new PlayerHandler();
 		itemManager = new ItemManager();
+	}
+	
+	/**
+	 * Create the server table to database
+	 */
+	private void createServerTable()
+	{
+		Statement st = dbConnector.getStatement();
+		try {
+			st.execute(
+				"CREATE TABLE IF NOT EXISTS server("
+				+ "ID VARCHAR(64) NOT NULL,"
+				+ "PRIMARY KEY (ID));");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

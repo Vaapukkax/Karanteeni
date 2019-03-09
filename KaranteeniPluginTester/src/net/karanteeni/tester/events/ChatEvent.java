@@ -1,5 +1,6 @@
 package net.karanteeni.tester.events;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.event.EventHandler;
@@ -60,7 +61,7 @@ public class ChatEvent implements Listener{
 		//TesterMain.getMessager().sendBossbar(players, Sounds.NONE.get(), 5f, 3, true, bar, texts);
 		
 		/* LUO PARTICLESHAPE KUUTION MUODOSSA */
-		if(pshape == null)
+		/*if(pshape == null)
 		{
 			UndirectedAdjacencyListGraph<Point3D> shape = new UndirectedAdjacencyListGraph<Point3D>();
 			Point3D top = new Point3D(0,2,0);
@@ -95,7 +96,7 @@ public class ChatEvent implements Listener{
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0,Math.sqrt(3)/2), new Point3D(1,0,0));
 			shape.insertEqualsUndirectedEdge(new Point3D(1,0,0), new Point3D(0.5,0,-Math.sqrt(3)/2));
 			shape.insertEqualsUndirectedEdge(new Point3D(0.5,0,-Math.sqrt(3)/2), new Point3D(-0.5,0,-Math.sqrt(3)/2));
-			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0,-Math.sqrt(3)/2), new Point3D(-1,0,0));
+			shape.insertEqualsUndirectedEdge(new Point3D(-0.5,0,-Math.sqrt(3)/2), new Point3D(-1,0,0));*/
 			/*shape.insertVertex(new Point3D(-0.5,-0.5,-0.5));
 			shape.insertVertex(new Point3D(0.5,-0.5,-0.5));
 			shape.insertVertex(new Point3D(-0.5,0.5,-0.5));
@@ -124,8 +125,8 @@ public class ChatEvent implements Listener{
 			shape.insertVertex(p1);
 			shape.insertVertex(p2);
 			shape.insertEqualsUndirectedEdge(p1, p2);*/
-			pshape = new ParticleShape(shape, event.getPlayer().getLocation());
-			pshape.setRotation(0, 0, 0, 4);
+			/*pshape = new ParticleShape(shape, event.getPlayer().getLocation());
+			pshape.setRotation(0, 0, 0, 4);*/
 			//pshape.setRotation(0, 30, 0, 2);
 			/*Point3D loc = new Point3D(event.getPlayer().getLocation().getX(),event.getPlayer().getLocation().getY(),event.getPlayer().getLocation().getZ());
 			pshape.startAnimation(
@@ -136,14 +137,19 @@ public class ChatEvent implements Listener{
 					ParticleShape.ANIMATION.LINEAR, 
 					5000l);*/
 			//pshape.show(TesterMain.getPlugin(TesterMain.class), new ParticlePlayer());
-			pshape.startAnimation(plugin, 
+			/*pshape.startAnimation(plugin, 
 					new ParticlePlayer(), pshape.getLocation().toVector(), new Vector(0,90,0), ParticleShape.ANIMATION.LINEAR, 5000);
 		}
 		else
 		{
 			pshape.stopAnimation();
 			pshape = null;
-		}
+		}*/
+		
+		if(event.getPlayer().hasPermission("tester.bibsery"))
+			Bukkit.broadcastMessage("Has permission bibsery!");
+		else
+			Bukkit.broadcastMessage("Does not have permission bibsery!");
 	}
 	
 	private class ParticlePlayer implements ParticleShape.Animatable 
