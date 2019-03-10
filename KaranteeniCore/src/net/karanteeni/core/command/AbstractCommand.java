@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
@@ -21,7 +20,7 @@ import net.karanteeni.core.KaranteeniPlugin;
  * 
  * @author Goblom
  */
-public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
+public abstract class AbstractCommand implements TabExecutor {
     
 	protected final KaranteeniPlugin plugin;
     protected final String command;
@@ -98,6 +97,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
         if (this.permMessage != null) cmd.setPermissionMessage(this.permMessage);
         getCommandMap().register("", cmd);
         cmd.setExecutor(this);
+        //plugin.getCommand(this.command).setTabCompleter(this);
     }
     
     /**
@@ -188,7 +188,8 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     
     public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
     
+    
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
-        return null;
+    	return null;
     }
 }
