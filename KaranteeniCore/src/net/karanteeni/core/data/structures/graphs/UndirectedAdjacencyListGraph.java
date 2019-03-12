@@ -1,8 +1,10 @@
-package net.karanteeni.core.data.structures;
+package net.karanteeni.core.data.structures.graphs;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Set;
+
+import net.karanteeni.core.data.structures.lists.Deque;
 
 public class UndirectedAdjacencyListGraph<A>
 {
@@ -86,7 +88,7 @@ public class UndirectedAdjacencyListGraph<A>
 		  if(a2 == null && vertex.getValue() == second)
 			  a2 = vertex;
 		  
-		  if(a1 == null && a2 == null)
+		  if(a1 != null && a2 != null)
 		  {
 			  Edge<A> edge = new Edge<A>(a1,a2); 
 			  edgeList.insertLast(edge);

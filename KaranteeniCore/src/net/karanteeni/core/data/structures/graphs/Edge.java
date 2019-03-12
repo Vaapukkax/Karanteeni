@@ -1,4 +1,4 @@
-package net.karanteeni.core.data.structures;
+package net.karanteeni.core.data.structures.graphs;
 
 /**
  * Edge for graphs

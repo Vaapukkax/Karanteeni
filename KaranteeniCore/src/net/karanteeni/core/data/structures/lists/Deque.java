@@ -1,4 +1,4 @@
-package net.karanteeni.core.data.structures;
+package net.karanteeni.core.data.structures.lists;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

@@ -1,6 +1,8 @@
-package net.karanteeni.core.data.structures;
+package net.karanteeni.core.data.structures.graphs;
 
-public class Vertex<V> {
+import net.karanteeni.core.data.structures.lists.Deque;
+
+public class Vertex<V> {	
 	private V value;
 	private Deque<Edge<V>> edges 		= new Deque<Edge<V>>();
 
@@ -13,7 +15,7 @@ public class Vertex<V> {
 	{
 		this.value = value;
 	}
-
+	
 	/**
 	 * Returns the incoming edges for this vertex
 	 * @return The incoming edges
@@ -50,7 +52,7 @@ public class Vertex<V> {
 	 */
 	public void setValue(final V value)
 	{ this.value = value; }
-
+	
 	/**
 	 * Returns this variable as a string for debugging purposes
 	 * @return {Key: key, Value: value}

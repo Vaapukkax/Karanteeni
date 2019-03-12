@@ -1,10 +1,13 @@
-package net.karanteeni.core.data.structures;
+package net.karanteeni.core.data.structures.graphs;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+
+import net.karanteeni.core.data.structures.lists.Deque;
 
 public class Digraph<A, B>
 {
@@ -41,6 +44,19 @@ public class Digraph<A, B>
 	public int degree(Vertex<A> v)
 	{ return v.getEdges().size(); }
 
+	/**
+	 * Returns the keys used by this graph
+	 * @return Collection of keys used by this graph vertices
+	 */
+	public Collection<A> getKeys()
+	{ return this.vertexList.keySet(); }
+	
+	/**
+	 * Returns the map of keys and their vertices 
+	 * @return
+	 */
+	public Map<A, Vertex<B>> getKeyValuePairs()
+	{ return this.vertexList; }
 	
 	/**
 	 * Inserts a vertex to graph

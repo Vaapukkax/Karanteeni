@@ -1,4 +1,4 @@
-package net.karanteeni.core.data.structures;
+package net.karanteeni.core.data.structures.lists;
 
 /**
  * A node for double linked list data structure
