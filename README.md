@@ -7,7 +7,7 @@ KaranteeniCore toimii muiden projektien pohjana, joten jos jotain katsoo suositt
 Mikäli haluatte esimerkkejä yliopistossa suoritetuista harjoituksista tai vapaavalintaisista tehtävistä, ottakaa minuun yhteyttä sähköpostilla tai tekstiviestillä!
 
 # Karanteeni
-This README file is made to help understand how KaranteeniCore should be used
+This README file is made to help understand how KaranteeniCore may be used. Remember to comment code when programming in real use!
 
 ## Code examples of KaranteeniCore
 ### How to extend KaranteeniCore
@@ -29,7 +29,11 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
 {
   public MyCommand()
   {
-    super(MyPlugin.getPlugin(MyPlugin.class), "command", "usage", "description", Arrays.asList("possible","command","arguments"));
+    super(MyPlugin.getPlugin(MyPlugin.class), 
+      "command", 
+      "usage", 
+      "description", 
+      Arrays.asList("possible","command","arguments"));
     registerTranslations();
   }
   
@@ -37,12 +41,12 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) 
   {
     //Returns a translation based on the users language if player
-    sender.sendMessage(MyPlugin.getTranslator().getTranslation(MyPlugin.getPlugin(MyPlugin.class),
+    sender.sendMessage(MyPlugin.getTranslator().getTranslation(this.plugin,
       sender, "sample-text"));
     
     if(args.length == 1)
       if(this.getRealParam(args[0]).equalsIgnoreCase("arguments"))
-        sender.sendMessage(MyPlugin.getTranslator().getTranslation(MyPlugin.getPlugin(MyPlugin.class),
+        sender.sendMessage(MyPlugin.getTranslator().getTranslation(this.plugin,
           sender, "cmd-args"));
   }
   
@@ -50,9 +54,9 @@ public class MyCommand extends AbstractCommand implements TranslationContainer
   public void registerTranslations() 
   {
     MyPlugin.getTranslator().registerTranslation(
-      MyPlugin.getPlugin(MyPlugin.class), "sample-text", "This is sample text");
+      this.plugin, "sample-text", "This is sample text");
     MyPlugin.getTranslator().registerTranslation(
-      MyPlugin.getPlugin(MyPlugin.class), "cmd-args", "Translated command arguments!");
+      this.plugin, "cmd-args", "Translated command arguments!");
   }
 }
 ```
@@ -97,7 +101,10 @@ public void chat(AsyncPlayerChatEvent event)
     texts.add(text+c);
   }
   
-  MyPlugin.getMessager().sendBossBar(event.getPlayer(), Sounds.NONE.get(), 5f, 3, true, bar, texts);
+  MyPlugin.getMessager().sendBossBar(
+    event.getPlayer(), 
+    Sounds.NONE.get(), 
+    5f, 3, true, bar, texts);
 }
 ```
 
@@ -106,7 +113,12 @@ public void chat(AsyncPlayerChatEvent event)
 @EventHandler
 public void chat(AsyncPlayerChatEvent event)
 {
-  MyPlugin.getMessager().sendTitle(0.1f, 0.1f, 1.2f, event.getPlayer(), event.getMessage(), "subtitle!", Sounds.NONE.get());
+  MyPlugin.getMessager().sendTitle(
+    0.1f, 0.1f, 1.2f, 
+    event.getPlayer(), 
+    event.getMessage(), 
+    "subtitle!", 
+    Sounds.NONE.get());
 }
 ```
 
@@ -115,7 +127,8 @@ public void chat(AsyncPlayerChatEvent event)
 @EventHandler
 public void chat(AsyncPlayerChatEvent event)
 {
-  MyPlugin.getMessager().sendMessage(players, Sounds.PLING_HIGH.get(), "This is a message with sound!");
+  MyPlugin.getMessager().sendMessage(players, 
+    Sounds.PLING_HIGH.get(), "This is a message with sound!");
   event.setCancelled(true);
 }
 ```
@@ -140,7 +153,8 @@ public class TestInv extends InventoryMenu
   public void menuClick(InventoryClickEvent event)
   {
     //Remember to check that the used inventory item and player are valid!
-    if(!isValid(event.getClickedInventory(), event.getCurrentItem(), (Player)event.getWhoClicked()) return;
+    if(!isValid(event.getClickedInventory(), 
+      event.getCurrentItem(), (Player)event.getWhoClicked()) return;
     
     if(event.getItem().equals(getClose());
     {
