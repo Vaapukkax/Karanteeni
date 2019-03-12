@@ -3,9 +3,9 @@ package net.karanteeni.core.command;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -14,6 +14,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 
 import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.core.data.structures.graphs.Digraph;
+import net.karanteeni.core.data.structures.graphs.Vertex;
 
 /**
  * For a How-To on how to use AbstractCommand see this post @ http://forums.bukkit.org/threads/195990/
@@ -28,8 +30,8 @@ public abstract class AbstractCommand implements TabExecutor {
     protected List<String> alias;
     protected final String usage;
     protected final String permMessage;
-    protected final Map<String, String> paramMap;
-    protected final List<String> params;
+    //protected final Map<String, String> paramMap;
+    protected final Digraph<String,List<String>> params;
 
     protected static CommandMap cmap;
     
@@ -53,7 +55,7 @@ public abstract class AbstractCommand implements TabExecutor {
         this(plugin, command, usage, description, null, aliases);
     }*/
     
-    private AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage, List<String> aliases, List<String> parameters) {
+    private AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage, List<String> aliases, Digraph<String,List<String>> parameters) {
         this.plugin = plugin;
     	this.command = command.toLowerCase();
         this.usage = usage;
@@ -62,7 +64,7 @@ public abstract class AbstractCommand implements TabExecutor {
         this.alias = aliases;
 
         //Create a map for parameters to get the actual parameter 
-        this.paramMap = new HashMap<String, String>();
+        //this.paramMap = new HashMap<String, String>();
         this.params = parameters;
     }
     
@@ -72,19 +74,19 @@ public abstract class AbstractCommand implements TabExecutor {
      * @param command
      * @param params Possible command parameters
      */
-    public AbstractCommand(KaranteeniPlugin plugin, String command, List<String> params) {
+    public AbstractCommand(KaranteeniPlugin plugin, String command, Digraph<String,List<String>> params) {
         this(plugin, command, null, null, null, null, params);
     }
     
-    public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, List<String> params) {
+    public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, Digraph<String,List<String>> params) {
         this(plugin, command, usage, null, null, null, params);
     }
     
-    public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, List<String> params) {
+    public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, Digraph<String,List<String>> params) {
         this(plugin, command, usage, description, null, null, params);
     }
     
-    public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage, List<String> params) {
+    public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage, Digraph<String,List<String>> params) {
         this(plugin, command, usage, description, permissionMessage, null, params);
     }
     
@@ -108,7 +110,41 @@ public abstract class AbstractCommand implements TabExecutor {
      */
     protected String getRealParam(String parameter)
     {
-    	return paramMap.get(parameter.toLowerCase());
+    	if(parameter == null)
+    		return "";
+    	
+    	//String param = paramMap.get(parameter.toLowerCase());
+    	Map<String, Vertex<List<String>>> valuePairs = params.getKeyValuePairs();
+    	parameter = parameter.toLowerCase();
+    	String realParam = "";
+    	
+    	//Loop through all the parameters to get the correct one
+    	for(Entry<String,Vertex<List<String>>> entry : valuePairs.entrySet())
+    	{
+    		for(String param : entry.getValue().getValue())
+    		{
+    			if(parameter.equals(param))
+    			{
+    				realParam = entry.getKey();
+    				break;
+    			}
+    		}
+    		
+    		if(realParam.length() > 0) //Real param has been found
+    			break;
+    	}
+    	
+    	return realParam;
+    }
+    
+    /**
+     * Returns the next parameters for onTabComplete if first params are given
+     * @param parameter
+     * @return
+     */
+    protected List<String> getNextParams(String[] parameters)
+    {
+    	
     }
     
     /**
@@ -135,7 +171,7 @@ public abstract class AbstractCommand implements TabExecutor {
     	if(params != null && !params.isEmpty()) //There are parameters in this command
     	{
     		//Loop all parameters
-    		for(String param : params)
+    		for(String param : params.getKeys())
     		{
     			param = param.toLowerCase();
     			//Create placeholders for parameter types
@@ -145,7 +181,7 @@ public abstract class AbstractCommand implements TabExecutor {
     		plugin.saveConfig();
     		
     		//Loop all parameters
-    		for(String param : params)
+    		for(String param : params.getKeys())
     			for(String paramalias : plugin.getConfig().getStringList("Command."+this.command+".params."+param))
     				paramMap.put(paramalias.toLowerCase(), param);
     	}
