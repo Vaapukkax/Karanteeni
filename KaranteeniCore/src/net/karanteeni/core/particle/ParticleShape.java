@@ -3,15 +3,14 @@ package net.karanteeni.core.particle;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.data.math.MineMath;
 import net.karanteeni.core.data.math.Point3D;
-import net.karanteeni.core.data.structures.Edge;
-import net.karanteeni.core.data.structures.UndirectedAdjacencyListGraph;
+import net.karanteeni.core.data.structures.graphs.Edge;
+import net.karanteeni.core.data.structures.graphs.UndirectedAdjacencyListGraph;
 import net.karanteeni.core.timers.KaranteeniTimer;
 
 public class ParticleShape implements Iterable<Point3D>{
