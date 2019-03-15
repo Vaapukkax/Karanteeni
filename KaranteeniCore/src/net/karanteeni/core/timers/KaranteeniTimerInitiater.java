@@ -13,7 +13,7 @@ import net.karanteeni.core.KaranteeniCore;
 
 public class KaranteeniTimerInitiater {
 	private final Map<KaranteeniTimer, Integer> listeners = new HashMap<KaranteeniTimer, Integer>();
-	private final BukkitRunnable timer;
+	//private final BukkitTask timer;
 	private int tickCount = 0;
 	private Plugin plugin = KaranteeniCore.getPlugin(KaranteeniCore.class);
 	
@@ -22,14 +22,14 @@ public class KaranteeniTimerInitiater {
 	 */
 	public KaranteeniTimerInitiater()
 	{
-		timer = new BukkitRunnable() {
+		BukkitRunnable timer = new BukkitRunnable() {
 			@Override
 			public void run() {
 				runTimer();
 			}
 		};
 		
-		timer.runTaskTimerAsynchronously(plugin, 1, 1);
+		/*this.timer = */timer.runTaskTimerAsynchronously(plugin, 1, 1);
 	}
 	
 	/**
@@ -40,9 +40,7 @@ public class KaranteeniTimerInitiater {
 	public void registerTimer(KaranteeniTimer timer, int tickLimit) throws IllegalArgumentException
 	{
 		if(tickLimit > 0)
-		{
 			listeners.put(timer, tickLimit);
-		}
 		else
 			throw new IllegalArgumentException("Illegal time! Has to be 1-N. " + tickLimit + " given.");
 	}
@@ -62,50 +60,29 @@ public class KaranteeniTimerInitiater {
 	 */
 	public void runTimer()
 	{
-		for (Entry<KaranteeniTimer, Integer> entry : listeners.entrySet())
-		{
-			//Has there been X ticks since last call
-			if(tickCount % entry.getValue() == 0)			
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, 
+		new Runnable() {
+			Map<KaranteeniTimer, Integer> listeners;
+			
+			@Override
+			public void run()
 			{
-				//The main function of the timer
-				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-					new Runnable() 
-					{
-						@Override
-						public void run()
-						{
-							try
-							{
-								entry.getKey().runTimer();
-							}
-							catch(Exception e)
-							{
-								plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", e);
-							}
-						}
-					});
+				if(this.listeners == null)
+					this.listeners = new HashMap<KaranteeniTimer, Integer>(KaranteeniTimerInitiater.this.listeners);
+			
+				for (Entry<KaranteeniTimer, Integer> entry : listeners.entrySet())
+				if(tickCount % entry.getValue() == 0)			
+					try
+					{ entry.getKey().runTimer(); }
+					catch(Exception e)
+					{ plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", e); }
+				else
+					try
+					{ entry.getKey().timerWait(); }
+					catch(Exception e)
+					{ plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e); }
 			}
-			else
-			{
-				//Runs the timerWait() function
-				Bukkit.getScheduler().scheduleSyncDelayedTask(plugin,
-					new Runnable() 
-					{
-						@Override
-						public void run()
-						{
-							try
-							{
-								entry.getKey().timerWait();
-							}
-							catch(Exception e)
-							{
-								plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e);
-							}
-						}
-					});
-			}
-		}
+		});
 		
 		if(tickCount == Integer.MAX_VALUE)
 			tickCount = 0;

@@ -17,6 +17,7 @@ public class LinkedNode <K extends Comparable<K>,V> implements Comparable<Linked
 	private K key;
 	private V value;
 	private Map<K,LinkedNode<K,V>> nextNodes = new HashMap<K,LinkedNode<K,V>>();
+	private boolean visited = false;
 	
 	/**
 	 * Initializes a new linkedNode with a key and a value
@@ -31,6 +32,20 @@ public class LinkedNode <K extends Comparable<K>,V> implements Comparable<Linked
 		this.key = key;
 		this.value = value;
 	}
+	
+	/**
+	 * Has this node been visited in DFS
+	 * @return
+	 */
+	public boolean isVisited()
+	{ return this.visited; }
+	
+	/**
+	 * Set the visited value of this node
+	 * @param visited
+	 */
+	public void setVisited(boolean visited)
+	{ this.visited = visited; }
 	
 	/**
 	 * Returns the next node using a key 

@@ -2,14 +2,16 @@ package net.karanteeni.core.data.structures.graphs;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class Route<K extends Comparable<K>,V> {
+public class Route<K extends Comparable<K>,V> implements Iterable<Entry<K,V>>{
 	//Path we've made
 	private Deque<LinkedNode<K,V>> path = new ArrayDeque<LinkedNode<K,V>>();
 	//Path we've made but stepped back from
@@ -62,6 +64,17 @@ public class Route<K extends Comparable<K>,V> {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Gets the current value the route has at the moment
+	 * @return Value of the route now
+	 */
+	public V getCurrentValue()
+	{
+		if(path.isEmpty())
+			return null;
+		return path.peek().getValue();
 	}
 	
 	/**
@@ -348,7 +361,7 @@ public class Route<K extends Comparable<K>,V> {
 		if(this.path.isEmpty())
 			this.nodes.put(key, new LinkedNode<K,V>(key, value));
 		else
-			this.path.peek().addNextNode(key, value);
+			this.path.peek().addNextNode(new LinkedNode<K,V>(key, value));
 		return true;
 	}
 	
@@ -363,5 +376,42 @@ public class Route<K extends Comparable<K>,V> {
 			this.nodes.put(key, new LinkedNode<K,V>(key, value));
 		else
 			this.path.peek().addNextNode(key, value);
+	}
+
+	@Override
+	public Iterator<Entry<K,V>> iterator() {
+		List<Entry<K,V>> allValues = new ArrayList<Entry<K,V>>();
+		List<LinkedNode<K,V>> allNodes = new ArrayList<LinkedNode<K,V>>();
+		Deque<LinkedNode<K,V>> queue = new ArrayDeque<LinkedNode<K,V>>();
+		
+		//Add values to queue from starting points
+		for(Entry<K, LinkedNode<K, V>> entry : this.nodes.entrySet())
+			queue.add(entry.getValue());
+		
+		LinkedNode<K,V> node;
+		while(!queue.isEmpty())
+		{
+			node = queue.pop();
+			if(node.isVisited()) //If this node is already visited, continue queue
+				continue;
+			
+			allNodes.add(node);
+			allValues.add(new SimpleEntry<K,V>(node.getKey(),node.getValue()));
+			
+			//Add the next nodes to the queue
+			for(LinkedNode<K,V> lnode : node)
+			{
+				if(lnode.isVisited())
+					continue;
+				
+				queue.add(lnode);
+			}
+		}
+		
+		allNodes.forEach((LinkedNode<K,V> node_) -> {
+			node_.setVisited(false);
+		});
+		
+		return allValues.iterator();
 	}
 }

@@ -13,6 +13,7 @@ public class DefaultMessages implements TranslationContainer{
 	
 	private static final String noPermission = "no-permission";
 	private static final String playerNotFound = "player-not-found";
+	private static final String incorrectParameters = "incorrect-command-parameters";
 	private static final String databaseError = "database-error-occurred";
 	
 	/**
@@ -25,6 +26,8 @@ public class DefaultMessages implements TranslationContainer{
 				noPermission, "You don't have permissions to this command!");
 		KaranteeniCore.getTranslator().registerRandomTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
 				playerNotFound, "Couldn't find a player named %player%!");
+		KaranteeniCore.getTranslator().registerRandomTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
+				incorrectParameters, "Incorrect parameters in command!");
 		KaranteeniCore.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
 				databaseError, "A database error occurred, please contact staff and try again later.");
 	}
@@ -46,6 +49,11 @@ public class DefaultMessages implements TranslationContainer{
 	public String defaultDatabaseError()
 	{
 		return "A database error occurred, please contact staff and try again later.";
+	}
+	
+	public String defaultIncorrectParameters()
+	{
+		return "Incorrect parameters in command!";
 	}
 	
 	/**
@@ -114,6 +122,33 @@ public class DefaultMessages implements TranslationContainer{
 			return KaranteeniCore.getTranslator().getRandomTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), 
 					KaranteeniPlugin.getTranslator().getDefaultLocale(), playerNotFound).replace("%player%", notFoundName);
+	}
+	
+	/**
+	 * Returns the translated message for incorrect parameters in command
+	 * @param sender
+	 * @return
+	 */
+	public String incorrectParameters(CommandSender sender)
+	{
+		if(sender instanceof Player)
+			return KaranteeniCore.getTranslator().getTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, incorrectParameters);
+		else
+			return KaranteeniCore.getTranslator().getTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), 
+					KaranteeniPlugin.getTranslator().getDefaultLocale(), incorrectParameters);
+	}
+	
+	/**
+	 * Returns the translated message for incorrect parameters in command
+	 * @param locale
+	 * @return
+	 */
+	public String incorrectParameters(Locale locale)
+	{
+		return KaranteeniCore.getTranslator().getTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, incorrectParameters);
 	}
 	
 	/**
