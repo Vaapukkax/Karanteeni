@@ -1,6 +1,8 @@
 package net.karanteeni.core.timers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -16,6 +18,7 @@ public class KaranteeniTimerInitiater {
 	//private final BukkitTask timer;
 	private int tickCount = 0;
 	private Plugin plugin = KaranteeniCore.getPlugin(KaranteeniCore.class);
+	private List<KaranteeniTimer> unregisterable = new ArrayList<KaranteeniTimer>();
 	
 	/**
 	 * Creates and starts the timer
@@ -46,14 +49,11 @@ public class KaranteeniTimerInitiater {
 	}
 	
 	/**
-	 * Otetaan ajastin pois rekisteräinnistä
+	 * Unregister a given timer the next timer run
 	 * @param timer
 	 */
 	public void unregisterTimer(KaranteeniTimer timer)
-	{
-		timer.timerStopped();
-		listeners.remove(timer);
-	}
+	{ unregisterable.add(timer); }
 	
 	/**
 	 * Runs all timers once
@@ -62,13 +62,15 @@ public class KaranteeniTimerInitiater {
 	{
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, 
 		new Runnable() {
-			Map<KaranteeniTimer, Integer> listeners;
 			
 			@Override
 			public void run()
 			{
-				if(this.listeners == null)
-					this.listeners = new HashMap<KaranteeniTimer, Integer>(KaranteeniTimerInitiater.this.listeners);
+				for(KaranteeniTimer timer : unregisterable) //Unregister the timer before next runtime
+				{
+					timer.timerStopped();
+					listeners.remove(timer);
+				}
 			
 				for (Entry<KaranteeniTimer, Integer> entry : listeners.entrySet())
 				if(tickCount % entry.getValue() == 0)			
@@ -83,9 +85,5 @@ public class KaranteeniTimerInitiater {
 					{ plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e); }
 			}
 		});
-		
-		if(tickCount == Integer.MAX_VALUE)
-			tickCount = 0;
-		++tickCount;
 	}
 }
