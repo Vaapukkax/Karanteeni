@@ -32,7 +32,7 @@ public class KaranteeniTimerInitiater {
 			}
 		};
 		
-		/*this.timer = */timer.runTaskTimerAsynchronously(plugin, 1, 1);
+		/*this.timer = */timer.runTaskTimer(plugin, 1, 1);
 	}
 	
 	/**
