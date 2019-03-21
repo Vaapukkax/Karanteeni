@@ -21,10 +21,12 @@ import net.karanteeni.core.KaranteeniPlugin;
 public class Translator {
 	
 	//Locales used by this plugin
-	private List<Locale> locales = new ArrayList<Locale>();
+	private final List<Locale> locales = new ArrayList<Locale>();
+	private final List<String> localesString = new ArrayList<String>(); 
 	private Locale defaultLocale = null;
 	private Plugin plugin = null;
 	private String configLocalesTag = "Locales";
+	private static String LANG_SPLITTER = "_";
 	
 	/**
 	 * Initializes the default languages which are always used
@@ -45,10 +47,11 @@ public class Translator {
 		boolean first = true;
 		for(String locale : lcs)
 		{
-			String[] l = locale.split("-");
+			String[] l = locale.split(LANG_SPLITTER);
 			if(l.length == 2)
 			{
 				locales.add(new Locale(l[0], l[1]));
+				localesString.add(l[0]+LANG_SPLITTER+l[1]);
 				if(first)
 				{
 					defaultLocale = locales.get(0);
@@ -59,6 +62,14 @@ public class Translator {
 				Bukkit.getLogger().log(
 						Level.CONFIG, 
 						"Illegal locale variable \""+locale+"\"! Please use format x-x!");
+		}
+		
+		//Register default locale to usage if no lang is set
+		if(locales.size() == 0)
+		{
+			locales.add(new Locale("en", "US"));
+			localesString.add("en_US");
+			defaultLocale = new Locale("en","US");
 		}
 	}
 	
@@ -71,7 +82,7 @@ public class Translator {
 		if(!plugin.getConfig().isSet(configLocalesTag))
 		{
 			plugin.getConfig().set(configLocalesTag, 
-					new ArrayList<String>(Arrays.asList("en-US")));
+					new ArrayList<String>(Arrays.asList("en"+LANG_SPLITTER+"US")));
 			plugin.saveConfig();
 		}
 	}
@@ -85,10 +96,27 @@ public class Translator {
 		return defaultLocale;
 	}
 	
+	/**
+	 * Returns the locale of player or if not able to
+	 * identify locale, then default locale
+	 * @param player
+	 * @return
+	 */
 	public Locale getLocale(Player player)
 	{
-		return new Locale(player.getLocale().substring(0, 2), player.getLocale().substring(3));
+		String[] parts = player.getLocale().split(LANG_SPLITTER);
+		if(parts.length == 2 && parts[0] != null && parts[1] != null)
+			return new Locale(parts[0], parts[1]);
+		return this.defaultLocale;
 	}
+	
+	/**
+	 * Gives all the locales as stringlist used by the plugin in the format
+	 * "xx-XX"
+	 * @return list of locales as string in format "xx-XX"
+	 */
+	public List<String> getStringLocales()
+	{ return this.localesString; }
 	
 	/**
 	 * Registers a new plugin translation to a key
@@ -139,6 +167,24 @@ public class Translator {
 		{
 			Bukkit.getLogger().log(Level.SEVERE, "Tried to register translation before enabling plugin!");
 		}
+	}
+	
+	/**
+	 * Sets the translation of given key to the config
+	 * @param plugin
+	 * @param locale
+	 * @param key
+	 * @param newValue
+	 */
+	public void setTranslation(KaranteeniPlugin plugin, Locale locale, String key, String newValue)
+	{
+		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
+		
+		if(yml == null)
+			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+		
+		yml.set(key, newValue);
+		KaranteeniCore.getConfigManager().savePluginTranslationYML(plugin, locale);
 	}
 	
 	/**
