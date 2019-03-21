@@ -16,14 +16,14 @@ import org.bukkit.block.Block;
  *
  */
 public class BlockCollection implements Iterable<Block>{
-	private ArrayList<Block> blocks = new ArrayList<Block>();
+	private LinkedList<Block> blocks = new LinkedList<Block>();
 	
 	/**
 	 * Create a new BlockCollection from blocks
 	 * @param blocks
 	 */
 	public BlockCollection(Collection<Block> blocks)
-	{ this.blocks = new ArrayList<Block>(blocks); }
+	{ this.blocks = new LinkedList<Block>(blocks); }
 	
 	/**
 	 * Creates a new empty block collection
@@ -74,7 +74,7 @@ public class BlockCollection implements Iterable<Block>{
 	 * @param connectedBlocks blocks that are not the same type but are connected to the structure anyways
 	 * @return
 	 */
-	public static BlockCollection scanBlockTypes(Block block, boolean corners, boolean goDown,ArrayList<Block> connectedBlocks)
+	public static BlockCollection scanBlockTypes(Block block, boolean corners, boolean goDown, ArrayList<Block> connectedBlocks)
 	{
 		BlockCollection coll = new BlockCollection();
 		
@@ -84,11 +84,12 @@ public class BlockCollection implements Iterable<Block>{
 		while(!q.isEmpty())
 		{
 			Block b = q.remove();
+			
 			coll.add(b);
 			
 			//Check all blocks around the current block
 			for(int x = -1; x <= 1; ++x)
-			for(int y = -1; y <= 1; ++y)
+			for(int y = goDown?-1:0; y <= 1; ++y)
 			for(int z = -1; z <= 1; ++z)
 			{
 				if(x == 0 && y == 0 && z == 0)
@@ -97,19 +98,17 @@ public class BlockCollection implements Iterable<Block>{
 				Block cBlock = b.getLocation().add(x, y, z).getBlock();
 				
 				//If no corners are allowed, skip them
-				if(!(corners || (x == 0 && y == 0 )||( x == 0 && z == 0 )||(z == 0 && y == 0)))
-					continue;
-				
-				//Check if we can scan downwards
-				if(!goDown && cBlock.getLocation().add(x, y, z).getBlockY() < block.getLocation().getBlockY())
+				if(!corners && x != 0 && y != 0 && z != 0)
 					continue;
 				
 				//Blocks are same type, continue
 				if(block.getType() == cBlock.getType())
-					if(!coll.contains(cBlock)) //Don't add if already in collection
+				{
+					if(!(coll.contains(cBlock) || q.contains(cBlock))) //Don't add if already in collection
 						q.add(cBlock);
+				}
 				//Blocks are different type, add to connectedBlocks
-				if(connectedBlocks != null)
+				else if(connectedBlocks != null)
 					connectedBlocks.add(cBlock);
 			}
 		}
