@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -98,6 +99,19 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
         if (this.permMessage != null) cmd.setPermissionMessage(this.permMessage);
         getCommandMap().register("", cmd);
         cmd.setExecutor(this);
+    }
+    
+    /**
+     * Filters a list of string based on their prefix
+     * @param list List to be filtered
+     * @param prefix Prefix by which the strings will be filtered
+     * @return List of filtered strings
+     */
+    protected List<String> filterByPrefix(List<String> list, String prefix)
+    {
+    	if(prefix == null)
+    		return new ArrayList<String>();
+    	return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
     }
     
     /**
