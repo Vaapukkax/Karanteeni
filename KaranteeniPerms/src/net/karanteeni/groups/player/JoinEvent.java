@@ -36,15 +36,12 @@ public class JoinEvent implements Listener{
 		}
 		
 		//Load the players permissions of group
-		perms.getPlayerModel().loadOnlinePlayerPermissions(event.getPlayer(), group);
+		perms.getPlayerModel().loadOnlinePlayerGroupPermissions(event.getPlayer(), group);
 		
-		perms.getPlayerModel().loadOnlinePlayerPrivatePermissions(event.getPlayer());
-		
-		/*Bukkit.broadcastMessage("Player: " + event.getPlayer().getName() + " Group: " + group.getID());
-		Bukkit.broadcastMessage("Name of group in players language: " + group.getName(event.getPlayer()));
-		Bukkit.broadcastMessage("Long Prefix: " + group.getPrefix(event.getPlayer(), false) + 
-				" Short Prefix: " + group.getPrefix(event.getPlayer(), true) + 
-				" Suffix: " + group.getSuffix());*/
+		//Load players private permissions
+		if(!perms.getPlayerModel().loadOnlinePlayerPrivatePermissions(event.getPlayer()))
+			Bukkit.getLogger().log(Level.SEVERE, "Failed to load player "+
+					event.getPlayer().getUniqueId()+" permissions from database!");
 	}
 	
 	/**

@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map.Entry;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -19,11 +22,12 @@ import net.karanteeni.core.config.YamlConfig;
 import net.karanteeni.groups.KaranteeniPerms;
 
 public class Group {
-	private String 				prefix 					= "";
-	private String 				suffix 					= "";
+	//private String 				prefix 					= "";
+	//private String 				suffix 					= "";
+	private GroupData			groupData;
 	private final String 		ID;
 	private boolean 			def;
-	private List<Permission> 	permissions;
+	//private List<Permission> 	permissions;
 	private List<Group> 		inheritedGroups 		= new ArrayList<Group>();
 	private KaranteeniPlugin 	pl;
 	private static YamlConfig 	groupConfig;
@@ -31,7 +35,9 @@ public class Group {
 	private static final String RANK_SHORT_NAME_DEST 	= GROUP_SECTION + ".%s.shortname";
 	private static final String RANK_LONG_NAME_DEST 	= GROUP_SECTION + ".%s.name";
 	private static final String SAVE_GROUP_LOCATION 	= GROUP_SECTION + ".%s.";
-	private static final String GROUP_STRING_TAG		= "%group%";
+	private BiConsumer<UUID, String> addPermission;
+	private BiConsumer<UUID, String> removePermission;
+	protected static final String GROUP_STRING_TAG		= "%group%";
 	
 	/**
 	 * Creates a new group with info
@@ -50,7 +56,9 @@ public class Group {
 			String prefix, 
 			String suffix, 
 			boolean defaultGroup,
-			List<Permission> perms)
+			List<String> perms,
+			BiConsumer<UUID,String> addPermission,
+			BiConsumer<UUID,String> removePermission)
 	{
 		pl = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 		this.ID = ID;
@@ -64,14 +72,13 @@ public class Group {
 				String.format(RANK_SHORT_NAME_DEST, ID), 
 				rankShortName);
 		
-		this.prefix = prefix;
-		this.suffix = suffix;
-		this.permissions = perms;
+		this.addPermission = addPermission;
+		this.removePermission = removePermission;
+		this.groupData = new GroupData(prefix, suffix, perms);
+		//this.permissions = perms;
 		this.def = defaultGroup;
 		if(groupConfig == null)
-		{
 			groupConfig = new YamlConfig(pl, "Groups.yml");
-		}
 	}
 	
 	/**
@@ -93,8 +100,8 @@ public class Group {
 			return false;
 		
 		//Loop all permissions of parent group
-		for(Permission perm : group.getPermissions())
-			this.addPermission(perm);
+		for(String perm : group.getPermissions())
+			this.addPermission(perm, false);
 		
 		//Get all inherited groups of inherited group
 		Deque<Group> queue = new ArrayDeque<Group>();
@@ -104,8 +111,8 @@ public class Group {
 		{
 			Group g = queue.pop();
 			queue.addAll(getInheritedGroups());
-			for(Permission perm : g.getPermissions())
-				this.addPermission(perm);
+			for(String perm : g.getPermissions())
+				this.addPermission(perm, false);
 		}
 		
 		return true; //Inheritance of group(s) was successful
@@ -132,7 +139,7 @@ public class Group {
 	 * @return Groups prefix in its raw format
 	 */
 	public String getRawPrefix()
-	{ return this.prefix; }
+	{ return this.groupData.getPrefix(); }
 	
 	/**
 	 * Returns the translated prefix of group
@@ -152,7 +159,7 @@ public class Group {
 			rankName = KaranteeniPerms.getTranslator().getTranslation(
 				pl, locale, String.format(RANK_SHORT_NAME_DEST, ID));
 		
-		return this.prefix.replace(GROUP_STRING_TAG, rankName); 
+		return this.groupData.getPrefix().replace(GROUP_STRING_TAG, rankName); 
 	}
 	
 	/**
@@ -173,7 +180,7 @@ public class Group {
 			rankName = KaranteeniPerms.getTranslator().getTranslation(
 				pl, player, String.format(RANK_SHORT_NAME_DEST, ID));
 		
-		return this.prefix.replace(GROUP_STRING_TAG, rankName);
+		return this.groupData.getPrefix().replace(GROUP_STRING_TAG, rankName);
 	}
 	
 	/**
@@ -194,7 +201,7 @@ public class Group {
 			rankName = KaranteeniPerms.getTranslator().getTranslation(
 				pl, sender, String.format(RANK_SHORT_NAME_DEST, ID));
 		
-		return this.prefix.replace(GROUP_STRING_TAG, rankName); 
+		return this.groupData.getPrefix().replace(GROUP_STRING_TAG, rankName); 
 	}
 	
 	/**
@@ -205,7 +212,7 @@ public class Group {
 	 */
 	public boolean setPrefix(String newPrefix)
 	{
-		this.prefix = newPrefix;
+		this.groupData.setPrefix(newPrefix);
 		return this.saveGroup();
 	}
 	
@@ -216,7 +223,7 @@ public class Group {
 	 */
 	public boolean setSuffix(String newSuffix)
 	{
-		this.suffix = newSuffix;
+		this.groupData.setSuffix(newSuffix);
 		return this.saveGroup();
 	}
 	
@@ -225,7 +232,7 @@ public class Group {
 	 * @return
 	 */
 	public String getSuffix()
-	{ return suffix; }
+	{ return this.groupData.getSuffix(); }
 	
 	/**
 	 * Returns the name for this rank
@@ -292,12 +299,34 @@ public class Group {
 	}
 	
 	/**
+	 * Sets the name of the group to given value in the given locale
+	 * @param locale
+	 * @param name
+	 * @param longVersion
+	 */
+	public void setName(Locale locale, String name, boolean longVersion)
+	{
+		if(longVersion)
+		{
+			KaranteeniPerms.getTranslator().setTranslation(this.pl, locale, 
+					String.format(RANK_LONG_NAME_DEST, ID), name);
+			//this.groupData.setGroupName(name);
+		}
+		else
+		{
+			KaranteeniPerms.getTranslator().setTranslation(this.pl, locale, 
+					String.format(RANK_SHORT_NAME_DEST, ID), name);
+			//this.groupData.setGroupShortName(name);
+		}
+	}
+	
+	/**
 	 * Does this group have the given permission
 	 * @param perm
 	 * @return
 	 */
 	public boolean hasPermission(Permission perm)
-	{ return permissions.contains(perm); }
+	{ return this.groupData.hasPermission(perm.getName()); }
 	
 	/**
 	 * Does this group have the given permission
@@ -305,14 +334,14 @@ public class Group {
 	 * @return
 	 */
 	public boolean hasPermission(String permission)
-	{ return permissions.contains(new Permission(permission)); }
+	{ return this.groupData.hasPermission(permission); }
 	
 	/**
 	 * Get all the permissions this group has
 	 * @return
 	 */
-	public List<Permission> getPermissions()
-	{ return this.permissions; }
+	public List<String> getPermissions()
+	{ return this.groupData.getPermissions(); }
 	
 	/**
 	 * Saves the group variables to the config file
@@ -321,8 +350,8 @@ public class Group {
 	public boolean saveGroup()
 	{
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"default", this.def);
-		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"prefix", this.prefix);
-		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"suffix", this.suffix);
+		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"prefix", this.groupData.getPrefix());
+		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"suffix", this.groupData.getSuffix());
 		
 		List<String> inheritedIDs = new ArrayList<String>();
 		List<String> perms = new ArrayList<String>();
@@ -330,8 +359,8 @@ public class Group {
 		for(Group g : this.inheritedGroups)
 			inheritedIDs.add(g.ID);
 		
-		for(Permission perm : this.permissions)
-			perms.add(perm.getName());
+		for(String perm : this.groupData.getPermissions())
+			perms.add(perm);
 		
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"inherited-groups", inheritedIDs);
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"permissions", perms);
@@ -342,15 +371,19 @@ public class Group {
 	 * Generates a new default group to config and saves it.
 	 * @return Was the save successful
 	 */
-	private static boolean generateDefaultGroup()
+	private static boolean generateDefaultGroup(
+			BiConsumer<UUID,String> addPermission,
+			BiConsumer<UUID,String> removePermission)
 	{
 		Group group = new Group("myGroup", 
 				"DefaultGroup", 
 				"DG", 
 				"§f[§7"+GROUP_STRING_TAG+"§f] ", 
-				" §6>§f", 
+				" §6> §f", 
 				true, 
-				new ArrayList<Permission>());
+				new ArrayList<String>(),
+				addPermission,
+				removePermission);
 		
 		return group.saveGroup();
 	}
@@ -361,14 +394,49 @@ public class Group {
 	 * @param perm
 	 * @return was the new permission inserted or did it already exist
 	 */
-	public boolean addPermission(Permission perm)
-	{ return this.permissions.add(perm); }
+	public boolean addPermission(String perm, boolean save)
+	{
+		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+		for(Player player : Bukkit.getOnlinePlayers()) //Loop each player in this group
+			if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
+				this.addPermission.accept(player.getUniqueId(), perm);
+		
+		if(this.groupData.hasPermission(perm))
+			return false;
+		if(!this.groupData.addPermission(perm))
+			return false;
+		if(save)
+			return this.saveGroup();
+		return false;
+	}
+	
+	/**
+	 * Removes a given permission from group
+	 * @param perm
+	 * @return True if removal was successful, false if nothing to remove
+	 */
+	public boolean removePermission(String perm, boolean save)
+	{
+		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+		for(Player player : Bukkit.getOnlinePlayers()) //Loop each player in this group
+			if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
+				this.removePermission.accept(player.getUniqueId(), perm);
+		
+		if(!this.groupData.removePermission(perm))
+			return false;
+		if(save)
+			return this.saveGroup();
+		return false;
+	}
 	
 	/**
 	 * Load all the groups that are present in the config and return them
 	 * @return All groups that could be loaded from the config
 	 */
-	public static Collection<Group> getGroupsFromConfig(KaranteeniPerms plugin) throws Exception
+	public static Collection<Group> getGroupsFromConfig(
+			KaranteeniPerms plugin,
+			BiConsumer<UUID, String> addPermission,
+			BiConsumer<UUID, String> removePermission) throws Exception
 	{
 		if(groupConfig == null)
 			groupConfig = new YamlConfig(plugin, "Groups.yml");
@@ -380,7 +448,7 @@ public class Group {
 		
 		//Verify that the at least one group exists. If not, try to create one
 		if(groupSecs == null || groupSecs.getKeys(false) == null)
-			if(!generateDefaultGroup())
+			if(!generateDefaultGroup(addPermission, removePermission))
 				throw new Exception("Failed to load/generate any groups!");
 			else
 				groupSecs = groupConfig.getConfig().getConfigurationSection(GROUP_SECTION);
@@ -396,11 +464,6 @@ public class Group {
 			String suffix = groupSecs.getString(key+".suffix");
 			groupInheritance.put(key, groupSecs.getStringList(key+".inherited-groups"));
 			List<String> permissions = groupSecs.getStringList(key+".permissions");
-			
-			//Load the permissions
-			List<Permission> perms = new ArrayList<Permission>();
-			for(String p : permissions)
-				perms.add(new Permission(p));
 			
 			//Check if all the group has all values loaded
 			if(prefix == null)
@@ -430,7 +493,9 @@ public class Group {
 					prefix,
 					suffix,
 					def,
-					perms);
+					permissions,
+					addPermission,
+					removePermission);
 			
 			//Add the new group to the map
 			groups.put(key, g);

@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 
 import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.groups.player.CommandPerms;
 import net.karanteeni.groups.player.Group;
 import net.karanteeni.groups.player.GroupModel;
 import net.karanteeni.groups.player.JoinEvent;
@@ -25,8 +26,10 @@ public class KaranteeniPerms extends KaranteeniPlugin {
 	public void onEnable()
 	{
 		try {
-			this.groupModel = new GroupModel();		//Generate groupmodel
 			this.playerModel = new PlayerModel(this);
+			this.groupModel = new GroupModel(
+					playerModel::addPermissionToPlayer, //Generate groupmodel
+					playerModel::removePermissionFromPlayer); //Allow access to addPermission and removePermission in real time
 		} catch (Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, 
 					"Error happened trying to launch KaranteeniPerms, closing plugin...:", e);
@@ -60,7 +63,9 @@ public class KaranteeniPerms extends KaranteeniPlugin {
 	 */
 	private final void registerCommands()
 	{
-		
+		(new CommandPerms(this,
+			"permissions", "/permissions", "Manages the permissions of groups and players",
+			getDefaultMsgs().defaultNoPermission())).register();
 	}
 	
 	/**

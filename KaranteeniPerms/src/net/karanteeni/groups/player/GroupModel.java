@@ -1,13 +1,17 @@
 package net.karanteeni.groups.player;
 
+import java.util.UUID;
+import java.util.function.BiConsumer;
+
 public class GroupModel {
 	/** Local groups only on this server */
 	private GroupList localGroups;
 	
-	public GroupModel() throws Exception
+	public GroupModel(BiConsumer<UUID,String> addPermission, 
+			BiConsumer<UUID,String> removePermission) throws Exception
 	{
 		//Load this servers groups
-		this.localGroups = new GroupList();
+		this.localGroups = new GroupList(addPermission, removePermission);
 	}
 	
 	/**

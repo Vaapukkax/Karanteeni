@@ -5,3 +5,63 @@ author: Nuubles
 description: This plugin handles all BASIC permissions and groups in worlds
 api-version: 1.13
 depend: [KaranteeniCore]
+
+permissions:
+  #all permissions
+  #player
+  karanteeniperms.player.permission.add:
+    description: add a new permission to player
+  karanteeniperms.player.permission.remove:
+    description: removes a permission from player
+  karanteeniperms.player.prefix:
+    description: sets the prefix of player
+  karanteeniperms.player.suffix:
+    description: sets the suffix of player
+  karanteeniperms.player.rankname.long:
+    description: sets the long rankname of player
+  karanteeniperms.player.rankname.short:
+    description: sets the short rankname of player
+  #group
+  karanteeniperms.group.permission.add:
+    description: add a new permission to player
+  karanteeniperms.group.permission.remove:
+    description: removes a permission from player
+  karanteeniperms.group.prefix:
+    description: sets the prefix of player
+  karanteeniperms.group.suffix:
+    description: sets the suffix of player
+  karanteeniperms.group.rankname.long:
+    description: sets the long rankname of player
+  karanteeniperms.group.rankname.short:
+    description: sets the short rankname of player  
+  #wildcards
+  #group
+  karanteeniperms.group.permission.*:
+    children:
+      karanteeniperms.group.permission.add: true
+      karanteeniperms.group.permission.remove: true
+  karanteeniperms.group.rankname.*:
+    children:
+      karanteeniperms.group.rankname.long: true
+      karanteeniperms.group.rankname.short: true
+  karanteeniperms.group.*:
+    children:
+      karanteeniperms.group.permission.*: true
+      karanteeniperms.group.prefix: true
+      karanteeniperms.group.suffix: true
+      karanteeniperms.group.rankname.*: true
+  #player
+  karanteeniperms.player.permission.*:
+    children:
+      karanteeniperms.player.permission.add: true
+      karanteeniperms.player.permission.remove: true
+  karanteeniperms.player.rankname.*:
+    children:
+      karanteeniperms.player.rankname.long: true
+      karanteeniperms.player.rankname.short: true
+  karanteeniperms.player.*:
+    children:
+      karanteeniperms.player.permission.*: true
+      karanteeniperms.player.prefix: true
+      karanteeniperms.player.suffix: true
+      karanteeniperms.player.rankname.*: true

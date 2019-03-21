@@ -2,6 +2,8 @@ package net.karanteeni.groups.player;
 
 import java.util.Collection;
 import java.util.TreeMap;
+import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -21,11 +23,13 @@ public class GroupList {
 	/**
 	 * Load the grouplist with configuration groups.
 	 */
-	protected GroupList() throws Exception
+	protected GroupList(BiConsumer<UUID,String> addPermission, 
+			BiConsumer<UUID,String> removePermission) throws Exception
 	{
 		Collection<Group> groups;
 		
-		groups = Group.getGroupsFromConfig(KaranteeniPerms.getPlugin(KaranteeniPerms.class));
+		groups = Group.getGroupsFromConfig(KaranteeniPerms.getPlugin(KaranteeniPerms.class),
+				addPermission, removePermission);
 		
 		//Loop each group through
 		for(Group g : groups)
@@ -42,6 +46,13 @@ public class GroupList {
 			this.groups.put(g.getID(), g);
 		}
 	}
+	
+	/**
+	 * Returns all the groups in this list
+	 * @return
+	 */
+	public Collection<Group> getGroups()
+	{ return this.groups.values(); }
 	
 	/**
 	 * Adds a local group to the grouplist
