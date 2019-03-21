@@ -2,6 +2,7 @@ package net.karanteeni.core.block;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -16,14 +17,14 @@ import org.bukkit.block.Block;
  *
  */
 public class BlockCollection implements Iterable<Block>{
-	private LinkedList<Block> blocks = new LinkedList<Block>();
+	private HashSet<Block> blocks = new HashSet<Block>();
 	
 	/**
 	 * Create a new BlockCollection from blocks
 	 * @param blocks
 	 */
 	public BlockCollection(Collection<Block> blocks)
-	{ this.blocks = new LinkedList<Block>(blocks); }
+	{ this.blocks = new HashSet<Block>(blocks); }
 	
 	/**
 	 * Creates a new empty block collection
@@ -148,16 +149,16 @@ public class BlockCollection implements Iterable<Block>{
 	 * @param index index at which the block will be taken
 	 * @return Block at index
 	 */
-	public Block get(int index) 
-	{ return blocks.get(index); }
+	/*public Block get(int index) 
+	{ return blocks.get(index); }*/
 	
 	/**
 	 * Remove a block from list
 	 * @param index
 	 * @return
 	 */
-	public Block remove(int index) 
-	{ return blocks.remove(index); }
+	/*public Block remove(int index) 
+	{ return blocks.remove(index); }*/
 
 	/**
 	 * Removes a specific block from the collection
@@ -182,11 +183,15 @@ public class BlockCollection implements Iterable<Block>{
 	{
 		if(blocks.isEmpty())
 			return true;
-		int x = blocks.get(0).getLocation().getBlockX();
+		int x = -1;
 		
 		for(Block block : blocks)
+		{
+			if(x == -1)
+				x = block.getLocation().getBlockX();
 			if(x != block.getLocation().getBlockX())
 				return false;
+		}
 		return true;
 	}
 	
@@ -198,11 +203,15 @@ public class BlockCollection implements Iterable<Block>{
 	{
 		if(blocks.isEmpty())
 			return true;
-		int y = blocks.get(0).getLocation().getBlockY();
+		int y = -1;
 		
 		for(Block block : blocks)
+		{
+			if(y == -1)
+				y = block.getLocation().getBlockY();
 			if(y != block.getLocation().getBlockY())
 				return false;
+		}
 		return true;
 	}
 	
@@ -214,11 +223,15 @@ public class BlockCollection implements Iterable<Block>{
 	{
 		if(blocks.isEmpty())
 			return true;
-		int z = blocks.get(0).getLocation().getBlockZ();
+		int z = -1;
 		
 		for(Block block : blocks)
+		{
+			if(z == -1)
+				z = block.getLocation().getBlockZ();
 			if(z != block.getLocation().getBlockZ())
 				return false;
+		}
 		return true;
 	}
 }
