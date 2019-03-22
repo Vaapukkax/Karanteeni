@@ -69,7 +69,7 @@ public class ConfigManager {
 		
 		for(Locale locale : KaranteeniCore.getTranslator().getLocales())
 		{
-			File configFile = new File(dir + File.separator + locale.toString() + ".yml");
+			File configFile = new File(dir + File.separator + locale.toLanguageTag() + ".yml");
 			
 			try {
 				//If the config file does not exist create it
@@ -122,7 +122,7 @@ public class ConfigManager {
 		try {
 			//Save the plugin translation file
 			translations.get(plugin).get(locale).save(new File(subDataFolders.get(plugin) + 
-					File.separator + TRANSLATIONS + File.separator + locale.toString() + ".yml"));
+					File.separator + TRANSLATIONS + File.separator + locale.toLanguageTag() + ".yml"));
 			return true;
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

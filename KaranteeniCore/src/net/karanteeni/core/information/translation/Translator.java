@@ -26,7 +26,7 @@ public class Translator {
 	private Locale defaultLocale = null;
 	private Plugin plugin = null;
 	private String configLocalesTag = "Locales";
-	private static String LANG_SPLITTER = "_";
+	private static String LANG_SPLITTER = "-";
 	
 	/**
 	 * Initializes the default languages which are always used
@@ -68,7 +68,7 @@ public class Translator {
 		if(locales.size() == 0)
 		{
 			locales.add(new Locale("en", "US"));
-			localesString.add("en_US");
+			localesString.add("en"+LANG_SPLITTER+"US");
 			defaultLocale = new Locale("en","US");
 		}
 	}
@@ -104,7 +104,7 @@ public class Translator {
 	 */
 	public Locale getLocale(Player player)
 	{
-		String[] parts = player.getLocale().split(LANG_SPLITTER);
+		String[] parts = player.getLocale().split("_");
 		if(parts.length == 2 && parts[0] != null && parts[1] != null)
 			return new Locale(parts[0], parts[1]);
 		return this.defaultLocale;
