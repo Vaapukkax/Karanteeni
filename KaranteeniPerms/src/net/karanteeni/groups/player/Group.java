@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -19,6 +20,7 @@ import org.bukkit.permissions.Permission;
 
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.config.YamlConfig;
+import net.karanteeni.core.players.KPlayer;
 import net.karanteeni.groups.KaranteeniPerms;
 
 public class Group {
@@ -135,7 +137,7 @@ public class Group {
 	
 	/**
 	 * Returns the raw format of players prefix
-	 * ง6[ง7%group%ง6]
+	 * ยง6[ยง7%group%ยง6]
 	 * @return Groups prefix in its raw format
 	 */
 	public String getRawPrefix()
@@ -378,8 +380,8 @@ public class Group {
 		Group group = new Group("myGroup", 
 				"DefaultGroup", 
 				"DG", 
-				"งf[ง7"+GROUP_STRING_TAG+"งf] ", 
-				" ง6> งf", 
+				"ยงf[ยง7"+GROUP_STRING_TAG+"ยงf] ", 
+				" ยง6> ยงf", 
 				true, 
 				new ArrayList<String>(),
 				addPermission,
@@ -397,9 +399,18 @@ public class Group {
 	public boolean addPermission(String perm, boolean save)
 	{
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+		if(perms.getGroupModel() != null) //If groupmodel is null, this is a reload
 		for(Player player : Bukkit.getOnlinePlayers()) //Loop each player in this group
-			if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
-				this.addPermission.accept(player.getUniqueId(), perm);
+		{
+			//If KPlayer is not loaded, don't try to add permissions
+			if(KPlayer.getKPlayer(player) != null)
+			{
+				KPlayer kp = KPlayer.getKPlayer(player);
+				System.out.println(kp.getPlayer());
+				if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
+					this.addPermission.accept(player.getUniqueId(), perm);
+			}
+		}
 		
 		if(this.groupData.hasPermission(perm))
 			return false;
@@ -512,6 +523,8 @@ public class Group {
 			for(String groupID : pair.getValue())
 				if(groups.get(groupID) != null)
 					g.inheritGroup(groups.get(groupID));
+				else
+					Bukkit.getLogger().log(Level.CONFIG, "Cannot inherit nonexistent group '"+groupID+"'");
 		}
 		
 		return groups.values();

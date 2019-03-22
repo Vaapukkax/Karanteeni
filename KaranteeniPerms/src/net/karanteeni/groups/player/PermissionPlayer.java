@@ -317,11 +317,12 @@ public class PermissionPlayer {
 	 */
 	public boolean resetSuffix()
 	{
+		String suffix = groupData.getSuffix();
+		this.groupData.setSuffix(null);
 		if(this.resetSuffix.test(this))
-		{
-			this.groupData.setSuffix(null);
 			return true;
-		}
+		else
+			this.groupData.setSuffix(suffix);
 		return false;
 	}
 	
@@ -342,11 +343,13 @@ public class PermissionPlayer {
 	 */
 	public boolean resetPrefix()
 	{
+		String prefix = groupData.getPrefix();
+		this.groupData.setPrefix(null);
 		if(this.resetPrefix.test(this))
-		{
-			this.groupData.setPrefix(null);
 			return true;
-		}
+		else
+			groupData.setPrefix(prefix);
+		
 		return false;
 	}
 	
@@ -368,10 +371,12 @@ public class PermissionPlayer {
 	 */
 	public boolean resetLocalGroupName()
 	{
-		if(this.resetGroupName.test(this)) {
-			this.groupData.setGroupName(null);
+		String groupName = groupData.getGroupName();
+		groupData.setGroupName(null);
+		if(this.resetGroupName.test(this))
 			return true;
-		}
+		else
+			groupData.setGroupName(groupName);
 		return false;
 	}
 	
@@ -393,10 +398,12 @@ public class PermissionPlayer {
 	 */
 	public boolean resetLocalGroupShortName()
 	{
-		if(this.resetGroupShortName.test(this)) {
-			this.groupData.setGroupShortName(null);
+		String shortName = groupData.getGroupShortName();
+		this.groupData.setGroupShortName(null);
+		if(this.resetGroupShortName.test(this))
 			return true;
-		}
+		else
+			groupData.setGroupShortName(shortName);
 		return false;
 	}
 	

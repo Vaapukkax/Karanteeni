@@ -27,14 +27,15 @@ public class JoinEvent implements Listener{
 		
 		if(group == null)
 		{
-			Bukkit.broadcastMessage("ง4CRITICAL ERROR IN DATABASE ACCESS, GROUP RETURNED NULL!");
-			Bukkit.broadcastMessage("ง4PLEASE CONTACT SERVER STAFF IMMEDIATELY! MORE INFORMATION IN CONSOLE!");
-			Bukkit.broadcastMessage("ง4Timestamp in console: " + (new Date()).toString());
-			Bukkit.broadcastMessage("ง4Shutting down server to prevent further playerdata damage!");
+			Bukkit.broadcastMessage("ยง4CRITICAL ERROR IN DATABASE ACCESS, GROUP RETURNED NULL!");
+			Bukkit.broadcastMessage("ยง4PLEASE CONTACT SERVER STAFF IMMEDIATELY! MORE INFORMATION IN CONSOLE!");
+			Bukkit.broadcastMessage("ยง4Timestamp in console: " + (new Date()).toString());
+			Bukkit.broadcastMessage("ยง4Shutting down server to prevent further playerdata damage!");
 			Bukkit.getLogger().log(Level.SEVERE, "GROUP RETURNED NULL! No default group set or access to database"
 					+ " is broken!");
 		}
 		
+		//perms.getPlayerModel().clearOnlinePlayerPermissions(event.getPlayer()); //Clear all permissions from player
 		//Load the players permissions of group
 		perms.getPlayerModel().loadOnlinePlayerGroupPermissions(event.getPlayer(), group);
 		

@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
@@ -45,12 +46,13 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 	private static String PATH_GROUP_SET_NAME_SHORT 			= "permissions.group.set.rankname.short";
 	private static String PATH_PLAYER_SET_NAME_LONG 			= "permissions.player.set.rankname.long";
 	private static String PATH_PLAYER_SET_NAME_SHORT 			= "permissions.player.set.rankname.short";
+	private static String PATH_PLAYER_GROUP_SET					= "permissions.player.set.group";
 	
 	private static String PATH_PLAYER_RESET_PREFIX 				= "permissions.player.reset.prefix";
 	private static String PATH_PLAYER_RESET_SUFFIX 				= "permissions.player.reset.suffix";
 	private static String PATH_PLAYER_RESET_NAME_SHORT 			= "permissions.player.reset.name.short";
 	private static String PATH_PLAYER_RESET_NAME_LONG 			= "permissions.player.reset.name.long";
-	
+			
 	private static String PATH_SAVE_FAILED 						= "permissions.save-failed";
 	
 	private static String TAG_GROUP 		= "%group%";
@@ -60,17 +62,17 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 	private static String TAG_SUFFIX 		= "%suffix%";
 	private static String TAG_LANGUAGE 		= "%lang%";
 	private static String TAG_NAME 			= "%name%";
-	private static String PREFIX = "prefix";
-	private static String SUFFIX = "suffix";
-	private static String RANK_NAME = "rankname";
-	private static String SET = "set";
-	private static String ADD = "add";
-	private static String REMOVE = "remove";
-	private static String PLAYER = "player";
-	private static String GROUP = "group";
-	private static String LONG = "long";
-	private static String SHORT = "short";
-	private static String RESET = "reset";
+	private static String PREFIX 			= "prefix";
+	private static String SUFFIX 			= "suffix";
+	private static String RANK_NAME 		= "rankname";
+	private static String SET 				= "set";
+	private static String ADD 				= "add";
+	private static String REMOVE 			= "remove";
+	private static String PLAYER 			= "player";
+	private static String GROUP 			= "group";
+	private static String LONG 				= "long";
+	private static String SHORT 			= "short";
+	private static String RESET 			= "reset";
 	
 
 	public CommandPerms(KaranteeniPlugin plugin, String command, String usage, String description,
@@ -95,6 +97,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		Group group = null;
 		UUID uuid = null;
 		String playername = "";
+		
 		if(checker.isGroup()) {
 			group = CommandPerms.perms.getLocalGroup(checker.getPlayerGroupName());
 			if(group == null) //Group was not found 
@@ -111,6 +114,17 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 				return true;
 			}
 			playername = KaranteeniPlugin.getPlayerHandler().getOfflineName(uuid);
+			
+			//Case for when setting player group /permissions set player group <player> <group>
+			if(checker.isGroupChange())
+			{
+				group = CommandPerms.perms.getLocalGroup(checker.getNewName());
+				if(group == null) //Group was not found 
+				{
+					this.sendInvalidGroup(sender, checker.getPlayerGroupName());
+					return true;
+				}
+			}
 		}
 		
 		if(checker.isAdd()) {
@@ -141,6 +155,9 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 					this.setPlayerRankName(sender, uuid, playername, checker.getNewName(), checker.isLong());
 				else
 					this.setGroupRankName(sender, group, checker.getNewName(), checker.getLanguage(), checker.isLong());
+			else if(checker.isGroupChange())
+				if(checker.isPlayer())
+					this.setPlayerGroup(sender, uuid, checker.getPlayerGroupName(), group);
 		}
 		else if(checker.isReset()) {
 			if(checker.isPrefix()) {
@@ -159,13 +176,27 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		return true;
 	}
 	
-	/**
-	/perms player add <pelaaja> <permission>	
-	/perms group add <group> <permission>
-	/perms player remove <pelaaja> <permission>
-	/perms group set prefix <group> <prefix>
-	/perms player set prefix <player> <prefix>
- */
+	private void setPlayerGroup(CommandSender sender, UUID uuid, String playerName, Group group)
+	{
+		if(!sender.hasPermission("karanteeniperms.player.group")) {
+			this.sendNoPermissions(sender);
+			return;
+		}
+		
+		
+		if(!perms.getPlayerModel().setLocalGroup(uuid, group))
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.ERROR.get(), Prefix.NEGATIVE.toString(), 
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_SAVE_FAILED));
+			return;
+		}
+		
+		KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
+				Prefix.NEUTRAL+
+				KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_GROUP_SET)
+				.replace(TAG_GROUP, group.getID())
+				.replace(TAG_PLAYER, playerName));
+	}
 	
 	private void addPlayerPermission(CommandSender sender, UUID uuid, String playername, List<String> permission)
 	{
@@ -192,7 +223,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 			//perms.getPlayerModel().addAndSavePlayerPermission(uuid, permission.get(i), i+1 == permission.size());
 			
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), //Send message that a permission has been added
-					Prefix.POSITIVE + 
+					Prefix.NEUTRAL + 
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_ADDED_PERMISSION)
 					.replace(TAG_PERMISSION, permission.get(i))
 					.replace(TAG_PLAYER, playername));
@@ -227,7 +258,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 			modified = true;
 			
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), //Permission added to group!
-					Prefix.POSITIVE +
+					Prefix.NEUTRAL +
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_GROUP_ADDED_PERMISSION)
 					.replace(TAG_PERMISSION, perm)
 					.replace(TAG_GROUP, group.getID()));
@@ -266,7 +297,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 			player.removePermission(permission.get(i));
 			
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), //Send message that a permission has been added
-					Prefix.POSITIVE + 
+					Prefix.NEUTRAL + 
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_REMOVED_PERMISSION)
 					.replace(TAG_PERMISSION, permission.get(i))
 					.replace(TAG_PLAYER, playername));
@@ -301,7 +332,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 			modified = true;
 			
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), //Permission added to group!
-					Prefix.POSITIVE +
+					Prefix.NEUTRAL +
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_GROUP_REMOVED_PERMISSION)
 					.replace(TAG_PERMISSION, perm)
 					.replace(TAG_GROUP, group.getID()));
@@ -364,9 +395,15 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		
 		if(player.setPrefix(prefix))
 		{
+			if(!prefix.contains(TAG_GROUP)) {
+				KaranteeniPlugin.getMessager().sendMessage(
+						sender, Sounds.SETTINGS.get(), 
+						Prefix.NEUTRAL +
+						KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_GROUP_RECOMMENDATION));
+			}
 			KaranteeniPlugin.getMessager().sendMessage(
 					sender, Sounds.NONE.get(), 
-					Prefix.POSITIVE +
+					Prefix.NEUTRAL +
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_SET_PREFIX)
 					.replace(TAG_PLAYER, playerName)
 					.replace(TAG_PREFIX, prefix));
@@ -396,7 +433,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		if(group.setSuffix(suffix))
 		{
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), 
-					Prefix.POSITIVE+
+					Prefix.NEUTRAL+
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_GROUP_SET_SUFFIX)
 					.replace(TAG_SUFFIX, suffix)
 					.replace(TAG_GROUP, group.getID()));
@@ -428,7 +465,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		if(player.setSuffix(suffix))
 		{
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), 
-					Prefix.POSITIVE+
+					Prefix.NEUTRAL+
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_SET_SUFFIX)
 					.replace(TAG_SUFFIX, suffix)
 					.replace(TAG_PLAYER, playerName));
@@ -462,7 +499,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		if(isLong)
 		{
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
-					Prefix.POSITIVE+
+					Prefix.NEUTRAL+
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_GROUP_SET_NAME_LONG)
 					.replace(TAG_GROUP, group.getID())
 					.replace(TAG_LANGUAGE, locale.toLanguageTag())
@@ -471,7 +508,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		else
 		{
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
-					Prefix.POSITIVE+
+					Prefix.NEUTRAL+
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_GROUP_SET_NAME_SHORT)
 					.replace(TAG_GROUP, group.getID())
 					.replace(TAG_LANGUAGE, locale.toLanguageTag())
@@ -501,7 +538,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		{
 			if(player.setLocalGroupName(newName))
 				KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
-					Prefix.POSITIVE+
+					Prefix.NEUTRAL+
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_SET_NAME_LONG)
 					.replace(TAG_PLAYER, playerName)
 					.replace(TAG_NAME, newName));
@@ -514,7 +551,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		{
 			if(player.setLocalGroupShortName(newName))
 				KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
-					Prefix.POSITIVE+
+					Prefix.NEUTRAL+
 					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_SET_NAME_SHORT)
 					.replace(TAG_PLAYER, playerName)
 					.replace(TAG_NAME, newName));
@@ -527,17 +564,82 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 	
 	private void resetPlayerPrefix(CommandSender sender, UUID uuid, String playername)
 	{
-		Bukkit.broadcastMessage("RESET PREFIX");
+		if(!sender.hasPermission("karanteeniperms.player.prefix"))
+		{
+			this.sendNoPermissions(sender);
+			return;
+		}
+		
+		PermissionPlayer player = perms.getPlayerModel().getPermissionPlayer(uuid);
+		if(player.resetPrefix())
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
+					Prefix.NEUTRAL+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_RESET_PREFIX)
+					.replace(TAG_PLAYER, playername));
+		}
+		else
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.ERROR.get(), 
+					Prefix.NEGATIVE+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_SAVE_FAILED));
+		}
 	}
 	
 	private void resetPlayerSuffix(CommandSender sender, UUID uuid, String playername)
 	{
-		Bukkit.broadcastMessage("RESET SUFFIX");
+		if(!sender.hasPermission("karanteeniperms.player.suffix"))
+		{
+			this.sendNoPermissions(sender);
+			return;
+		}
+		
+		PermissionPlayer player = perms.getPlayerModel().getPermissionPlayer(uuid);
+		if(player.resetPrefix())
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
+					Prefix.NEUTRAL+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_RESET_SUFFIX)
+					.replace(TAG_PLAYER, playername));
+		}
+		else
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.ERROR.get(), 
+					Prefix.NEGATIVE+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_SAVE_FAILED));
+		}
 	}
 	
 	private void resetPlayerRankName(CommandSender sender, UUID uuid, String playername, boolean isLong)
 	{
-		Bukkit.broadcastMessage("RESET RANKNAME");
+		if((isLong && !sender.hasPermission("karanteeniperms.player.rankname.long")) || 
+				(!isLong && !sender.hasPermission("karanteeniperms.player.rankname.short")))
+		{
+			this.sendNoPermissions(sender);
+			return;
+		}
+		
+		PermissionPlayer player = perms.getPlayerModel().getPermissionPlayer(uuid);
+		if(isLong && player.resetLocalGroupName())
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
+					Prefix.NEUTRAL+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_RESET_NAME_LONG)
+					.replace(TAG_PLAYER, playername));
+		}
+		else if(!isLong && player.resetLocalGroupShortName())
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
+					Prefix.NEUTRAL+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_PLAYER_RESET_NAME_SHORT)
+					.replace(TAG_PLAYER, playername));
+		}
+		else
+		{
+			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.ERROR.get(), 
+					Prefix.NEGATIVE+
+					KaranteeniPlugin.getTranslator().getTranslation(perms, sender, PATH_SAVE_FAILED));
+		}
 	}
 	
 	/**
@@ -563,7 +665,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 	private void sendInvalidGroup(CommandSender sender, String groupName)
 	{
 		KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NO.get(), 
-				KaranteeniPlugin.getTranslator().getTranslation(
+				Prefix.NEGATIVE.toString() + KaranteeniPlugin.getTranslator().getTranslation(
 						this.plugin, sender, PATH_GROUP_DOES_NOT_EXIST).replace(TAG_GROUP, groupName));
 	}
 	
@@ -610,42 +712,46 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_GROUP_SET_PREFIX, 
-				"Prefix of group "+TAG_GROUP+" was set to §r"+TAG_PREFIX);
+				"Prefix of group "+TAG_GROUP+" was set to Â§r"+TAG_PREFIX);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_GROUP_SET_SUFFIX, 
-				"Suffix of group "+TAG_GROUP+" was set to §r"+TAG_SUFFIX);
+				"Suffix of group "+TAG_GROUP+" was set to Â§r"+TAG_SUFFIX);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_SET_PREFIX, 
-				"Prefix of player "+TAG_PLAYER+" was set to §r"+TAG_PREFIX);
+				"Prefix of player "+TAG_PLAYER+" was set to Â§r"+TAG_PREFIX);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_SET_SUFFIX, 
-				"Prefix of group "+TAG_PLAYER+" was set to §r"+TAG_SUFFIX);
+				"Prefix of group "+TAG_PLAYER+" was set to Â§r"+TAG_SUFFIX);
 		
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_GROUP_SET_NAME_LONG, 
-				"Set the long name of group "+TAG_GROUP+" in language "+TAG_LANGUAGE+" to §r"+TAG_NAME);
+				"Set the long name of group "+TAG_GROUP+" in language "+TAG_LANGUAGE+" to Â§r"+TAG_NAME);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_GROUP_SET_NAME_SHORT, 
-				"Set the short name of group "+TAG_GROUP+" in language "+TAG_LANGUAGE+" to §r"+TAG_NAME);
+				"Set the short name of group "+TAG_GROUP+" in language "+TAG_LANGUAGE+" to Â§r"+TAG_NAME);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_SET_NAME_LONG, 
-				"Set the long name of player "+TAG_PLAYER+" to §r"+TAG_NAME);
+				"Set the long name of player "+TAG_PLAYER+" to Â§r"+TAG_NAME);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_SET_NAME_SHORT, 
-				"Set the short name of player "+TAG_PLAYER+" to §r"+TAG_NAME);
+				"Set the short name of player "+TAG_PLAYER+" to Â§r"+TAG_NAME);
 		
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_RESET_NAME_LONG, 
-				"Resetted the long group name of player "+TAG_PLAYER+".");
+				"Resetted the long group name of player "+TAG_PLAYER);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_RESET_NAME_SHORT, 
-				"Resetted the short group name of player "+TAG_PLAYER+".");
+				"Resetted the short group name of player "+TAG_PLAYER);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_RESET_PREFIX, 
-				"Resetted the prefix of player "+TAG_PLAYER+".");
+				"Resetted the prefix of player "+TAG_PLAYER);
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_PLAYER_RESET_SUFFIX, 
-				"Resetted the suffix of player "+TAG_PLAYER+".");
+				"Resetted the suffix of player "+TAG_PLAYER);
+		
+		KaranteeniPlugin.getTranslator().registerTranslation(
+				this.plugin, PATH_PLAYER_GROUP_SET, 
+				"Set the group of "+TAG_PLAYER+" to " + TAG_GROUP);
 		
 		KaranteeniPlugin.getTranslator().registerTranslation(
 				this.plugin, PATH_SAVE_FAILED, "Failed to save modifications!");
@@ -654,46 +760,135 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String arg2, String[] args)
 	{
-		// /permissions group set prefix <id> <prefix>
-		// /permissions group set suffix <id> <prefix>
-		// /permissions group set rankname long fi_FI <id> <prefix>
-		// /permissions group add <id> <permission>
-		// /permissions group set prefix <id> <prefix>
-		
-		// Arrays.asList("player","group")
 		if(args.length == 1)
-			return this.filterByPrefix(Arrays.asList("player","group"), args[0]);
+			return filterByPrefix(Arrays.asList(GROUP, PLAYER), args[0]);
 		
-		else if(args.length == 2)
-			return this.filterByPrefix(Arrays.asList("add","set","remove"), args[1]);
-		
-		else if(args.length == 3 && this.getRealParam(args[1]) != null && this.getRealParam(args[1]).equals("set"))
-			return this.filterByPrefix(Arrays.asList("prefix","suffix","rankname"), args[2]);
-		
-		else if(args.length == 5 && this.getRealParam(args[2]) != null && this.getRealParam(args[2]).equals("rankname")) //permissions player/group set rankname en_US <groupID>
+		if(args.length == 2)
 		{
-			List<String> groupNames = new ArrayList<String>();
-			for(Group g : ((KaranteeniPerms)this.plugin).getGroupModel().getLocalGroupList().getGroups())
-				groupNames.add(g.getID()); //Add groups to list
-			return this.filterByPrefix(groupNames, args[4]);
-		}
-
-		else if(args.length == 5 && this.getRealParam(args[2]) != null && this.getRealParam(args[2]).equals("rankname") &&
-				this.getRealParam(args[0]) != null && this.getRealParam(args[0]).equals("player")) //permissions player set rankname en_US <groupID>
-		{
-			List<String> groupNames = new ArrayList<String>();
-			for(Group g : ((KaranteeniPerms)this.plugin).getGroupModel().getLocalGroupList().getGroups())
-				groupNames.add(g.getID()); //Add groups to list
-			return this.filterByPrefix(groupNames, args[4]);
+			if(args[0].equalsIgnoreCase(GROUP))
+				return filterByPrefix(Arrays.asList(SET,ADD,REMOVE), args[1]);
+			else if(args[0].equalsIgnoreCase(PLAYER))
+				return filterByPrefix(Arrays.asList(SET,ADD,REMOVE,RESET), args[1]);
 		}
 		
-		else if(args.length == 4 && this.getRealParam(args[2]) != null && this.getRealParam(args[2]).equals("rankname"))
-			return this.filterByPrefix(KaranteeniPlugin.getTranslator().getStringLocales(), args[3]);
+		if(args.length == 3)
+		{
+			if(args[0].equalsIgnoreCase(GROUP))
+			{
+				if(args[1].equalsIgnoreCase(SET))
+					return filterByPrefix(Arrays.asList(PREFIX,SUFFIX,RANK_NAME), args[2]);
+				else if(args[1].equalsIgnoreCase(ADD))
+					return filterByPrefix(getGroupNames(), args[2]);
+				else if(args[1].equalsIgnoreCase(REMOVE))
+					return filterByPrefix(getGroupNames(), args[2]);
+			}
+			else if(args[0].equalsIgnoreCase(PLAYER))
+			{
+				if(args[1].equalsIgnoreCase(SET))
+					return filterByPrefix(Arrays.asList(PREFIX,SUFFIX,RANK_NAME,GROUP), args[2]);
+				else if(args[1].equalsIgnoreCase(ADD))
+					return filterByPrefix(getPlayerNames(), args[2]);
+				else if(args[1].equalsIgnoreCase(REMOVE))
+					return filterByPrefix(getPlayerNames(), args[2]);
+				else if(args[1].equalsIgnoreCase(RESET))
+					return filterByPrefix(Arrays.asList(PREFIX,SUFFIX,RANK_NAME), args[2]);
+			}
+		}
 		
-		else if(args.length == 4 && this.getRealParam(args[2]) != null && this.getRealParam(args[2]).equals("group") &&
-				this.getRealParam(args[0]) != null && this.getRealParam(args[0]).equals("player")) //Take /permissions player set group <groupID>
-			return this.filterByPrefix(KaranteeniPlugin.getTranslator().getStringLocales(), args[3]);
+		if(args.length == 4)
+		{
+			if(args[0].equalsIgnoreCase(GROUP))
+			{
+				if(args[1].equalsIgnoreCase(SET))
+				{
+					if(args[2].equalsIgnoreCase(PREFIX))
+						return filterByPrefix(getGroupNames(), args[3]);
+					else if(args[2].equalsIgnoreCase(SUFFIX))
+						return filterByPrefix(getGroupNames(), args[3]);
+					else if(args[2].equalsIgnoreCase(RANK_NAME))
+						return filterByPrefix(Arrays.asList(LONG,SHORT), args[3]);
+				}
+			}
+			else if(args[0].equalsIgnoreCase(PLAYER))
+			{
+				if(args[1].equalsIgnoreCase(SET))
+				{
+					if(args[2].equalsIgnoreCase(PREFIX))
+						return filterByPrefix(getPlayerNames(), args[3]);
+					else if(args[2].equalsIgnoreCase(SUFFIX))
+						return filterByPrefix(getPlayerNames(), args[3]);
+					else if(args[2].equalsIgnoreCase(GROUP))
+						return filterByPrefix(getPlayerNames(), args[3]);
+					else if(args[2].equalsIgnoreCase(RANK_NAME))
+						return filterByPrefix(Arrays.asList(LONG,SHORT), args[3]);
+				}
+				else if(args[1].equalsIgnoreCase(RESET))
+				{
+					if(args[2].equalsIgnoreCase(RANK_NAME))
+						return filterByPrefix(Arrays.asList(LONG,SHORT), args[3]);
+					return filterByPrefix(getPlayerNames(), args[3]);
+				}
+			}
+		}
+		
+		if(args.length == 5)
+		{
+			if(args[0].equalsIgnoreCase(GROUP))
+			{
+				if(args[1].equalsIgnoreCase(SET))
+				{
+					if(args[2].equalsIgnoreCase(RANK_NAME))
+						if(args[3].equalsIgnoreCase(LONG) || args[3].equalsIgnoreCase(SHORT))
+						{
+							List<String> locales = new ArrayList<String>();
+							for(Locale loc : KaranteeniPerms.getTranslator().getLocales())
+								locales.add(loc.toLanguageTag());
+							return filterByPrefix(locales, args[4]);
+						}
+				}
+			}
+			else if(args[0].equalsIgnoreCase(PLAYER))
+				if(args[1].equalsIgnoreCase(SET))
+				{
+					if(args[2].equalsIgnoreCase(RANK_NAME))
+						return filterByPrefix(getPlayerNames(), args[4]);
+					else if(args[2].equalsIgnoreCase(GROUP))
+						return filterByPrefix(getGroupNames(), args[4]);
+				}
+		}
+		
+		if(args.length == 6)
+			if(args[0].equalsIgnoreCase(GROUP))
+				if(args[1].equalsIgnoreCase(SET))
+					if(args[2].equalsIgnoreCase(RANK_NAME))
+						if(args[3].equalsIgnoreCase(LONG) || args[3].equalsIgnoreCase(SHORT))
+							return filterByPrefix(getGroupNames(), args[5]);
+		
 		return null;
+	}
+	
+	/**
+	 * Returns the group names as string list
+	 * @return
+	 */
+	private List<String> getGroupNames()
+	{
+		List<String> groups = new ArrayList<String>();
+		for(Group group : perms.getGroupModel().getLocalGroupList().getGroups())
+			groups.add(group.getID());
+		return groups;
+	}
+	
+	/**
+	 * Returns the playernames as string list
+	 * @return
+	 */
+	private List<String> getPlayerNames()
+	{
+		List<String> players = new ArrayList<String>();
+		for(Player player : Bukkit.getOnlinePlayers())
+			players.add(player.getName());
+		return players;
 	}
 	
 	/**
@@ -743,6 +938,12 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 					return;
 				}
 				
+				
+				if(params.length < 3)
+				{
+					this.invalidParameters = true;
+					return;
+				}
 				parsePrefixSuffixRankName(CommandPerms.this.getRealParam(params[2]));
 				
 				if(this.prefixSuffixRankName == 2) //Was RANKNAME
@@ -754,6 +955,11 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 						return;
 					}
 					
+					if(params.length < 4)
+					{
+						this.invalidParameters = true;
+						return;
+					}
 					// /permission group set rankname long fi-FI myGroup oofington
 					parseLongShort(CommandPerms.this.getRealParam(params[3]));
 					
@@ -770,17 +976,42 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 					}
 					else if(this.isPlayer())
 					{
-						// /permissions player set rankname long <nimi>
-						for(int i = 4; i < params.length; ++i) { //Loop all the rest params to get the correct name
-							this.newName += params[i];
-							if(i+1 != params.length)
-								this.newName += " "; //Add a space since there's more coming
+						if(this.addRemoveSet == 3) //Is Reset
+						{
+							if(params.length != 5) {
+								this.invalidParameters = true;
+								return;
+							}
+							this.parseLongShort(params[3]);
+							if(this.invalidParameters)
+								return;
+							
+							this.playerGroupName = params[4];
+						}
+						else
+						{
+							// /permissions player set rankname long <nimi>
+							for(int i = 4; i < params.length; ++i) { //Loop all the rest params to get the correct name
+								this.newName += params[i];
+								if(i+1 != params.length)
+									this.newName += " "; //Add a space since there's more coming
+							}
 						}
 					}
 					else
 						this.invalidParameters = true;
 					// Color the new name correctly
 					this.newName = ChatColor.translateAlternateColorCodes('&', this.newName);
+				}
+				else if(this.prefixSuffixRankName == 3) //WAS new group set
+				{
+					if(this.isGroup() || params.length < 5) {
+						this.invalidParameters = true;
+						return;
+					}
+					
+					this.playerGroupName = params[3];
+					this.newName = params[4];
 				}
 				else //WAS prefix or suffix
 				{
@@ -851,6 +1082,9 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		public boolean isRankName()
 		{ return this.prefixSuffixRankName == 2; }
 		
+		public boolean isGroupChange()
+		{ return this.prefixSuffixRankName == 3; }
+		
 		@SuppressWarnings("unused")
 		public boolean isShort()
 		{ return !this.longRank; }
@@ -893,6 +1127,8 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 				prefixSuffixRankName = 1;
 			else if(param.equals(CommandPerms.RANK_NAME))
 				prefixSuffixRankName = 2;
+			else if(param.equals(CommandPerms.GROUP))
+				prefixSuffixRankName = 3;
 			else
 				this.invalidParameters = true;
 		}
@@ -909,7 +1145,7 @@ public class CommandPerms extends AbstractCommand implements TranslationContaine
 		
 		private void parseLang(String param)
 		{
-			String[] parameters = param.split("_");
+			String[] parameters = param.split("-");
 			
 			if(parameters.length != 2)
 			{

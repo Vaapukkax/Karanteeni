@@ -46,7 +46,6 @@ public class PlayerModel {
 	{
 		this.plugin = pl;
 		db = new GroupDatabase(); //May throw SQLException		
-		this.plugin = pl;
 	}
 	
 	/**
@@ -171,13 +170,11 @@ public class PlayerModel {
 	}*/
 	
 	/**
-	 * Load and set players permissions
+	 * Load and sets players permissions
 	 * @param uuid
 	 */
 	protected void loadOnlinePlayerGroupPermissions(Player player, Group group)
 	{
-		clearOnlinePlayerPermissions(player); //Clear all permissions from player
-		
 		PermissionAttachment attachment = player.addAttachment(plugin);
 		this.playerPermissions.put(player.getUniqueId(), attachment);
 		
@@ -408,6 +405,67 @@ public class PlayerModel {
 			return group;
 		}
 	}
+	
+	/**
+	 * Clears the group cache of player
+	 * @param player Player whos cache will be cleared
+	 * @return false if player was offline
+	 */
+	private boolean clearCache(Player player)
+	{
+		if(!player.isOnline())
+			return false;
+		
+		KPlayer kp = KPlayer.getKPlayer(player);
+		kp.removeData(plugin, GROUP_KEY);
+		return true;
+	}
+	
+	/**
+	 * Sets the group of given player to database
+	 * @param player player to set the new group to
+	 * @param group new group the uuid will gave
+	 * @return was the set successful
+	 */
+	public boolean setLocalGroup(Player player, Group group)
+	{
+		if(player.isOnline())
+		{
+			if(!db.setLocalGroup(player.getUniqueId(), group))
+				return false;
+			
+			this.clearCache(player);
+			clearOnlinePlayerPermissions(player); //Clear all permissions from player
+			//Load the players permissions of group
+			loadOnlinePlayerGroupPermissions(player, group);
+			
+			//Load players private permissions
+			if(!loadOnlinePlayerPrivatePermissions(player))
+			{
+				Bukkit.getLogger().log(Level.SEVERE, "Failed to load player "+
+						player.getUniqueId()+" permissions from database!");
+				return false;
+			}
+			return true;
+		}
+		else
+			return setLocalGroup(player.getUniqueId(), group);
+	}
+	
+	/**
+	 * Sets the group of given uuid to database
+	 * @param uuid UUID to set the group to
+	 * @param group new group the uuid will gave
+	 * @return was the set successful
+	 */
+	public boolean setLocalGroup(UUID uuid, Group group)
+	{
+		if(Bukkit.getPlayer(uuid) != null)
+			return setLocalGroup(Bukkit.getPlayer(uuid), group);
+		if(!db.setLocalGroup(uuid, group))
+			return false;
+		return true;
+	}
 }
 
 /**
@@ -501,7 +559,7 @@ class GroupDatabase {
 	protected Group getLocalGroup(GroupList list, UUID uuid)
 	{
 		String statement = 
-				"SELECT UUID " +
+				"SELECT UUID, ID " +
 				"FROM groups " +
 				"WHERE UUID = ? " +
 				"AND serverID = ?;";
@@ -522,7 +580,7 @@ class GroupDatabase {
 				return list.getDefaultGroup();
 			}
 			
-			playerGroup = list.getGroup(set.getString(1)); //Get the first group player has in the database
+			playerGroup = list.getGroup(set.getString(2)); //Get the first group player has in the database
 			
 			if(playerGroup == null) //If group no longer exists, set to default group
 				playerGroup = list.getDefaultGroup();
@@ -577,7 +635,7 @@ class GroupDatabase {
 	 * Sets the players groupdata to given custom groupdata values
 	 * @param uuid UUID of the player
 	 * @param groupData groupdata for the player
-	 * @return
+	 * @return was the modification successful
 	 */
 	protected boolean setPrivateGroupData(UUID uuid, GroupData groupData)
 	{
@@ -599,7 +657,7 @@ class GroupDatabase {
 			st.setString(4, groupData.getPrefix());
 			st.setString(5, groupData.getSuffix());
 			st.setString(6, KaranteeniPerms.getServerIdentificator());
-			return st.executeUpdate() == 1;
+			return st.executeUpdate() > 0;
 		} catch(SQLException e) {
 			e.printStackTrace();
 		}
