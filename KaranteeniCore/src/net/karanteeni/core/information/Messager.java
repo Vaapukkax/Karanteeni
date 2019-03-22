@@ -305,8 +305,8 @@ public class Messager {
     	subtitle = TextUtil.formatJSON(subtitle);
     	
     	CraftPlayer player = (CraftPlayer) receiver;
-        PacketPlayOutTitle packetPlayOutTitle = new PacketPlayOutTitle(EnumTitleAction.TITLE, ChatSerializer.a("{\"text\": \"§r" + title + "\"}"));
-        PacketPlayOutTitle packetPlayOutSubtitle = new PacketPlayOutTitle(EnumTitleAction.SUBTITLE, ChatSerializer.a("{\"text\": \"§r" + subtitle + "\"}"));
+        PacketPlayOutTitle packetPlayOutTitle = new PacketPlayOutTitle(EnumTitleAction.TITLE, ChatSerializer.a("{\"text\": \"Â§r" + title + "\"}"));
+        PacketPlayOutTitle packetPlayOutSubtitle = new PacketPlayOutTitle(EnumTitleAction.SUBTITLE, ChatSerializer.a("{\"text\": \"Â§r" + subtitle + "\"}"));
         PacketPlayOutTitle packetLength = new PacketPlayOutTitle((int)(fadein*20), (int)(stay*20), (int)(fadeout*20));
         
         player.getHandle().playerConnection.sendPacket(packetLength);
@@ -329,7 +329,7 @@ public class Messager {
     	
     	//LÃ¤hetÃ¤ actionbar
     	CraftPlayer player = (CraftPlayer) receiver;
-        IChatBaseComponent chatBaseComponent = ChatSerializer.a("{\"text\": \"§r" + text + "\"}");
+        IChatBaseComponent chatBaseComponent = ChatSerializer.a("{\"text\": \"Â§r" + text + "\"}");
         PacketPlayOutTitle packetPlayOutChat = new PacketPlayOutTitle(EnumTitleAction.ACTIONBAR ,chatBaseComponent);
         player.getHandle().playerConnection.sendPacket(packetPlayOutChat);
     	

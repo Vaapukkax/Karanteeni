@@ -2,6 +2,7 @@ package net.karanteeni.core.players;
 
 import java.sql.PreparedStatement;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -18,7 +19,7 @@ import net.karanteeni.core.database.DatabaseConnector;
  *
  */
 public class onJoin implements Listener{
-
+	
 	/**
 	 * Adds player to KPlayer list when player joins
 	 * @param event
@@ -26,10 +27,9 @@ public class onJoin implements Listener{
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void playerJoin(PlayerJoinEvent event)
 	{
+		new KPlayer(event.getPlayer());
 		//Add player to database
 		addToDatabase(event.getPlayer());
-		
-		new KPlayer(event.getPlayer());
 	}
 	
 	/**

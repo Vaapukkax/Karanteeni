@@ -132,10 +132,10 @@ public class DefaultMessages implements TranslationContainer{
 	public String incorrectParameters(CommandSender sender)
 	{
 		if(sender instanceof Player)
-			return KaranteeniCore.getTranslator().getTranslation(
+			return KaranteeniCore.getTranslator().getRandomTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, incorrectParameters);
 		else
-			return KaranteeniCore.getTranslator().getTranslation(
+			return KaranteeniCore.getTranslator().getRandomTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), 
 					KaranteeniPlugin.getTranslator().getDefaultLocale(), incorrectParameters);
 	}
@@ -147,7 +147,7 @@ public class DefaultMessages implements TranslationContainer{
 	 */
 	public String incorrectParameters(Locale locale)
 	{
-		return KaranteeniCore.getTranslator().getTranslation(
+		return KaranteeniCore.getTranslator().getRandomTranslation(
 				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, incorrectParameters);
 	}
 	

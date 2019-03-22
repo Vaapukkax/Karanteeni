@@ -3,6 +3,7 @@ package net.karanteeni.core.command;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +108,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
      * @param prefix Prefix by which the strings will be filtered
      * @return List of filtered strings
      */
-    protected List<String> filterByPrefix(List<String> list, String prefix)
+    protected List<String> filterByPrefix(Collection<String> list, String prefix)
     {
     	if(prefix == null)
     		return new ArrayList<String>();

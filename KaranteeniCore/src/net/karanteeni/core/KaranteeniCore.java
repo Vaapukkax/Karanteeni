@@ -40,12 +40,13 @@ public class KaranteeniCore extends KaranteeniPlugin {
 		//Initialize the Time class for usage
 		Time.initialize();
 		getLogger().log(Level.INFO, "KaranteeniCore has been enabled!");
+		reloadPlayers(Bukkit.getOnlinePlayers());
 		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
 			@Override
 			public void run() {
 				reloadPlayers(Bukkit.getOnlinePlayers());
 			}
-		}, 20);
+		}, 0);
 	}
 	
 	@Override
