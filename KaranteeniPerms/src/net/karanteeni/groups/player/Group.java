@@ -7,6 +7,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -16,7 +17,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.util.Vector;
 
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.config.YamlConfig;
@@ -118,6 +122,223 @@ public class Group {
 		}
 		
 		return true; //Inheritance of group(s) was successful
+	}
+	
+	/**
+	 * Saves custom value to config of this group
+	 * @param plugin plugin of which data this is
+	 * @param path path to data
+	 * @param value value of data
+	 */
+	public void setCustomData(Plugin plugin, String path, Object value)
+	{
+		groupConfig.getConfig().set(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path, 
+				value);
+	}
+	
+	/**
+	 * Checks if the custom data in group plugin section is set
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return was the data set
+	 */
+	public boolean isCustomDataSet(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().isSet(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public int getCustomInt(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getInt(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public String getCustomString(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getString(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<String> getCustomStringList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getStringList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<Integer> getCustomIntList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getIntegerList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public boolean getCustomBoolean(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getBoolean(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<Boolean> getCustomBooleanList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getBooleanList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public Object getCustomData(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().get(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<?> getCustomDataList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public double getCustomDouble(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getDouble(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<Double> getCustomDoubleList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getDoubleList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public long getCustomLong(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getLong(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<Long> getCustomLongList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getLongList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public ItemStack getCustomItemStack(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getItemStack(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<Map<?,?>> getCustomMapList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getMapList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public List<Character> getCustomCharacterList(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getCharacterList(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+	}
+	
+	/**
+	 * Returns the custom in from path
+	 * @param plugin plugin of which path
+	 * @param path path to data
+	 * @return value at path
+	 */
+	public Vector getCustomVector(Plugin plugin, String path)
+	{
+		return groupConfig.getConfig().getVector(
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
 	}
 	
 	/**
