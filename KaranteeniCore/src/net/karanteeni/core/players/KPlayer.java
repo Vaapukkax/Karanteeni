@@ -1,8 +1,10 @@
 package net.karanteeni.core.players;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -14,20 +16,37 @@ import org.bukkit.plugin.Plugin;
 import net.karanteeni.core.KaranteeniPlugin;
 
 public class KPlayer {
-	
+	//Player held by this KPlayer class
 	private final Player player;
-	
-	public KPlayer(Player player)
-	{
-		this.player = player;
-		players.put(player.getUniqueId(), this);
-	}
 	
 	/* List of all players */
 	private static final Map<UUID, KPlayer> players = new HashMap<UUID, KPlayer>();
 	
-	//List which contains any kind of data of players
-	private Map<NamespacedKey, Object> playerData = new HashMap<NamespacedKey, Object>();
+	//List which contains any kind of data of players. Boolean tells if this data is to be removed with delay
+	private HashMap<NamespacedKey, Entry<Object,Boolean>> playerData = new HashMap<NamespacedKey, Entry<Object,Boolean>>();
+	
+	//Cache of playerdata to hold playerdata when player leaves but may come back
+	private static HashMap<UUID, HashMap<NamespacedKey, Entry<Object,Boolean>>> cache = 
+			new HashMap<UUID, HashMap<NamespacedKey, Entry<Object,Boolean>>>();
+	
+	/**
+	 * Inserts a new KPlayer to list and loads possible cache data which
+	 * may still remain if player is rejoining
+	 * @param player Player of this KPlayer
+	 */
+	protected KPlayer(Player player)
+	{
+		this.player = player;		
+		players.put(player.getUniqueId(), this); //Put player to list
+		//Load player cache
+		if(cache.containsKey(player.getUniqueId()))
+		{
+			//Load and remove cache from memory
+			HashMap<NamespacedKey, Entry<Object, Boolean>> data = clearCache(player.getUniqueId());
+			if(data != null) //Set data only if it's not null
+				playerData = data;
+		}
+	}
 	
 	/**
 	 * Returns the KPlayer entity
@@ -40,11 +59,42 @@ public class KPlayer {
 	}
 	
 	/**
-	 * Destroys this instance of KPlayer
+	 * Checks if KPlayer has still cached data in memory
+	 * @param uuid uuid of cached data
+	 * @return true if there is data in cache, false otherwise
+	 */
+	protected static boolean hasCachedData(UUID uuid)
+	{ return cache.containsKey(uuid); }
+	
+	/**
+	 * Destroys this instance of KPlayer and
+	 * saves the cache of this player
 	 */
 	public void destroy()
 	{
-		players.remove(player);
+		HashMap<NamespacedKey, Entry<Object, Boolean>> data = players.remove(player).playerData;
+		HashMap<NamespacedKey, Entry<Object, Boolean>> storable = new HashMap<NamespacedKey, Entry<Object, Boolean>>();
+		
+		//Store only cacheable data to cache
+		if(data == null) return;
+		
+		for(Entry<NamespacedKey, Entry<Object,Boolean>> entry : data.entrySet())
+			if(entry.getValue().getValue()) //True if cacheable
+				storable.put(entry.getKey(), entry.getValue());
+		
+		if(!storable.isEmpty())
+			cache.put(player.getUniqueId(), storable);
+	}
+	
+	/**
+	 * Clears the cache held by KPlayer but may not clear all cache data in
+	 * other places
+	 * @param uuid UUID of player to remove the cache
+	 * @return cached data
+	 */
+	public static HashMap<NamespacedKey, Entry<Object,Boolean>> clearCache(UUID uuid)
+	{
+		return cache.remove(uuid);
 	}
 	
 	/**
@@ -82,7 +132,7 @@ public class KPlayer {
 	 */
 	public Object setData(final NamespacedKey key, final Object data)
 	{
-		return playerData.put(key, data);
+		return playerData.put(key, new SimpleEntry<Object,Boolean>(data,false));
 	}
 	
 	/**
@@ -90,12 +140,35 @@ public class KPlayer {
 	 * @param plugin which plugin does this data belong to
 	 * @param key the key of the data
 	 * @param data the data to be stores
-	 * @return
+	 * @return previous data if exists
 	 */
 	public Object setData(final KaranteeniPlugin plugin, final String key, final Object data)
 	{
-		return playerData.put(new NamespacedKey(plugin, key), data);
+		return playerData.put(new NamespacedKey(plugin, key), new SimpleEntry<Object,Boolean>(data,false));
 	}
+	
+	/**
+	 * Sets a specific data for player
+	 * @param key data identifier
+	 * @param data data to store
+	 * @return previous data if exists
+	 */
+	public Object setCacheData(final NamespacedKey key, final Object data)
+	{
+		return playerData.put(key, new SimpleEntry<Object,Boolean>(data,true));
+	}
+	
+	/**
+	 * Sets a specific data to player
+	 * @param plugin which plugin does this data belong to
+	 * @param key the key of the data
+	 * @param data the data to be stores
+	 * @return previous data if exists
+	 */
+	public Object setCacheData(final KaranteeniPlugin plugin, final String key, final Object data)
+	{
+		return playerData.put(new NamespacedKey(plugin, key), new SimpleEntry<Object,Boolean>(data,true));
+	}	
 	
 	/**
 	 * Tests if player has data assosiated for this key
@@ -124,7 +197,10 @@ public class KPlayer {
 	 */
 	public Object removeData(final Plugin plugin, final String key)
 	{
-		return playerData.remove(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.remove(new NamespacedKey(plugin, key));
+		if(entry != null)
+			return entry.getKey();
+		return null;
 	}
 	
 	/**
@@ -153,7 +229,11 @@ public class KPlayer {
 	 */
 	public Object getData(final NamespacedKey key)
 	{
-		return playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		
+		if(entry == null)
+			return null;
+		return entry.getKey();
 	}
 	
 	/**
@@ -163,10 +243,13 @@ public class KPlayer {
 	 */
 	public List<?> getList(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
-			if(data instanceof List<?>)
-				return (List<?>)data;
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
 			return null;
+		
+		if(entry.getKey() instanceof List<?>)
+			return (List<?>)entry.getKey();
+		return null;
 	}
 	
 	/**
@@ -176,7 +259,11 @@ public class KPlayer {
 	 */
 	public boolean getBoolean(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return false;
+		
+		Object data = entry.getKey();
 		
 		if(data instanceof Boolean)
 			return (Boolean)data;
@@ -201,7 +288,11 @@ public class KPlayer {
 	 */
 	public String getString(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return null;
+		
+		Object data = entry.getKey();
 		if(data != null)
 			return data.toString();
 		return null;
@@ -214,7 +305,11 @@ public class KPlayer {
 	 */
 	public Float getFloat(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return null;
+		
+		Object data = entry.getKey();
 		if(data instanceof Float)
 			return (Float)data;
 		return null;
@@ -227,7 +322,11 @@ public class KPlayer {
 	 */
 	public Double getDouble(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return null;
+		
+		Object data = entry.getKey();
 		if(data instanceof Double)
 			return (Double)data;
 		return null;
@@ -240,7 +339,11 @@ public class KPlayer {
 	 */
 	public Integer getInt(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return null;
+		
+		Object data = entry.getKey();
 		if(data instanceof Integer)
 			return (Integer)data;
 		return null;
@@ -253,7 +356,11 @@ public class KPlayer {
 	 */
 	public Character getChar(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return null;
+		
+		Object data = entry.getKey();
 		if(data instanceof Character)
 			return (Character)data;
 		return null;
@@ -266,7 +373,11 @@ public class KPlayer {
 	 */
 	public Location getLocationData(final NamespacedKey key)
 	{
-		Object data = playerData.get(key);
+		Entry<Object,Boolean> entry = playerData.get(key);
+		if(entry == null)
+			return null;
+		
+		Object data = entry.getKey();
 		if(data instanceof Location)
 			return (Location)data;
 		return null;
@@ -279,7 +390,11 @@ public class KPlayer {
 	 */
 	public Object getData(final Plugin plugin, final String key)
 	{
-		return playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		
+		return entry.getKey();
 	}
 	
 	/**
@@ -289,7 +404,10 @@ public class KPlayer {
 	 */
 	public boolean getBoolean(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return false;
+		Object data = entry.getKey();
 		
 		if(data instanceof Boolean)
 			return (Boolean)data;
@@ -303,7 +421,11 @@ public class KPlayer {
 	 */
 	public String getString(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		Object data = entry.getKey();
+		
 		if(data != null)
 			return data.toString();
 		return null;
@@ -316,7 +438,10 @@ public class KPlayer {
 	 */
 	public Float getFloat(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		Object data = entry.getKey();
 		if(data instanceof Float)
 			return (Float)data;
 		return null;
@@ -329,7 +454,10 @@ public class KPlayer {
 	 */
 	public Double getDouble(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		Object data = entry.getKey();
 		if(data instanceof Double)
 			return (Double)data;
 		return null;
@@ -342,7 +470,10 @@ public class KPlayer {
 	 */
 	public Integer getInt(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		Object data = entry.getKey();
 		if(data instanceof Integer)
 			return (Integer)data;
 		return null;
@@ -355,7 +486,10 @@ public class KPlayer {
 	 */
 	public Character getChar(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		Object data = entry.getKey();
 		if(data instanceof Character)
 			return (Character)data;
 		return null;
@@ -368,7 +502,10 @@ public class KPlayer {
 	 */
 	public Location getLocationData(final Plugin plugin, final String key)
 	{
-		Object data = playerData.get(new NamespacedKey(plugin, key));
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		Object data = entry.getKey();
 		if(data instanceof Location)
 			return (Location)data;
 		return null;
