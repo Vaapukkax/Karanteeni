@@ -29,7 +29,7 @@ import net.karanteeni.core.timers.KaranteeniTimerInitiater;
  * @author Matti
  *
  */
-public abstract class KaranteeniPlugin extends JavaPlugin{
+public class KaranteeniPlugin extends JavaPlugin {
 	protected static Translator translator;
 	protected static SoundHandler soundHandler;
 	protected static KaranteeniTimerInitiater timerInitiater;
@@ -45,6 +45,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	protected static String serverID;
 	private static String SERVERID = "ServerID";
 	private final boolean usesTranslation;
+	
 	
 	/**
 	 * A new instance of KaranteeniPlugin is created
@@ -89,7 +90,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 		{
 			dbConnector = createDatabaseConnector();
 			if(dbConnector.isConnected())
-				createServerTable();
+				createTables();
 		}
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		
@@ -107,7 +108,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	/**
 	 * Create the server table to database
 	 */
-	private void createServerTable()
+	private void createTables()
 	{
 		Statement st = dbConnector.getStatement();
 		try {
@@ -116,6 +117,22 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 				+ "ID VARCHAR(64) NOT NULL,"
 				+ "PRIMARY KEY (ID));");
 		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		try{
+			st.execute("CREATE TABLE IF NOT EXISTS location("+
+				"id VARCHAR(128) NOT NULL, "+
+				"serverID VARCHAR(64) NOT NULL, "+
+				"world VARCHAR(64) NOT NULL, "+
+				"x NUMERIC(20,10) NOT NULL, "+
+				"y NUMERIC(20,10) NOT NULL, "+
+				"z NUMERIC(20,10) NOT NULL, "+
+				"pitch NUMERIC(8,5) NOT NULL, "+
+				"yaw NUMERIC(8,5) NOT NULL, "+
+				"FOREIGN KEY (serverID) REFERENCES server(ID), "+
+				"PRIMARY KEY (id,serverID));");
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -252,7 +269,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	 * @param string
 	 * @return
 	 */
-	public final static KaranteeniPlugin getPluginInstance(String string)
+	public final KaranteeniPlugin getPluginInstance(String string)
 	{
 		return (KaranteeniPlugin) kPluginInstances.get(string);
 	}
@@ -279,7 +296,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	 * Returns the ID of this server
 	 * @return
 	 */
-	public static final String getServerIdentificator()
+	public final static String getServerIdentificator()
 	{
 		return serverID;
 	}
@@ -288,7 +305,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	 * Returns the DefaultMessages class which contains some default messages for children
 	 * @return
 	 */
-	public static final DefaultMessages getDefaultMsgs()
+	public final static DefaultMessages getDefaultMsgs()
 	{
 		return defaultMessages;
 	}
@@ -306,7 +323,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	 * Returns the PlayerHandler of the coreplugin
 	 * @return
 	 */
-	public static final PlayerHandler getPlayerHandler()
+	public final static PlayerHandler getPlayerHandler()
 	{
 		return playerHandler;
 	}
@@ -315,7 +332,7 @@ public abstract class KaranteeniPlugin extends JavaPlugin{
 	 * Returns the itemmanager of the coreplugin
 	 * @return
 	 */
-	public static final ItemManager getItemManager()
+	public final static ItemManager getItemManager()
 	{
 		return itemManager;
 	}

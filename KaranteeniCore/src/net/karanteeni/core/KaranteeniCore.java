@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import net.karanteeni.core.event.NoActionEvent;
 import net.karanteeni.core.information.time.Time;
 import net.karanteeni.core.information.translation.CoreTranslations;
-import net.karanteeni.core.players.onJoin;
+import net.karanteeni.core.players.KPlayerJoin;
 
 public class KaranteeniCore extends KaranteeniPlugin {
 	
@@ -85,6 +85,6 @@ public class KaranteeniCore extends KaranteeniPlugin {
 	private void enableEvents()
 	{
 		NoActionEvent.register(this);
-		getServer().getPluginManager().registerEvents(new onJoin(), this);
+		getServer().getPluginManager().registerEvents(new KPlayerJoin(), this);
 	}
 }
