@@ -6,9 +6,25 @@ description: The nature modifiers and actions for Karanteeni
 api-version: 1.13
 depend: [KaranteeniCore]
 
-
 permissions:
   katura.dropspawner.silk:
     description: Drop broken spawner if player has silk pickaxe
   katura.dropspawner.always:
     description: Drop broken spawner if broken with picaxe
+  katura.choptree:
+    description: Allow player to use choptree functionality
+  
+  katura.world.spawn-limit:
+    description: Spawn limit of certain mob types
+  katura.world.auto-save:
+    description: Is the world autosave on
+  katura.world.spawn:
+    description: Set the world spawn
+  katura.world.difficulty:
+    description: Set the difficulty of the world
+  katura.world.keep-spawn-in-memory:
+    description: Does this worlds spawn keep in memory
+  katura.world.ticks-per-spawn:
+    description: Ticks per entity spawn
+  katura.world.pvp:
+    description: Is pvp enabled in this world

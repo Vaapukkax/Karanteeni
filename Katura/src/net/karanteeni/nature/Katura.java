@@ -6,6 +6,7 @@ import net.karanteeni.nature.block.events.BlowDandelion;
 import net.karanteeni.nature.block.events.ChopTree;
 import net.karanteeni.nature.block.events.SpawnerSpawn;
 import net.karanteeni.nature.block.events.TreeGrow;
+import net.karanteeni.nature.commands.WorldCommand;
 import net.karanteeni.nature.entity.events.EntityGrief;
 import net.karanteeni.nature.entity.events.EntitySpawn;
 import net.karanteeni.nature.entity.events.ExplosionEffects;
@@ -46,7 +47,7 @@ public class Katura extends KaranteeniPlugin {
 	
 	private void registerCommands()
 	{
-		
+		(new WorldCommand()).register();
 	}
 
 	@Override
