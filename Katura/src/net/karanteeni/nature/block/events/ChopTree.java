@@ -17,6 +17,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import net.karanteeni.core.block.BlockCollection;
 import net.karanteeni.core.block.BlockType;
+import net.karanteeni.core.item.ItemType;
 import net.karanteeni.nature.Katura;
 import net.minecraft.server.v1_13_R2.BlockPosition;
 
@@ -64,22 +65,19 @@ public class ChopTree implements Listener{
 			if(!pl.getConfig().getBoolean(configKey))
 				return;
 			
+			//Check that player has the permission to use choptree
+			if(!event.getPlayer().hasPermission("katura.choptree"))
+				return;
 			
 			Player player = event.getPlayer();
 			
-			if(player.getInventory().getItemInMainHand().getType() == Material.DIAMOND_AXE ||
-				player.getInventory().getItemInMainHand().getType() == Material.IRON_AXE ||
-				player.getInventory().getItemInMainHand().getType() == Material.GOLDEN_AXE ||
-				player.getInventory().getItemInMainHand().getType() == Material.STONE_AXE ||
-				player.getInventory().getItemInMainHand().getType() == Material.WOODEN_AXE)
+			if(ItemType.AXE.contains(player.getInventory().getItemInMainHand().getType()))
 			{
 				event.setCancelled(true);
 				
 				//Break the tree
 				if(!processTree(event.getBlock(), event.getPlayer()))
-				{
 					event.setCancelled(false);
-				}
 			}
 		}
 		else if(BlockType.LOG.contains(event.getBlock().getType()))
@@ -177,23 +175,23 @@ public class ChopTree implements Listener{
 		int lowestLoc = 255;
 		ArrayList<Block> saplings = new ArrayList<Block>();
 		
-		for(int i = 0; i < blocks.size(); i++)
+		for(Block block : blocks)
 		{
-			if(blocks.get(i).getLocation().getBlockY() < lowestLoc)
+			if(block.getLocation().getBlockY() < lowestLoc)
 			{
 				//Found a new lowest level, reset the list
-				lowestLoc = blocks.get(i).getLocation().getBlockY();
+				lowestLoc = block.getLocation().getBlockY();
 				saplings.clear();
 				
 				//Add checked block to blocklist
-				if(BlockType.GROWABLE.contains(blocks.get(i).getLocation().add(0,-1,0).getBlock().getType()))
-					saplings.add(blocks.get(i));
+				if(BlockType.GROWABLE.contains(block.getLocation().add(0,-1,0).getBlock().getType()))
+					saplings.add(block);
 			}
-			else if(blocks.get(i).getLocation().getBlockY() == lowestLoc &&
-					BlockType.GROWABLE.contains(blocks.get(i).getLocation().add(0,-1,0).getBlock().getType()))
+			else if(block.getLocation().getBlockY() == lowestLoc &&
+					BlockType.GROWABLE.contains(block.getLocation().add(0,-1,0).getBlock().getType()))
 			{
 				//This block is suitable for sapling
-				saplings.add(blocks.get(i));
+				saplings.add(block);
 			}
 		}
 		
