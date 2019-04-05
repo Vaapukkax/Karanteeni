@@ -12,8 +12,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.sounds.Sounds;
+import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.currency.KCurrency;
 import net.karanteeni.currency.transactions.Transaction;
@@ -32,7 +34,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 		//Does the player have permission for this
 		if(!sender.hasPermission("kcurrency.pay"))
 		{
-			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), KCurrency.getDefaultMsgs().noPermission(sender));
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE+KCurrency.getDefaultMsgs().noPermission(sender));
 			return true;
 		}
 		
@@ -49,8 +51,15 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			
 			//Player was not found
 			if(uuid == null) {
-				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), KCurrency.getDefaultMsgs().playerNotFound(sender, args[0]));
+				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE+KCurrency.getDefaultMsgs().playerNotFound(sender, args[0]));
 				return true;
+			}
+			
+			//Player paid itself
+			if(uuid.equals(player.getUniqueId())) {
+				KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NO.get(), 
+						Prefix.NEGATIVE + 
+						KaranteeniPlugin.getTranslator().getTranslation(plugin, sender, "cannot-pay-yourself"));
 			}
 			
 			double transferAmount;
@@ -65,10 +74,10 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			
 			if(transferAmount < 0.001)
 			{
-				KCurrency.getPlugin(KCurrency.class);
-				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), KCurrency.getPlugin(KCurrency.class).getConfigHandler().getPrefix()+
-						KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), (Player)sender, "min-amount")
-						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
+				KCurrency curr = KCurrency.getPlugin(KCurrency.class);
+				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), curr.getConfigHandler().getPrefix()+
+						KCurrency.getTranslator().getTranslation(curr, (Player)sender, "min-amount")
+						.replace("%unit%", curr.getConfigHandler().getCurrencyUnit()));
 				return true;
 			}
 			
@@ -92,7 +101,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 		KCurrency.getMessager().sendMessage(
 				sender, 
 				Sounds.NO.get(), 
-				KCurrency.getPlugin(KCurrency.class).getConfigHandler().getPrefix() + 
+				Prefix.NEGATIVE+KCurrency.getPlugin(KCurrency.class).getConfigHandler().getPrefix() + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "invalid-pay-arguments"));
 	}
 	

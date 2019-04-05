@@ -29,200 +29,20 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
-		
-		// eco give <player> <amount>
-		
 		//Check that all arguments exist
 		if(args.length == 3)
 		{
 			if(this.getRealParam(args[0]).equalsIgnoreCase("give"))
 			{
-				if(!sender.hasPermission("kcurrency.eco.give"))
-				{
-					KCurrency.getMessager().sendMessage(
-							sender, 
-							Sounds.NO.get(), 
-							KCurrency.getDefaultMsgs().noPermission(sender));
-					return true;
-				}
-				
-				UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
-				//Check if player was found
-				if(uuid == null)
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-					return true;
-				}
-				
-				double amount = TextUtil.parseDouble(args[2]);
-				
-				//Check if the double is valid
-				if(Double.isNaN(amount) || amount < 0.001)
-				{
-					sendInvalidNumber(sender);
-					return true;
-				}
-				
-				//Perform the actual command action
-				Double result = ecoGive(uuid, amount);
-				
-				//Player does not exist
-				if(result == null)
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-				}
-				else if(Double.isNaN(result))
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
-							Prefix.NEGATIVE + 
-							KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "payment-failed"));
-				}
-				else
-				{
-					//Send the confirmation message to the command executor that the command succeeded
-					KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_RECEIVED, 
-							Prefix.POSITIVE + 
-							KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "give-balance-of")
-							.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-							.replace("%amount%", Double.toString(amount))
-							.replace("%newbal%", Double.toString(result))
-							.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
-					
-					if(Bukkit.getPlayer(uuid).isOnline())
-					{
-						BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
-								KCurrency.getPlugin(KCurrency.class), 
-								Bukkit.getPlayer(uuid), "you-received")
-								.replace("%amount%", Double.toString(amount))
-								.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
-								, BarColor.GREEN, BarStyle.SOLID);
-						
-						KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_RECEIVED, 3, 1, true, bar);
-					}
-				}
+				giveCMD(sender, args);
 			}
 			else if(this.getRealParam(args[0]).equalsIgnoreCase("take"))
 			{
-				if(!sender.hasPermission("kcurrency.eco.take"))
-				{
-					KCurrency.getMessager().sendMessage(
-							sender, 
-							Sounds.NO.get(), 
-							KCurrency.getDefaultMsgs().noPermission(sender));
-					return true;
-				}
-				
-				UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
-				//Check if player was found
-				if(uuid == null)
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-					return true;
-				}
-				
-				double amount = TextUtil.parseDouble(args[2]);
-				
-				//Check if the double is valid
-				if(Double.isNaN(amount) || amount < 0.001)
-				{
-					sendInvalidNumber(sender);
-					return true;
-				}
-				
-				//Perform the actual command action
-				Double result = ecoTake(uuid, amount);
-				
-				//Player does not exist
-				if(result == null)
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-				}
-				else if(Double.isNaN(result))
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
-							Prefix.NEGATIVE + KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "payment-failed"));
-				}
-				else
-				{
-					//Send the confirmation message to the command executor that the command succeeded
-					KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_LOST, 
-							Prefix.POSITIVE + 
-							KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "take-balance-of")
-							.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-							.replace("%amount%", Double.toString(amount))
-							.replace("%newbal%", Double.toString(result))
-							.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
-					
-					if(Bukkit.getPlayer(uuid).isOnline())
-					{
-						BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
-								KCurrency.getPlugin(KCurrency.class), 
-								Bukkit.getPlayer(uuid), "you-lost")
-								.replace("%amount%", Double.toString(amount))
-								.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
-								, BarColor.GREEN, BarStyle.SOLID);
-						
-						KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_LOST, 3, 1, true, bar);
-					}
-				}
+				takeCMD(sender, args);
 			}
 			else if(this.getRealParam(args[0]).equalsIgnoreCase("set"))
 			{
-				if(!sender.hasPermission("kcurrency.eco.set"))
-				{
-					KCurrency.getMessager().sendMessage(
-							sender, 
-							Sounds.NO.get(), 
-							KCurrency.getDefaultMsgs().noPermission(sender));
-					return true;
-				}
-				
-				UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
-				//Check if player was found
-				if(uuid == null)
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-					return true;
-				}
-				
-				double amount = TextUtil.parseDouble(args[2]);
-				
-				//Check if the double is valid
-				if(Double.isNaN(amount) || amount < 0.001)
-				{
-					sendInvalidNumber(sender);
-					return true;
-				}
-				
-				//Perform the actual command action
-				boolean result = ecoSet(uuid, amount);
-				
-				//Player does not exist
-				if(!result)
-				{
-					KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-				}
-				else
-				{
-					//Send the confirmation message to the command executor that the command succeeded
-					KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_RECEIVED,
-							Prefix.POSITIVE + 
-							KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "set-balance-of")
-							.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-							.replace("%amount%", Double.toString(amount))
-							.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
-				}
-				
-				if(Bukkit.getPlayer(uuid) != null && Bukkit.getPlayer(uuid).isOnline())
-				{
-					BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
-							KCurrency.getPlugin(KCurrency.class), 
-							Bukkit.getPlayer(uuid), "your-balance-set")
-							.replace("%amount%", Double.toString(amount))
-							.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
-							, BarColor.GREEN, BarStyle.SOLID);
-					KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_RECEIVED, 3, 1, true, bar);
-				}
+				setCMD(sender, args);
 			}
 		}
 		else
@@ -232,6 +52,198 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		}
 		
 		return true;
+	}
+	
+	private void giveCMD(CommandSender sender, String[] args) 
+	{
+		if(!sender.hasPermission("kcurrency.eco.give"))
+		{
+			KCurrency.getMessager().sendMessage(
+					sender, 
+					Sounds.NO.get(), 
+					KCurrency.getDefaultMsgs().noPermission(sender));
+			return;
+		}
+		
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
+		//Check if player was found
+		if(uuid == null)
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
+			return;
+		}
+		
+		double amount = TextUtil.parseDouble(args[2]);
+		
+		//Check if the double is valid
+		if(Double.isNaN(amount) || amount < 0.001)
+		{
+			sendInvalidNumber(sender);
+			return;
+		}
+		
+		//Perform the actual command action
+		Double result = ecoGive(uuid, amount);
+		
+		//Player does not exist
+		if(result == null)
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
+		}
+		else if(Double.isNaN(result))
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
+					Prefix.NEGATIVE + 
+					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "payment-failed"));
+		}
+		else
+		{
+			//Send the confirmation message to the command executor that the command succeeded
+			KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_RECEIVED, 
+					Prefix.POSITIVE + 
+					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "give-balance-of")
+					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
+					.replace("%amount%", Double.toString(amount))
+					.replace("%newbal%", Double.toString(result))
+					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
+			
+			if(Bukkit.getPlayer(uuid).isOnline())
+			{
+				BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
+						KCurrency.getPlugin(KCurrency.class), 
+						Bukkit.getPlayer(uuid), "you-received")
+						.replace("%amount%", Double.toString(amount))
+						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
+						, BarColor.GREEN, BarStyle.SOLID);
+				
+				KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_RECEIVED, 3, 1, true, bar);
+			}
+		}
+	}
+	
+	private void takeCMD(CommandSender sender, String[] args) 
+	{
+		if(!sender.hasPermission("kcurrency.eco.take"))
+		{
+			KCurrency.getMessager().sendMessage(
+					sender, 
+					Sounds.NO.get(), 
+					KCurrency.getDefaultMsgs().noPermission(sender));
+			return;
+		}
+		
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
+		//Check if player was found
+		if(uuid == null)
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
+			return;
+		}
+		
+		double amount = TextUtil.parseDouble(args[2]);
+		
+		//Check if the double is valid
+		if(Double.isNaN(amount) || amount < 0.001)
+		{
+			sendInvalidNumber(sender);
+			return;
+		}
+		
+		//Perform the actual command action
+		Double result = ecoTake(uuid, amount);
+		
+		//Player does not exist
+		if(result == null)
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
+		}
+		else if(Double.isNaN(result))
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
+					Prefix.NEGATIVE + KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "payment-failed"));
+		}
+		else
+		{
+			//Send the confirmation message to the command executor that the command succeeded
+			KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_LOST, 
+					Prefix.POSITIVE + 
+					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "take-balance-of")
+					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
+					.replace("%amount%", Double.toString(amount))
+					.replace("%newbal%", Double.toString(result))
+					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
+			
+			if(Bukkit.getPlayer(uuid).isOnline())
+			{
+				BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
+						KCurrency.getPlugin(KCurrency.class), 
+						Bukkit.getPlayer(uuid), "you-lost")
+						.replace("%amount%", Double.toString(amount))
+						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
+						, BarColor.GREEN, BarStyle.SOLID);
+				
+				KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_LOST, 3, 1, true, bar);
+			}
+		}
+	}
+	
+	private void setCMD(CommandSender sender, String[] args) 
+	{
+		if(!sender.hasPermission("kcurrency.eco.set"))
+		{
+			KCurrency.getMessager().sendMessage(
+					sender, 
+					Sounds.NO.get(), 
+					KCurrency.getDefaultMsgs().noPermission(sender));
+			return;
+		}
+		
+		UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
+		//Check if player was found
+		if(uuid == null)
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
+			return;
+		}
+		
+		double amount = TextUtil.parseDouble(args[2]);
+		
+		//Check if the double is valid
+		if(Double.isNaN(amount) || amount < 0.001)
+		{
+			sendInvalidNumber(sender);
+			return;
+		}
+		
+		//Perform the actual command action
+		boolean result = ecoSet(uuid, amount);
+		
+		//Player does not exist
+		if(!result)
+		{
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
+		}
+		else
+		{
+			//Send the confirmation message to the command executor that the command succeeded
+			KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_RECEIVED,
+					Prefix.POSITIVE + 
+					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "set-balance-of")
+					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
+					.replace("%amount%", Double.toString(amount))
+					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
+		}
+		
+		if(Bukkit.getPlayer(uuid) != null && Bukkit.getPlayer(uuid).isOnline())
+		{
+			BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
+					KCurrency.getPlugin(KCurrency.class), 
+					Bukkit.getPlayer(uuid), "your-balance-set")
+					.replace("%amount%", Double.toString(amount))
+					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
+					, BarColor.GREEN, BarStyle.SOLID);
+			KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_RECEIVED, 3, 1, true, bar);
+		}
 	}
 	
 	/**
