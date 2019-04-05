@@ -1,9 +1,7 @@
 package net.karanteeni.groups.player;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -106,7 +104,7 @@ public class Group {
 			return false;
 		
 		//Loop all permissions of parent group
-		for(String perm : group.getPermissions())
+		/*for(String perm : group.getPermissions())
 			this.addPermission(perm, false);
 		
 		//Get all inherited groups of inherited group
@@ -119,7 +117,7 @@ public class Group {
 			queue.addAll(getInheritedGroups());
 			for(String perm : g.getPermissions())
 				this.addPermission(perm, false);
-		}
+		}*/
 		
 		return true; //Inheritance of group(s) was successful
 	}
@@ -544,27 +542,54 @@ public class Group {
 	}
 	
 	/**
-	 * Does this group have the given permission
+	 * Does this group or inherited groups have the given permission
 	 * @param perm
 	 * @return
 	 */
 	public boolean hasPermission(Permission perm)
-	{ return this.groupData.hasPermission(perm.getName()); }
+	{ 
+		if(!this.groupData.hasPermission(perm.getName()))
+		{
+			for(Group group : inheritedGroups)
+			{
+				if(group.hasPermission(perm))
+					return true;
+			}
+			return false;
+		}
+		return true;
+	}
 	
 	/**
-	 * Does this group have the given permission
+	 * Does this group or inherited groups have the given permission
 	 * @param permission
 	 * @return
 	 */
 	public boolean hasPermission(String permission)
-	{ return this.groupData.hasPermission(permission); }
+	{ 
+		if(!this.groupData.hasPermission(permission))
+		{
+			for(Group group : inheritedGroups)
+			{
+				if(group.hasPermission(permission))
+					return true;
+			}
+			return false;
+		}
+		return true; 
+	}
 	
 	/**
-	 * Get all the permissions this group has
+	 * Get all the permissions this group and inherited groups have
 	 * @return
 	 */
 	public List<String> getPermissions()
-	{ return this.groupData.getPermissions(); }
+	{ 
+		List<String> perms = this.groupData.getPermissions();
+		for(Group group : inheritedGroups)
+			perms.addAll(group.getPermissions());
+		return perms;
+	}
 	
 	/**
 	 * Saves the group variables to the config file
