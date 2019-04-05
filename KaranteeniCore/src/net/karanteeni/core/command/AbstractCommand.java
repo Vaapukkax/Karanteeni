@@ -15,6 +15,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.Player;
 
 import net.karanteeni.core.KaranteeniPlugin;
 
@@ -127,6 +128,20 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     	if(param == null)
     		param = "";
     	return param;
+    }
+    
+    /**
+     * Returns the filtered playernames of online players with specific prefix
+     * @param prefix prefix of player searched
+     * @return list of names
+     */
+    protected List<String> getPlayerNames(String prefix) 
+    {
+    	List<String> players = new ArrayList<String>();
+		for(Player player : Bukkit.getOnlinePlayers())
+			players.add(player.getName());
+		
+		return filterByPrefix(players, prefix);
     }
     
     /**
