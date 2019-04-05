@@ -72,7 +72,7 @@ public class KPlayer {
 	 */
 	public void destroy()
 	{
-		HashMap<NamespacedKey, Entry<Object, Boolean>> data = players.remove(player).playerData;
+		HashMap<NamespacedKey, Entry<Object, Boolean>> data = players.remove(player.getUniqueId()).playerData;
 		HashMap<NamespacedKey, Entry<Object, Boolean>> storable = new HashMap<NamespacedKey, Entry<Object, Boolean>>();
 		
 		//Store only cacheable data to cache
