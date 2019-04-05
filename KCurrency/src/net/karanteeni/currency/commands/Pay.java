@@ -60,6 +60,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 				KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NO.get(), 
 						Prefix.NEGATIVE + 
 						KaranteeniPlugin.getTranslator().getTranslation(plugin, sender, "cannot-pay-yourself"));
+				return true;
 			}
 			
 			double transferAmount;
