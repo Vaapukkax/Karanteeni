@@ -1,6 +1,7 @@
 package net.karanteeni.currency.commands;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -285,5 +286,27 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "set-balance-of", "Set the balance of %player% to %amount%%unit%");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "give-balance-of", "You gave %player% %amount%%unit%. New balance is %newbal%%unit%");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "take-balance-of", "You took %amount%%unit% from %player%. New balance is %newbal%%unit%");
+	}
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command arg1, String arg2, String[] args) {
+		if(args.length == 1) {
+			return filterByPrefix(Arrays.asList("give","set","take"), args[0]);
+		}
+		else if(args.length == 2) {
+			//"kcurrency.eco.give"
+			String realParam = getRealParam(args[0]);
+			if(realParam.equals("give") && sender.hasPermission("kcurrency.eco.give")) {
+				return getPlayerNames(args[1]);
+			}
+			else if(realParam.equals("take") && sender.hasPermission("kcurrency.eco.take")) {
+				return getPlayerNames(args[1]);			
+			}
+			else if(realParam.equals("set") && sender.hasPermission("kcurrency.eco.set")) {
+				return getPlayerNames(args[1]);
+			}
+		}
+		
+		return null;
 	}
 }

@@ -1,5 +1,7 @@
 package net.karanteeni.currency.commands;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
@@ -180,5 +182,16 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 		KCurrency.getTranslator().registerRandomTranslation(KCurrency.getPlugin(KCurrency.class), "paid-x-money-to-y-player", "You paid %amount%%unit% money to %player%");
 		KCurrency.getTranslator().registerRandomTranslation(KCurrency.getPlugin(KCurrency.class), "player-x-paid-y-to-you", "You received %amount%%unit% money from %player%");
 		KCurrency.getTranslator().registerRandomTranslation(KCurrency.getPlugin(KCurrency.class), "not-enough-currency", "Your balance %balance% is not enough for %amount%%unit% bill");
+	}
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command arg1, String arg2, String[] args) {
+		if(args.length == 1 && sender.hasPermission("kcurrency.pay")) {
+			return getPlayerNames(args[0]);
+		}
+		else if(args.length == 2 && sender.hasPermission("kcurrency.pay")) {
+			return Arrays.asList("10.0");
+		}
+		return null;
 	}
 }

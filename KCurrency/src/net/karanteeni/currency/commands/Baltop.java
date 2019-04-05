@@ -208,4 +208,8 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		KCurrency.getTranslator().registerTranslation(plugin, "baltop-entry", ">%row%> %player% > %amount%");
 	}
 
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command arg1, String arg2, String[] args) {
+		return null;
+	}
 }

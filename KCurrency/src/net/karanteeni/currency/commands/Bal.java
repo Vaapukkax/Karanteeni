@@ -1,5 +1,6 @@
 package net.karanteeni.currency.commands;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.command.Command;
@@ -86,5 +87,14 @@ public class Bal extends AbstractCommand implements TranslationContainer{
 	public void registerTranslations() {
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "check-balance-own", "Your balance is %amount%%unit%");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "check-balance-other", "Player %player%s balance is %amount%%unit%");
+	}
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command arg1, String arg2, String[] args) {
+		if(args.length == 1 && sender.hasPermission("kcurrency.bal.other")) {
+			return getPlayerNames(args[0]);
+		}
+			
+		return null;
 	}
 }
