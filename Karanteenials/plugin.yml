@@ -1,0 +1,49 @@
+main: net.karanteeni.karanteenials.Karanteenials
+name: Karanteenials
+version: 1.0
+author: Nuubles
+description: Takes care of simple tasks like fly, messages, homes etc.
+api-version: 1.13
+depend: [KaranteeniCore, KaranteeniPerms]
+database: true
+
+permissions:
+  #all permissions
+  karanteenials.home.own.set:
+    description: allows to set a home
+  karanteenials.home.own.use:
+    description: allows to set a home
+  karanteenials.home.own.remove:
+    description: allows to set a home
+  karanteenials.home.other.set:
+    description: allows to set other player's home
+  karanteenials.home.other.use:
+    description: allows to use other player's home
+  karanteenials.home.other.remove:
+    description: allows to remove other player's home
+
+  karanteenials.teleport.back:
+    description: allows teleport to previous location
+  karanteenials.teleport.toggle:
+    description: toggles the ability of lower level players to teleport to you
+  karanteenials.teleport.ask:
+    description: asks permission to teleport to other player
+  karanteenials.teleport.askhere:
+    description: asks permission to teleport other player to here
+  karanteenials.antiblock:
+    description: players with this permission cannot be blocked
+    
+  #wildcards
+  karanteenials.home.other.*: #access to others homes
+    children:
+      karanteenials.home.other.use: true
+      karanteenials.home.other.set: true
+      karanteenials.home.other.remove: true
+  karanteenials.home.own.*: #access to own homes
+    children:
+      karanteenials.home.own.use: true
+      karanteenials.home.own.set: true
+  karanteenials.home.*: ##access to all home commands
+    children:
+      karanteenials.home.own.*: true
+      karanteenials.home.other.*: true
