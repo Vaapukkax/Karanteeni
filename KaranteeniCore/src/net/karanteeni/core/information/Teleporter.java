@@ -45,7 +45,10 @@ public class Teleporter {
 	 */
 	public Location teleport(LivingEntity entity, boolean safe)
 	{
-		Location l = destination.clone();
+		if(safe)
+			destination.setY(destination.getBlockY());
+		
+		Location l = destination;
 		
 		if(safe)
 		{
@@ -61,7 +64,7 @@ public class Teleporter {
 					goingDown = true;
 					
 					l.subtract(0, 1, 0);
-					if(l.getBlockY() == 0) //Going under bedrock
+					if(l.getBlockY() == 1) //Going under bedrock
 						break;
 					
 					safestat = isSafe(EyeLevel.Player);
@@ -73,8 +76,10 @@ public class Teleporter {
 					goingDown = false;
 					
 					l.add(0, 1, 0);
-					if(l.getBlockY() == 255) //Going over build limit
+					if(l.getBlockY() == 255){ //Going over build limit
+						safestat = SAFENESS.SAFE;
 						break;
+					}
 					
 					safestat = isSafe(EyeLevel.Player);
 				}
@@ -82,6 +87,9 @@ public class Teleporter {
 			
 			if(safestat != SAFENESS.SAFE) //Unsafe and unable to adjust
 				return null;
+			
+			//if(goingDown) //Fix 1 block error
+			l.add(0, 1, 0);
 		}
 		
 		Location orig = entity.getLocation();
@@ -114,13 +122,18 @@ public class Teleporter {
 	public SAFENESS isSafe(EyeLevel eye)
 	{
 		Location l = destination.clone().add(0, eye.getHeight(), 0);
-		if(l.getBlock().getType().isOccluding() ||
+		l = destination.clone().subtract(0, 1, 0); //Check below feet
+		if(((!l.getBlock().getType().isSolid() && !l.getBlock().getType().isOccluding()) &&
+				l.getBlock().getType() != Material.WATER)||
+			((!l.clone().add(0, 1, 0).getBlock().getType().isSolid() && !l.clone().add(0, 1, 0).getBlock().getType().isOccluding()) &&
+					l.clone().add(0, 1, 0).getBlock().getType() != Material.WATER))
+			return SAFENESS.UNSAFE_FLOOR;
+		
+		
+		if((l.add(0, 1+eye.height, 0).getBlock().getType().isOccluding() &&
+				l.getBlock().getType().isSolid()) || 
 				l.getBlock().getType() == Material.LAVA) //Check eye level
 			return SAFENESS.UNSAFE_CEILING;
-		
-		l = destination.clone().add(0, -1, 0); //Check below feet
-		if(!l.getBlock().getType().isSolid())
-			return SAFENESS.UNSAFE_FLOOR;
 
 		return SAFENESS.SAFE;
 	}
