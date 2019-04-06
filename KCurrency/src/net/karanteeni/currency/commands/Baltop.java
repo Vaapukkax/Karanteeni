@@ -116,7 +116,8 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 			//MySQL
 			ResultSet rs = st.executeQuery("select player.name, "+KCurrency.getBalanceName()+
 					" from "+ KCurrency.getTableName() + ", player" +
-					" order by "+ KCurrency.getBalanceName() +
+					" where player.UUID = "+KCurrency.getTableName()+"."+KCurrency.getUUIDName()+
+					" order by "+ KCurrency.getBalanceName() + " desc "+
 					" limit "+rowCount+ 
 					" offset "+offset+";");
 			
@@ -153,7 +154,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 					KCurrency.getTranslator().getTranslation(plugin, sender, "baltop-entry")
 						.replace("%row%", Integer.toString((page-1)*messageRows + ++row))
 						.replace("%player%", pair.getKey())
-						.replace("%amount%", Double.toString(pair.getValue()));
+						.replace("%amount%", String.format("%.3f", pair.getValue()));
 		}
 		
 		//Send the message to the player

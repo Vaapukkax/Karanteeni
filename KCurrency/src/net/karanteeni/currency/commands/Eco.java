@@ -61,7 +61,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 			KCurrency.getMessager().sendMessage(
 					sender, 
 					Sounds.NO.get(), 
-					KCurrency.getDefaultMsgs().noPermission(sender));
+					Prefix.NEGATIVE+KCurrency.getDefaultMsgs().noPermission(sender));
 			return;
 		}
 		
@@ -103,8 +103,8 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 					Prefix.POSITIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "give-balance-of")
 					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-					.replace("%amount%", Double.toString(amount))
-					.replace("%newbal%", Double.toString(result))
+					.replace("%amount%", String.format("%.3f", amount))
+					.replace("%newbal%", String.format("%.3f", result))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
 			
 			if(Bukkit.getPlayer(uuid).isOnline())
@@ -112,7 +112,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 				BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
 						KCurrency.getPlugin(KCurrency.class), 
 						Bukkit.getPlayer(uuid), "you-received")
-						.replace("%amount%", Double.toString(amount))
+						.replace("%amount%", String.format("%.3f", amount))
 						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
 						, BarColor.GREEN, BarStyle.SOLID);
 				
@@ -128,7 +128,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 			KCurrency.getMessager().sendMessage(
 					sender, 
 					Sounds.NO.get(), 
-					KCurrency.getDefaultMsgs().noPermission(sender));
+					Prefix.NEGATIVE+KCurrency.getDefaultMsgs().noPermission(sender));
 			return;
 		}
 		
@@ -169,8 +169,8 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 					Prefix.POSITIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "take-balance-of")
 					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-					.replace("%amount%", Double.toString(amount))
-					.replace("%newbal%", Double.toString(result))
+					.replace("%amount%", String.format("%.3f", amount))
+					.replace("%newbal%", String.format("%.3f", result))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
 			
 			if(Bukkit.getPlayer(uuid).isOnline())
@@ -178,7 +178,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 				BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
 						KCurrency.getPlugin(KCurrency.class), 
 						Bukkit.getPlayer(uuid), "you-lost")
-						.replace("%amount%", Double.toString(amount))
+						.replace("%amount%", String.format("%.3f", amount))
 						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
 						, BarColor.GREEN, BarStyle.SOLID);
 				
@@ -194,7 +194,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 			KCurrency.getMessager().sendMessage(
 					sender, 
 					Sounds.NO.get(), 
-					KCurrency.getDefaultMsgs().noPermission(sender));
+					Prefix.NEGATIVE+KCurrency.getDefaultMsgs().noPermission(sender));
 			return;
 		}
 		
@@ -230,7 +230,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 					Prefix.POSITIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "set-balance-of")
 					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-					.replace("%amount%", Double.toString(amount))
+					.replace("%amount%", String.format("%.3f", amount))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
 		}
 		
@@ -239,7 +239,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 			BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
 					KCurrency.getPlugin(KCurrency.class), 
 					Bukkit.getPlayer(uuid), "your-balance-set")
-					.replace("%amount%", Double.toString(amount))
+					.replace("%amount%", String.format("%.3f", amount))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
 					, BarColor.GREEN, BarStyle.SOLID);
 			KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_RECEIVED, 3, 1, true, bar);

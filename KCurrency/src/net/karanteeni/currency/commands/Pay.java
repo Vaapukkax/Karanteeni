@@ -38,8 +38,15 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			return true;
 		}
 		
+		if(!(sender instanceof Player)) {
+			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
+					Prefix.NEGATIVE+KCurrency.getDefaultMsgs().defaultNotForConsole());
+			return true;
+		}
+		
 		if(args.length == 2)
 		{
+			Player sender_ = (Player)sender;
 			Player player = Bukkit.getPlayer(args[0]);
 			UUID uuid = null;
 			
@@ -56,7 +63,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			}
 			
 			//Player paid itself
-			if(uuid.equals(player.getUniqueId())) {
+			if(uuid.equals(sender_.getUniqueId())) {
 				KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NO.get(), 
 						Prefix.NEGATIVE + 
 						KaranteeniPlugin.getTranslator().getTranslation(plugin, sender, "cannot-pay-yourself"));
@@ -133,7 +140,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getRandomTranslation(
 					plugin, 
 					Bukkit.getPlayer(who), "paid-x-money-to-y-player")
-					.replace("%amount%", amount.toString())
+					.replace("%amount%", String.format("%.3f", amount))
 					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
 					.replace("%player%", receiverName), BarColor.GREEN, BarStyle.SOLID);
 			
@@ -143,7 +150,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			BossBar bar2 = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getRandomTranslation(
 					plugin, 
 					receiver, "player-x-paid-y-to-you")
-					.replace("%amount%", amount.toString())
+					.replace("%amount%", String.format("%.3f", amount))
 					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
 					.replace("%player%", senderName), BarColor.GREEN, BarStyle.SOLID);
 			
@@ -161,7 +168,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 					Bukkit.getPlayer(who), 
 					"not-enough-currency")
 					.replace("%balance%", KCurrency.getBalances().getBalance(who).toString())
-					.replace("%amount%",amount.toString())
+					.replace("%amount%",String.format("%.3f", amount))
 					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit()));
 			
 			// %balance% is not enough for %amount%%unit% 
