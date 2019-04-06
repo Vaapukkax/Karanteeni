@@ -16,7 +16,7 @@ import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.bossbar.TimedBossBar;
 import net.karanteeni.core.information.sounds.SoundType;
 import net.karanteeni.core.information.text.TextUtil;
-import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.minecraft.server.v1_13_R2.IChatBaseComponent;
 import net.minecraft.server.v1_13_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_13_R2.PacketPlayOutTitle;
@@ -88,7 +88,7 @@ public class Messager {
 	 * @param sound
 	 * @param component
 	 */
-	public void sendMessage(final Player player, final SoundType sound, final TextComponent component)
+	public void sendMessage(final Player player, final SoundType sound, final BaseComponent component)
 	{
 		player.spigot().sendMessage(component);
 		KaranteeniCore.getSoundHandler().playSound(player, sound);
@@ -100,7 +100,7 @@ public class Messager {
 	 * @param sound
 	 * @param component
 	 */
-	public void sendMessage(final List<Player> players, final SoundType sound, final TextComponent component)
+	public void sendMessage(final List<Player> players, final SoundType sound, final BaseComponent component)
 	{
 		for(Player player : players)
 		{
@@ -114,7 +114,7 @@ public class Messager {
 	 * @param player
 	 * @param component
 	 */
-	public void sendMessage(final Player player, final TextComponent component)
+	public void sendMessage(final Player player, final BaseComponent component)
 	{
 		player.spigot().sendMessage(component);
 	}
@@ -124,7 +124,7 @@ public class Messager {
 	 * @param players
 	 * @param component
 	 */
-	public void sendMessage(final List<Player> players, final TextComponent component)
+	public void sendMessage(final List<Player> players, final BaseComponent component)
 	{
 		for(Player player : players)
 		{
