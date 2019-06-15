@@ -14,17 +14,29 @@ public class PlayerFunctionality {
 	private final TpToggle tptoggle;
 	private final PlayerBlock playerBlock; 
 	private final PowerLevel powerLevel;
+	private final GameModeModule gmm;
 	
 	public PlayerFunctionality(Karanteenials plugin) {
 		this.plugin = plugin;
 		powerLevel = new PowerLevel(plugin);
 		playerBlock = new PlayerBlock(plugin);
 		tptoggle = new TpToggle(plugin);
-		(new GameModeModule()).registerTranslations();
+		gmm = new GameModeModule();
+		gmm.initialize();
 		
 		playerBlock.initTable();
 		tptoggle.initTable();
 	}
+	
+	
+	/**
+	 * Returns the active gamemode module
+	 * @return gamemode module
+	 */
+	public GameModeModule getGameModeModule() {
+		return this.getGameModeModule();
+	}
+	
 	
 	/**
 	 * Returns the player block data manager class
@@ -34,6 +46,7 @@ public class PlayerFunctionality {
 		return this.playerBlock;
 	}
 	
+	
 	/**
 	 * Returns the tptoggle data manager class
 	 * @return
@@ -41,6 +54,7 @@ public class PlayerFunctionality {
 	public TpToggle getTpToggle() {
 		return this.tptoggle;
 	}
+	
 	
 	/**
 	 * Returns the power level of player
