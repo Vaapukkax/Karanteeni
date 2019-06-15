@@ -337,6 +337,33 @@ public class Messager {
         KaranteeniCore.getSoundHandler().playSound(receiver, sound);
     }
     
+    
+    /**
+     * Sends an actionbar to a CommandSender
+     * @param receiver Actionbar receiver such as console or player
+     * @param text actionbar text
+     * @param sound sound played with actionbar
+     */
+    public void sendActionBar(final CommandSender receiver, final SoundType sound, String text)
+    {
+    	if(receiver instanceof Player) {
+    		text = TextUtil.formatJSON(text);
+        	
+        	//send actionbar
+        	CraftPlayer player = (CraftPlayer) receiver;
+            IChatBaseComponent chatBaseComponent = ChatSerializer.a("{\"text\": \"§r" + text + "\"}");
+            PacketPlayOutTitle packetPlayOutChat = new PacketPlayOutTitle(EnumTitleAction.ACTIONBAR ,chatBaseComponent);
+            player.getHandle().playerConnection.sendPacket(packetPlayOutChat);
+        	
+    		//send sound
+            KaranteeniCore.getSoundHandler().playSound((Player) receiver, sound);
+    	} else {
+    		// player was console etc. send as a message
+    		receiver.sendMessage(text);
+    	}
+    }
+    
+    
     /**
      * Sends a clickable list to player
      * 
