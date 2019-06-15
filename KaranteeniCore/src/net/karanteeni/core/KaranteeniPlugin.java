@@ -8,10 +8,12 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import net.karanteeni.core.block.BlockManager;
 import net.karanteeni.core.config.ConfigManager;
+import net.karanteeni.core.config.YamlConfig;
 import net.karanteeni.core.database.DatabaseConnector;
 import net.karanteeni.core.entity.EntityManager;
 import net.karanteeni.core.information.Messager;
@@ -45,6 +47,8 @@ public class KaranteeniPlugin extends JavaPlugin {
 	protected static String serverID;
 	private static String SERVERID = "ServerID";
 	private final boolean usesTranslation;
+	/** Settings config in which the settings of core plugin are set */
+	private final YamlConfig settings;
 	
 	
 	/**
@@ -54,6 +58,8 @@ public class KaranteeniPlugin extends JavaPlugin {
 	{
 		super();
 		this.usesTranslation = usesTranslator;
+		
+		settings = new YamlConfig(this, "Settings.yml");
 		
 		//Keep up the plugins
 		kPluginInstances.put(this.getName(), this);
@@ -335,5 +341,23 @@ public class KaranteeniPlugin extends JavaPlugin {
 	public final static ItemManager getItemManager()
 	{
 		return itemManager;
+	}
+	
+	
+	/**
+	 * Returns the Core plugin data settings configuration file
+	 * @return core settings
+	 */
+	public FileConfiguration getSettings() {
+		return settings.getConfig();
+	}
+	
+	
+	/**
+	 * Saves the core plugin settings configuration file
+	 * @return true if save was successful, false otherwise
+	 */
+	public boolean saveSettings() {
+		return settings.save();
 	}
 }

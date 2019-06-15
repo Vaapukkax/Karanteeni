@@ -149,14 +149,14 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
      */
     private void registerAliases()
     {
-    	if(!plugin.getConfig().isSet("Command."+this.command+".aliases"))
+    	if(!plugin.getSettings().isSet("Command."+this.command+".aliases"))
     	{
             //Register the command alias list to a map
-            plugin.getConfig().set("Command."+this.command+".aliases", new ArrayList<String>());
-            plugin.saveConfig();
+            plugin.getSettings().set("Command."+this.command+".aliases", new ArrayList<String>());
+            plugin.saveSettings();
     	}
     	
-    	for(String ali : plugin.getConfig().getStringList("Command."+this.command+".aliases"))
+    	for(String ali : plugin.getSettings().getStringList("Command."+this.command+".aliases"))
     	{
     		if(alias != null)
     			alias.add(ali);
@@ -172,15 +172,15 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     		{
     			param = param.toLowerCase();
     			//Create placeholders for parameter types
-    			if(!plugin.getConfig().isSet("Command."+this.command+".params."+param))
-    				plugin.getConfig().set("Command."+this.command+".params."+param, new ArrayList<String>());
+    			if(!plugin.getSettings().isSet("Command."+this.command+".params."+param))
+    				plugin.getSettings().set("Command."+this.command+".params."+param, new ArrayList<String>());
     		}
-    		plugin.saveConfig();
+    		plugin.saveSettings();
     		
     		//Loop all parameters
     		for(String param : params)
     		{
-    			for(String paramalias : plugin.getConfig().getStringList("Command."+this.command+".params."+param))
+    			for(String paramalias : plugin.getSettings().getStringList("Command."+this.command+".params."+param))
     				paramMap.put(paramalias.toLowerCase(), param);
     			paramMap.put(param, param); //Add the default command parameter
     		}

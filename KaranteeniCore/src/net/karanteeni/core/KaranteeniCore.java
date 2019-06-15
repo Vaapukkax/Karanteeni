@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.event.NoActionEvent;
 import net.karanteeni.core.event.PlayerHasJoinedEvent;
 import net.karanteeni.core.information.time.Time;
@@ -24,9 +25,19 @@ public class KaranteeniCore extends KaranteeniPlugin {
 	public void onLoad()
 	{
 		getLogger().log(Level.INFO, "KaranteeniCore started loading...!");
+		initializeClasses();
 		super.load();
 		getLogger().log(Level.INFO, "KaranteeniCore has loaded!");
 	}
+	
+	
+	/**
+	 * Initializes classes that may need initialization
+	 */
+	private void initializeClasses() {
+		ArrayFormat.initialize();
+	}
+	
 	
 	@Override
 	public void onEnable()
@@ -49,6 +60,7 @@ public class KaranteeniCore extends KaranteeniPlugin {
 			}
 		}, 0);
 	}
+	
 	
 	@Override
 	public void onDisable()
