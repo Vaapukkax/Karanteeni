@@ -13,11 +13,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import net.karanteeni.core.KaranteeniCore;
 
 /**
- * This event is fired when no action is done when clicking a block or
- * clicking air. May fire multiple times, refer to PlayerInteractEvent.
+ * This event is fired 3 ticks after the initial join event
+ * if the player is still online. This is done to allow modification of player
+ * data which the normal event emitter does not allow
  * 
  * You MUST register this in the main class with
- * <i>NoActionEvent.register(Plugin);</i>
+ * <i>PlayerHasJoinedEvent.register(Plugin);</i>
  * 
  * @author Nuubles
  *
