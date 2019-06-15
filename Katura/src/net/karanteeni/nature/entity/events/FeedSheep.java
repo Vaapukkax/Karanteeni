@@ -13,23 +13,30 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
 
 import net.karanteeni.nature.Katura;
 
-public class FeedSheep implements Listener{
+public class FeedSheep implements Listener {
 
-	private static String configKey = "feed-sheep-with-hayblock";
+	private static String configKey = "sheep.feed-with-hayblock";
+	private static String speedKey = "sheep.jump-speed";
+	private static double maxSpeed; // max speed the sheep feeding can have
 	
 	public FeedSheep()
 	{
 		Plugin pl = Katura.getPlugin(Katura.class);
 		//Save a config option for the lightning effects
-		if(!pl.getConfig().isSet(configKey))
-		{
+		if(!pl.getConfig().isSet(configKey)) {
 			pl.getConfig().set(configKey, true);
 			pl.saveConfig();
 		}
+		
+		if(!pl.getConfig().isSet(speedKey)) {
+			pl.getConfig().set(speedKey, 0.6);
+			pl.saveConfig();
+		}
+		
+		maxSpeed = pl.getConfig().getDouble(speedKey);
 	}
 	
 	/**
@@ -60,7 +67,7 @@ public class FeedSheep implements Listener{
 					//Nostetaan lammas ilmaan, otetaan villa p��lle ja toistetaan ��ni
 					sheep.setSheared(false);
 					sheep.getLocation().getWorld().playSound(sheep.getLocation(), Sound.ENCHANT_THORNS_HIT, SoundCategory.NEUTRAL, 4F, 1.7F);
-					sheep.setVelocity(sheep.getVelocity().add(new Vector(0, 0.6, 0)));
+					sheep.setVelocity(sheep.getVelocity().setY(Math.min(sheep.getVelocity().getY() + maxSpeed, maxSpeed)));
 					
 					//Tehd��n partikkelit
 					sheep.getLocation().getWorld().spawnParticle(Particle.CLOUD, sheep.getLocation(), 20, 0.5, 0.5, 0.5);
