@@ -14,7 +14,7 @@ import net.karanteeni.core.KaranteeniCore;
  */
 public class ArrayFormat {
 	private static KaranteeniCore plugin = null;
-	private static Character[] defColors = null;
+	private static List<Character> defColors = null;
 	
 	/**
 	 * Initializes the array formatter
@@ -22,11 +22,11 @@ public class ArrayFormat {
 	public static void initialize() {
 		plugin = KaranteeniCore.getPlugin(KaranteeniCore.class);
 		if(!plugin.getConfig().isSet("array-colors")) {
-			plugin.getConfig().set("array-colors", Arrays.asList(new char[] {'a', 'e'}));
+			plugin.getConfig().set("array-colors", Arrays.asList('a', 'e'));
 			plugin.saveConfig();
 		}
 		
-		defColors = plugin.getConfig().getCharacterList("array-colors").toArray(new Character[0]);
+		defColors = plugin.getConfig().getCharacterList("array-colors");
 	}
 	
 	/**
@@ -42,9 +42,9 @@ public class ArrayFormat {
 		for(int i = 0; i < array.length; ++i) {
 			// if last element
 			if(array.length-1 == i) {
-				output.append("§" + defColors[i % defColors.length] + array[i]);
+				output.append("§" + defColors.get(i % defColors.size()) + array[i]);
 			} else {
-				output.append("§" + defColors[i % defColors.length] + array[i] + divider);
+				output.append("§" + defColors.get(i % defColors.size()) + array[i] + divider);
 			}
 		}
 		
@@ -67,9 +67,9 @@ public class ArrayFormat {
 		for(int i = 0; i < array.length; ++i) {
 			// if last element
 			if(array.length-1 == i) {
-				output.append("§" + defColors[i % defColors.length] + array[i]);
+				output.append("§" + defColors.get(i % defColors.size()) + array[i]);
 			} else {
-				output.append("§" + defColors[i % defColors.length] + array[i] + divider);
+				output.append("§" + defColors.get(i % defColors.size()) + array[i] + divider);
 			}
 		}
 		
