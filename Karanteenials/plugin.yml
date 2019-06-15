@@ -38,6 +38,7 @@ permissions:
     description: teleports player to a given location
   karanteenials.teleport.others.player:
     description: teleports player to a given player
+    
   karanteenials.player.speed.self.walk:
     description: sets the walking speed of player
   karanteenials.player.speed.self.fly:
@@ -46,10 +47,28 @@ permissions:
     description: sets the walking speed of player
   karanteenials.player.speed.other.fly:
     description: sets the flying speed of player
+    
   karanteenials.player.fly.self:
     description: toggles the fly state of player
   karanteenials.player.fly.other:
     description: toggles the fly state of another player
+    
+  karanteenials.player.gamemode.survival.self:
+    description: change your own gamemode to survival
+  karanteenials.player.gamemode.survival.other:
+    description: change someones gamemode to survival
+  karanteenials.player.gamemode.creative.self:
+    description: change your own gamemode to creative
+  karanteenials.player.gamemode.creative.other:
+    description: change someones gamemode to creative
+  karanteenials.player.gamemode.adventure.self:
+    description: change your own gamemode to adventure
+  karanteenials.player.gamemode.adventure.other:
+    description: change someones gamemode to adventure
+  karanteenials.player.gamemode.spectator.self:
+    description: change your own gamemode to spectator
+  karanteenials.player.gamemode.spectator.other:
+    description: change someones gamemode to spectator
   #unimplemented  
   karanteenials.antiblock:
     description: players with this permission cannot be blocked
@@ -94,7 +113,33 @@ permissions:
     children:
       karanteenials.player.fly.self: true
       karanteenials.player.fly.other: true
+  karanteenials.player.gamemode.survival.*:
+    children:
+      karanteenials.player.gamemode.survival.self: true
+      karanteenials.player.gamemode.survival.other: true
+  karanteenials.player.gamemode.creative.*:
+    children:
+      karanteenials.player.gamemode.creative.self: true
+      karanteenials.player.gamemode.creative.other: true
+  karanteenials.player.gamemode.adventure.*:
+    children:
+      karanteenials.player.gamemode.adventure.self: true
+      karanteenials.player.gamemode.adventure.other: true
+  karanteenials.player.gamemode.spectator.*:
+    children:
+      karanteenials.player.gamemode.spectator.self: true
+      karanteenials.player.gamemode.spectator.other: true
+  karanteenials.player.gamemode.*:
+    children:
+      karanteenials.player.gamemode.survival.*: true
+      karanteenials.player.gamemode.creative.*: true
+      karanteenials.player.gamemode.adventure.*: true
+      karanteenials.player.gamemode.spectator.*: true
   karanteenials.player.*:
     children:
       karanteenials.player.fly.*: true
       karanteenials.player.speed.*: true
+      karanteenials.player.gamemode.*: true
+      
+      
+      
