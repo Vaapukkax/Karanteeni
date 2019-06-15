@@ -20,6 +20,10 @@ public class PlayerFunctionality {
 		powerLevel = new PowerLevel(plugin);
 		playerBlock = new PlayerBlock(plugin);
 		tptoggle = new TpToggle(plugin);
+		(new GameModeModule()).registerTranslations();
+		
+		playerBlock.initTable();
+		tptoggle.initTable();
 	}
 	
 	/**
@@ -38,6 +42,10 @@ public class PlayerFunctionality {
 		return this.tptoggle;
 	}
 	
+	/**
+	 * Returns the power level of player
+	 * @return
+	 */
 	public PowerLevel getPowerLevel() {
 		return this.powerLevel;
 	}
