@@ -34,7 +34,7 @@ public class PlayerFunctionality {
 	 * @return gamemode module
 	 */
 	public GameModeModule getGameModeModule() {
-		return this.getGameModeModule();
+		return gmm;
 	}
 	
 	

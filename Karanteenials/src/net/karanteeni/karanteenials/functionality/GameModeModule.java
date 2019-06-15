@@ -2,6 +2,7 @@ package net.karanteeni.karanteenials.functionality;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -14,7 +15,7 @@ import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.karanteenials.Karanteenials;
 
-public class GameModeModule {
+public class GameModeModule extends TableContainer {
 	private final String GAMEMODE = "%gamemode%";
 	private final String PLAYERS = "%players%";
 	
@@ -27,9 +28,15 @@ public class GameModeModule {
 	 * @param gm gamemode to be set
 	 * @param checkPower should the power level be checked when changing gamemode
 	 * @param multiple changing multiple or just one gamemode
+	 * @param save Save the gamemodes to database
 	 * @return List of players whose gamemode has been changed
 	 */
-	public List<Player> setGamemode(CommandSender setter, String name, GameMode gm, boolean checkPower, boolean multiple) {
+	public List<Player> setGamemode(CommandSender setter, 
+			String name, 
+			GameMode gm, 
+			boolean checkPower, 
+			boolean multiple, 
+			boolean save) {
 		Karanteenials pl = Karanteenials.getPlugin(Karanteenials.class);
 		// get online players based on name and location
 		List<Player> players = null;
@@ -82,16 +89,27 @@ public class GameModeModule {
 		
 		// message command sender about the changes in gamemodes
 		KaranteeniPlugin.getMessager().sendMessage(setter, Sounds.PLING_HIGH.get(), 
-				KaranteeniPlugin.getTranslator().getRandomTranslation(pl, setter, "gamemode.set-others")
+				Prefix.POSITIVE +
+				KaranteeniPlugin.getTranslator().getTranslation(pl, setter, "gamemode.set-others")
 				.replace(PLAYERS, ArrayFormat.joinSort(ArrayFormat.playersToArray(players), "§f, "))
 				.replace(GAMEMODE, gm.name()));
 		
 		// notify which players you were not able to change 
 		if(!tooPowerful.isEmpty()) {
 			KaranteeniPlugin.getMessager().sendMessage(setter, Sounds.NO.get(), 
-					KaranteeniPlugin.getTranslator().getRandomTranslation(pl, setter, "gamemode.denied")
+					Prefix.NEGATIVE + 
+					KaranteeniPlugin.getTranslator().getTranslation(pl, setter, "gamemode.denied")
 					.replace(PLAYERS, ArrayFormat.joinSort(ArrayFormat.playersToArray(tooPowerful), "§f, "))
 					.replace(GAMEMODE, gm.name()));
+		}
+		
+		
+		if(save) {
+			//===========================================//
+			//
+			// SET GAMEMODE TO DATABASE
+			//
+			//===========================================//
 		}
 		
 		return players;
@@ -104,7 +122,7 @@ public class GameModeModule {
 	 * @param gamemode the new gamemode for the player
 	 * @return true if gamemode has been changed
 	 */
-	public boolean setGamemode(Player player, GameMode gamemode) {
+	public boolean setGamemode(Player player, GameMode gamemode, boolean save) {
 		if(player == null || !player.isOnline())
 			return false;
 		
@@ -113,6 +131,14 @@ public class GameModeModule {
 		// set the gamemode
 		player.setGameMode(gamemode);
 
+		if(save) {
+			//===========================================//
+			//
+			// SET GAMEMODE TO DATABASE
+			//
+			//===========================================//
+		}
+		
 		// inform about gamemode change
 		Karanteenials.getMessager().sendActionBar(player, Sounds.SETTINGS.get(), 
 			Karanteenials.getTranslator().getTranslation(plugin, player, "gamemode.set-own")
@@ -123,9 +149,40 @@ public class GameModeModule {
 	
 	
 	/**
+	 * Returns the gamemode of a player if online, otherwise gamemode from database.
+	 * @param uuid uuid of player whose gamemode is being loaded
+	 * @return gamemode of player
+	 */
+	public GameMode getGameMode(UUID uuid) {
+		// get online player data
+		Player player = Bukkit.getPlayer(uuid);
+		if(player != null && player.isOnline()) {
+			return player.getGameMode();
+		}
+		
+		//===========================================//
+		//
+		// GET GAMEMODE FROM DATABASE
+		//
+		//===========================================//
+		
+		return null;
+	}
+	
+	
+	/**
+	 * Initialize this module
+	 */
+	protected void initialize() {
+		registerTranslations();
+		initTable();
+	}
+	
+	
+	/**
 	 * {@inheritDoc}
 	 */
-	public void registerTranslations() {
+	private void registerTranslations() {
 		Karanteenials pl = Karanteenials.getPlugin(Karanteenials.class);
 		
 		Karanteenials.getTranslator().registerTranslation(
@@ -157,5 +214,12 @@ public class GameModeModule {
 				pl, 
 				"gamemode.unclear-name", 
 				"Multiple players found with the given name, please specify [ " + PLAYERS + "§c ]");
+	}
+
+
+	@Override
+	protected void initTable() {
+		// TODO Auto-generated method stub
+		
 	}
 }

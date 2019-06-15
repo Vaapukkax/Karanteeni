@@ -3,6 +3,7 @@ package net.karanteeni.karanteenials;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.karanteenials.functionality.PlayerFunctionality;
 import net.karanteeni.karanteenials.player.FlyCommand;
+import net.karanteeni.karanteenials.player.GameModeCommand;
 import net.karanteeni.karanteenials.player.SpeedCommand;
 import net.karanteeni.karanteenials.player.home.DelHomeCommand;
 import net.karanteeni.karanteenials.player.home.HomeCommand;
@@ -93,6 +94,10 @@ public class Karanteenials extends KaranteeniPlugin
 		if(getConfig().getBoolean(KEY_PREFIX+KEYS.FLY.toString())) {
 			(new FlyCommand(this)).register();
 		}
+		
+		if(getConfig().getBoolean(KEY_PREFIX+KEYS.GAMEMODE.toString())) {
+			(new GameModeCommand(this)).register();
+		}
 	}
 	
 	/**
@@ -112,6 +117,7 @@ public class Karanteenials extends KaranteeniPlugin
 		TPASK, 
 		TELEPORT, 
 		SPEED_SETTING,
-		FLY
+		FLY,
+		GAMEMODE
 	}
 }
