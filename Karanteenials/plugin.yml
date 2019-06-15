@@ -30,6 +30,27 @@ permissions:
     description: asks permission to teleport to other player
   karanteenials.teleport.askhere:
     description: asks permission to teleport other player to here
+  karanteenials.teleport.itself.location:
+    description: teleports player to a given location
+  karanteenials.teleport.itself.player:
+    description: teleports player to a given player
+  karanteenials.teleport.others.location:
+    description: teleports player to a given location
+  karanteenials.teleport.others.player:
+    description: teleports player to a given player
+  karanteenials.player.speed.self.walk:
+    description: sets the walking speed of player
+  karanteenials.player.speed.self.fly:
+    description: sets the flying speed of player
+  karanteenials.player.speed.other.walk:
+    description: sets the walking speed of player
+  karanteenials.player.speed.other.fly:
+    description: sets the flying speed of player
+  karanteenials.player.fly.self:
+    description: toggles the fly state of player
+  karanteenials.player.fly.other:
+    description: toggles the fly state of another player
+  #unimplemented  
   karanteenials.antiblock:
     description: players with this permission cannot be blocked
     
@@ -47,3 +68,33 @@ permissions:
     children:
       karanteenials.home.own.*: true
       karanteenials.home.other.*: true
+  karanteenials.teleport.itself.*:
+    children:
+      karanteenials.teleport.itself.location: true
+      karanteenials.teleport.itself.player: true
+  karanteenials.teleport.others.*:
+    children:
+      karanteenials.teleport.others.location: true
+      karanteenials.teleport.others.player: true
+  karanteenials.teleport.*: #access to all teleport based commands
+    children:
+      karanteenials.teleport.toggle: true
+      karanteenials.teleport.ask: true
+      karanteenials.teleport.askhere: true
+      karanteenials.teleport.back: true
+      karanteenials.teleport.itself.*: true
+      karanteenials.teleport.others.*: true
+  karanteenials.player.speed.*:
+    children:
+      karanteenials.player.speed.self.walk: true
+      karanteenials.player.speed.self.fly: true
+      karanteenials.player.speed.other.walk: true
+      karanteenials.player.speed.other.fly: true
+  karanteenials.player.fly.*:
+    children:
+      karanteenials.player.fly.self: true
+      karanteenials.player.fly.other: true
+  karanteenials.player.*:
+    children:
+      karanteenials.player.fly.*: true
+      karanteenials.player.speed.*: true

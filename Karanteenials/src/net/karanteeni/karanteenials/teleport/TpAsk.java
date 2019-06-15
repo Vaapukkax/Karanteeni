@@ -173,7 +173,7 @@ public class TpAsk extends AbstractCommand implements TranslationContainer {
 		Karanteenials.getTranslator().registerTranslation(plugin, "teleport-ask.asker.there.sent", 
 				"You sent a teleport request to %player% to teleport to them");
 		Karanteenials.getTranslator().registerTranslation(plugin, "teleport-ask.receiver.there.received", 
-				"%player% wants to teleport to you, /tpyes to accept and /tpno to deny. You have 60 seconds to reply");
+				"%player% wants to teleport to you, /tpaccept to accept and /tpdeny to deny. You have 60 seconds to reply");
 		Karanteenials.getTranslator().registerTranslation(plugin, "teleport-ask.asker.accepted", 
 				"%player% accepted your tp request");
 		Karanteenials.getTranslator().registerTranslation(plugin, "teleport-ask.asker.denied", 

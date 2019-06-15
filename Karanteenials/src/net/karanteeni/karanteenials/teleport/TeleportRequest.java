@@ -12,7 +12,6 @@ import org.bukkit.scheduler.BukkitTask;
 import net.karanteeni.core.information.Teleporter;
 import net.karanteeni.core.players.KPlayer;
 import net.karanteeni.karanteenials.Karanteenials;
-import net.karanteeni.karanteenials.PlayerFunctionality;
 
 public class TeleportRequest {
 	private static final NamespacedKey key = 
@@ -104,7 +103,8 @@ public class TeleportRequest {
 		}
 		
 		if(type == TeleportType.HERE) {
-			PlayerFunctionality.Back back = new PlayerFunctionality.Back(this.receiver.getPlayer());
+			net.karanteeni.karanteenials.functionality.Back back = 
+					new net.karanteeni.karanteenials.functionality.Back(this.receiver.getPlayer());
 			Location oldLoc = receiver.getPlayer().getLocation();
 			
 			boolean successful = teleporter.teleport(receiver.getPlayer(), safe) != null;
@@ -120,7 +120,8 @@ public class TeleportRequest {
 			
 			back.setBackLocation(oldLoc); //This this location to be the previous location
 		} else {
-			PlayerFunctionality.Back back = new PlayerFunctionality.Back(this.receiver.getPlayer());
+			net.karanteeni.karanteenials.functionality.Back back = 
+					new net.karanteeni.karanteenials.functionality.Back(this.receiver.getPlayer());
 			Location oldLoc = asker.getPlayer().getLocation();
 			
 			boolean successful = teleporter.teleport(asker.getPlayer(),  safe) != null;

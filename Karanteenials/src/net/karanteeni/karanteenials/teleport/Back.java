@@ -11,7 +11,6 @@ import net.karanteeni.core.information.Teleporter;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
-import net.karanteeni.karanteenials.PlayerFunctionality;
 
 public class Back extends AbstractCommand implements TranslationContainer{
 	private boolean safeback = true;
@@ -23,12 +22,12 @@ public class Back extends AbstractCommand implements TranslationContainer{
 				KaranteeniPlugin.getDefaultMsgs().defaultNoPermission());
 		registerTranslations();
 		
-		if(!plugin.getConfig().isSet("safe-back")) {
-			plugin.getConfig().set("safe-back", true);
+		if(!plugin.getConfig().isSet("teleport.back-safe")) {
+			plugin.getConfig().set("teleport.back-safe", true);
 			plugin.saveConfig();
 		}
 		
-		safeback = plugin.getConfig().getBoolean("safe-back");
+		safeback = plugin.getConfig().getBoolean("teleport.back-safe");
 	}
 
 	@Override
@@ -47,7 +46,7 @@ public class Back extends AbstractCommand implements TranslationContainer{
 		}
 		Player player = (Player)sender;
 		
-		PlayerFunctionality.Back back = new PlayerFunctionality.Back(player);
+		net.karanteeni.karanteenials.functionality.Back back = new net.karanteeni.karanteenials.functionality.Back(player);
 		Location loc = back.getBackLocation();
 		
 		if(loc == null) {

@@ -1,17 +1,21 @@
 package net.karanteeni.tester.events;
 
+import java.util.Random;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.util.Vector;
+import org.bukkit.permissions.Permission;
 
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.core.data.math.Point3D;
-import net.karanteeni.core.data.structures.UndirectedAdjacencyListGraph;
 import net.karanteeni.core.particle.ParticleShape;
+import net.karanteeni.core.timers.KaranteeniTimer;
+import net.karanteeni.groups.KaranteeniPerms;
+import net.karanteeni.groups.player.PermissionPlayer;
+import net.karanteeni.groups.player.PermissionPlayer.DATA_TYPE;
 import net.karanteeni.tester.TesterMain;
 
 public class ChatEvent implements Listener{
@@ -34,14 +38,14 @@ public class ChatEvent implements Listener{
 		for(Player player : Bukkit.getOnlinePlayers())
 			players.add(player);*/
 		
-		/* LÄHETÄ CHATVIESTI */
+		/* Lï¿½HETï¿½ CHATVIESTI */
 		//TesterMain.getMessager().sendMessage(players, Sounds.PLING_HIGH.get(), TesterMain.getTranslator().getTranslation(plugin, event.getPlayer(), "chat-message"));
 		
-		/* LÄHETÄ TITLE + ACTIONBAR */
+		/* Lï¿½HETï¿½ TITLE + ACTIONBAR */
 		/*for(Player player : players)
 		{
-			TesterMain.getMessager().sendTitle(0.1f, 0.1f, 1.2f, player, "§6"+msg, "§6"+msg, Sounds.NONE.get());
-			TesterMain.getMessager().sendActionBar(player, Sounds.NONE.get(), "§6"+TesterMain.getTranslator().getTranslation(plugin, event.getPlayer(), "actionbar-message"));
+			TesterMain.getMessager().sendTitle(0.1f, 0.1f, 1.2f, player, "ï¿½6"+msg, "ï¿½6"+msg, Sounds.NONE.get());
+			TesterMain.getMessager().sendActionBar(player, Sounds.NONE.get(), "ï¿½6"+TesterMain.getTranslator().getTranslation(plugin, event.getPlayer(), "actionbar-message"));
 		}*/
 		
 		/* LUO BOSSBAR */
@@ -57,11 +61,11 @@ public class ChatEvent implements Listener{
 			texts.add(text+c);
 		}*/
 		
-		/* LÄHETÄ BOSSBAR */
+		/* Lï¿½HETï¿½ BOSSBAR */
 		//TesterMain.getMessager().sendBossbar(players, Sounds.NONE.get(), 5f, 3, true, bar, texts);
 		
 		/* LUO PARTICLESHAPE KUUTION MUODOSSA */
-		if(pshape == null)
+		/*if(pshape == null)
 		{
 			UndirectedAdjacencyListGraph<Point3D> shape = new UndirectedAdjacencyListGraph<Point3D>();
 			Point3D top = new Point3D(0,2,0);
@@ -108,13 +112,183 @@ public class ChatEvent implements Listener{
 		{
 			pshape.stopAnimation();
 			pshape = null;
+		}*/
+		
+		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+		//Group playerGroup = perms.getPlayerModel().getLocalGroup(event.getPlayer());
+		//String prefix = playerGroup.getPrefix(event.getPlayer(), false);
+		
+		PermissionPlayer pp = perms.getPlayerModel().getPermissionPlayer(event.getPlayer().getUniqueId());
+		String prefix = pp.getPrefix(event.getPlayer(), DATA_TYPE.GROUP_AND_PLAYER, false);
+		event.setFormat(prefix + "%s" + pp.getSuffix(DATA_TYPE.GROUP_AND_PLAYER) + "%s");
+		
+		
+		if(event.getPlayer().hasPermission("perm.oof"))
+			Bukkit.broadcastMessage("Has permission perm.oof");
+		/*String[] parts = event.getMessage().split(" ");
+		if(parts.length == 3)
+		{
+			int timerCount = 1;
+			int runTimes = 1;
+			boolean exception = false;
+			
+			try
+			{
+				timerCount = Integer.parseInt(parts[0]);
+				runTimes = Integer.parseInt(parts[1]);
+				exception = Boolean.parseBoolean(parts[2]);
+			} catch(Exception e)
+			{
+				
+			}
+			
+			testTimer(timerCount, runTimes, exception);
+		}*/
+	}
+	
+	private void testTimer(int timerCount, int runTimes, boolean exceptionTimer)
+	{
+		if(!exceptionTimer)
+		for(int i = 0; i < timerCount; ++i)
+		{
+			if(i == 0)
+				KaranteeniPlugin.getTimerHandler().registerTimer(new TimerTester(true, true, runTimes), 1);
+			else if(i+1 == timerCount)
+				KaranteeniPlugin.getTimerHandler().registerTimer(new TimerTester(true, true, runTimes), 1);
+			else
+				KaranteeniPlugin.getTimerHandler().registerTimer(new TimerTester(false, false, runTimes), 1);
+		}
+		else
+		for(int i = 0; i < timerCount; ++i)
+		{
+			if(i == 0)
+				KaranteeniPlugin.getTimerHandler().registerTimer(new TimerTesterException(true, true, runTimes), 1);
+			else if(i+1 == timerCount)
+				KaranteeniPlugin.getTimerHandler().registerTimer(new TimerTesterException(true, true, runTimes), 1);
+			else
+				KaranteeniPlugin.getTimerHandler().registerTimer(new TimerTesterException(false, false, runTimes), 1);
+		}
+	}
+	
+	private void testTimerException(int runtimes)
+	{
+		
+	}
+	
+	class TimerTester implements KaranteeniTimer
+	{
+		private double val;
+		private int runTimes = 0;
+		private boolean printStart = false;
+		private boolean printStop = false;
+		private long startTime;
+		private boolean runOnce = false;
+		
+		public TimerTester (boolean printStart, boolean printStop, int runTimes)
+		{ 
+			this.printStart = printStart;
+			this.printStop = printStop; 
+			this.runTimes = runTimes;
 		}
 		
-		if(event.getPlayer().hasPermission("tester.bibsery"))
-			Bukkit.broadcastMessage("Has permission bibsery!");
-		else
-			Bukkit.broadcastMessage("Does not have permission bibsery!");
+		@Override
+		public void runTimer() 
+		{
+			if(printStart)
+			{
+				Bukkit.broadcastMessage("Timer started at:" + System.currentTimeMillis());
+				this.printStart = false;
+			}
+			
+			if(!runOnce)
+			{
+				this.startTime = System.currentTimeMillis();
+				this.runOnce = true;
+			}
+			
+			while(runTimes-- > 0)
+			{
+				Random rnd = new Random();
+				val = rnd.nextDouble(); //Generate a random double value
+				//--runTimes;
+			}	
+			
+				//Unregister timer to prevent infinite loop
+				if(runTimes <= 0)
+					KaranteeniPlugin.getTimerHandler().unregisterTimer(this);
+		}
+
+		@Override
+		public void timerStopped() 
+		{
+			//Print time when the timer was stopped
+			if(printStop)
+			{
+				Bukkit.broadcastMessage("Result: " + (System.currentTimeMillis() - this.startTime));
+			}
+		}
+
+		@Override
+		public void timerWait() { }
 	}
+	
+	class TimerTesterException implements KaranteeniTimer
+	{
+		private double val;
+		private int runTimes = 0;
+		private boolean printStart = false;
+		private boolean printStop = false;
+		private long startTime;
+		private boolean runOnce = false;
+		
+		public TimerTesterException (boolean printStart, boolean printStop, int runTimes)
+		{ 
+			this.printStart = printStart;
+			this.printStop = printStop; 
+			this.runTimes = runTimes;
+		}
+		
+		@Override
+		public void runTimer() 
+		{
+			if(printStart)
+			{
+				Bukkit.broadcastMessage("Timer started at:" + System.currentTimeMillis());
+				this.printStart = false;
+			}
+			
+			if(!runOnce)
+			{
+				this.startTime = System.currentTimeMillis();
+				this.runOnce = true;
+			}
+			
+			Random rnd = new Random();
+			val = rnd.nextDouble(); //Generate a random double value
+			--runTimes;
+			
+			//Unregister timer to prevent infinite loop
+			if(runTimes == 0)
+				KaranteeniPlugin.getTimerHandler().unregisterTimer(this);
+			
+			int i = 100/0;
+		}
+
+		@Override
+		public void timerStopped() 
+		{
+			//Print time when the timer was stopped
+			if(printStop)
+			{
+				Bukkit.broadcastMessage("Result: " + (System.currentTimeMillis() - this.startTime));
+			}
+		}
+
+		@Override
+		public void timerWait() { }
+	}
+	
+	
 	
 	private class ParticlePlayer implements ParticleShape.Animatable 
 	{

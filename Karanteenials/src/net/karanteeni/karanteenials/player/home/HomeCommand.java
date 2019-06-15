@@ -19,7 +19,7 @@ import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.groups.KaranteeniPerms;
 import net.karanteeni.groups.player.Group;
-import net.karanteeni.karanteenials.PlayerFunctionality;
+import net.karanteeni.karanteenials.functionality.Back;
 
 public class HomeCommand extends AbstractCommand implements TranslationContainer {
 	private boolean 		safeTeleport 	= true;
@@ -119,7 +119,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		}
 		
 		//Create new Back object from teleportation
-		PlayerFunctionality.Back back = new PlayerFunctionality.Back(player);
+		Back back = new Back(player);
 		back.setBackLocation(player.getLocation()); //Set the back location
 		Teleporter teleporter = new Teleporter(home.getLocation()); //Create a new teleporter
 		if(teleporter.teleport(player, 
