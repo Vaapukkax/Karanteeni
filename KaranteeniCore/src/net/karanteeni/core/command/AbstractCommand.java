@@ -99,7 +99,8 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
         if (this.description != null) cmd.setDescription(this.description);
         if (this.usage != null) cmd.setUsage(this.usage);
         if (this.permMessage != null) cmd.setPermissionMessage(this.permMessage);
-        getCommandMap().register("", cmd);
+        //getCommandMap().register("", cmd);
+        getCommandMap().register(plugin.getName().toLowerCase(), cmd);
         cmd.setExecutor(this);
     }
     
