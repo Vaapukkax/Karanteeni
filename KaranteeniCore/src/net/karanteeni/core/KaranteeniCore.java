@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import net.karanteeni.core.command.ShortcutCommand;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.event.NoActionEvent;
 import net.karanteeni.core.event.PlayerHasJoinedEvent;
@@ -75,7 +76,8 @@ public class KaranteeniCore extends KaranteeniPlugin {
 	 */
 	private void enableCommands()
 	{
-		
+		// initialize shortcuts
+		ShortcutCommand.initializeShortcuts(this);
 	}
 	
 	/**
