@@ -1,7 +1,10 @@
 package net.karanteeni.core.command;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -18,6 +21,7 @@ import net.karanteeni.core.information.text.Prefix;
  */
 public abstract class CommandChainer extends AbstractCommand {
 	private HashMap<String, CommandComponent> components;
+	private CommandComponent execComponent;
 	private HashMap<String, Object> data;
 	
 	public CommandChainer(KaranteeniPlugin plugin, String command, String usage, String description,
@@ -115,6 +119,17 @@ public abstract class CommandChainer extends AbstractCommand {
 		if(components == null)
 			components = new HashMap<String, CommandComponent>();
 		components.put(arg, component);
+		component.setChainer(this);
+	}
+	
+	
+	/**
+	 * Adds the given loader to the command parameters. Run always if no match in parameters
+	 * @param component
+	 */
+	public void addComponent(CommandComponent component) {
+		this.execComponent = component;
+		component.setChainer(this);
 	}
 	
 	
@@ -136,6 +151,14 @@ public abstract class CommandChainer extends AbstractCommand {
 				// clear data after cmd execution
 				data = null;
 				return true;
+			} else if (this.execComponent != null){
+				// if no component was found, run the excess components which run with any parameters
+				if(!this.execComponent.exec(sender, cmd, label, args)) {
+					KaranteeniPlugin.getMessager().sendMessage(sender, 
+							Sounds.NO.get(),
+							Prefix.NEGATIVE + 
+							KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));
+				}
 			}
 		}
 		
@@ -148,6 +171,48 @@ public abstract class CommandChainer extends AbstractCommand {
 		// return true to prevent "no permission" message
 		return res;
 	}
+	
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		if(args.length == 0 || (this.components == null && this.execComponent == null))
+			return null;
+		
+		List<String> autoFill = null;
+		
+		// run autofill which includes a parameter
+		if(this.components != null) {
+			CommandComponent cc = this.components.get(args[0].toLowerCase());
+			if(cc != null)
+				autoFill = cc.execAutofill(sender, cmd, label, args);
+		}
+		
+		// if no found matches, get autofill from random parameter components
+		if((autoFill == null || autoFill.isEmpty()) && this.execComponent != null)
+			return this.execComponent.execAutofill(sender, cmd, label, args);
+		
+		// if no return value from random parameter components, return autofill for the params in the chainer
+		if(args.length == 1)
+			return filterByPrefix(new ArrayList<String>(this.components.keySet()), args[0]);
+		return null;
+	}
+	
+	
+    /**
+     * Filters a list of string based on their prefix
+     * @param list List to be filtered
+     * @param prefix Prefix by which the strings will be filtered
+     * @return List of filtered strings
+     */
+    protected List<String> filterByPrefix(Collection<String> list, String prefix)
+    {
+    	if(prefix == null)
+    		return new ArrayList<String>();
+    	return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
+    }
 	
 	
 	/**
