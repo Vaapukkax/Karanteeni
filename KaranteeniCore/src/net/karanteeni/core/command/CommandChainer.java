@@ -1,6 +1,7 @@
 package net.karanteeni.core.command;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +33,7 @@ public abstract class CommandChainer extends AbstractCommand {
      * Returns the superclass plugin
      * @return the plugin using this command
      */
-    protected KaranteeniPlugin getPlugin() {
+    public final KaranteeniPlugin getPlugin() {
     	return this.plugin;
     }
 	
@@ -141,6 +142,18 @@ public abstract class CommandChainer extends AbstractCommand {
 	}
 	
 	
+	/**
+	 * Removes the first parameter from the given array
+	 * @param args args where the first param is removed
+	 * @return shortened args
+	 */
+	protected String[] cutArgs(String[] args) {
+		if(args == null || args.length == 0 || args.length == 1)
+			return new String[0];
+		return Arrays.copyOfRange(args, 1, args.length);
+	}
+	
+	
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		// if the loader should be run before this, run it
@@ -161,7 +174,7 @@ public abstract class CommandChainer extends AbstractCommand {
 			CommandComponent component = components.get(args[0].toLowerCase());
 			// execute component if one is found
 			if(component != null) {
-				if(!component.exec(sender, cmd, label, args)) {
+				if(!component.exec(sender, cmd, label, cutArgs(args))) {
 					/*KaranteeniPlugin.getMessager().sendMessage(sender, 
 							Sounds.NO.get(),
 							Prefix.NEGATIVE + 
@@ -174,7 +187,7 @@ public abstract class CommandChainer extends AbstractCommand {
 				// if the loader has not been run, run it
 				if (this.execComponent != null && !this.execComponent.isBefore()){
 					// if no component was found, run the excess components which run with any parameters
-					if(!this.execComponent.exec(sender, cmd, label, args)) {
+					if(!this.execComponent.exec(sender, cmd, label, cutArgs(args))) {
 						/*KaranteeniPlugin.getMessager().sendMessage(sender, 
 								Sounds.NO.get(),
 								Prefix.NEGATIVE + 
