@@ -37,6 +37,9 @@ public abstract class CommandComponent {
 	 */
 	protected CommandComponent(HashMap<String, CommandComponent> components) {
 		this.components = components;
+		if(components != null)
+			for(Entry<String, CommandComponent> entry : components.entrySet())
+				entry.getValue().chainer = this.chainer;
 	}
 	
 	
@@ -48,6 +51,8 @@ public abstract class CommandComponent {
 	protected CommandComponent(String name, CommandComponent component) {
 		this.components = new HashMap<String, CommandComponent>();
 		this.components.put(name.toLowerCase(), component);
+		if(component != null)
+			component.chainer = this.chainer;
 	}
 	
 	
@@ -55,8 +60,10 @@ public abstract class CommandComponent {
 	 * Initializes a commandcomponent with always executable component
 	 * @param component component to run always if no other matches are found
 	 */
-	protected CommandComponent(CommandLoader component, boolean before) {
+	protected CommandComponent(CommandLoader component) {
 		this.execComponent = component;
+		if(component != null)
+			component.chainer = this.chainer;
 	}
 	
 	
@@ -64,15 +71,18 @@ public abstract class CommandComponent {
 	 * Sets the command chainer to be used in the command execution
 	 * @param chain Chainer from which the data is accessed
 	 */
-	public void setChainer(CommandChainer chain) {
+	public final void setChainer(CommandChainer chain) {
 		this.chainer = chain;
-		if(this.components == null)
-			return;
 		
 		// set the chainer to all child chains too
+		if(this.components != null)
 		for(Entry<String, CommandComponent> entry : components.entrySet()) {
 			entry.getValue().setChainer(chain);
 		}
+		
+		// set the chainer to loader
+		if(this.execComponent != null)
+			this.execComponent.setChainer(chain);
 	}
 	
 	
@@ -83,7 +93,9 @@ public abstract class CommandComponent {
 	 * @return the previous value associated with key, or null if there was no mapping for key.
 	 * (A null return can also indicate that the map previously associated null with key.)
 	 */
-	public CommandComponent addComponent(String parameter, CommandComponent component) {
+	public final CommandComponent addComponent(String parameter, CommandComponent component) {
+		if(component != null)
+			component.chainer = this.chainer;
 		return components.put(parameter.toLowerCase(), component);
 	}
 	
@@ -93,8 +105,10 @@ public abstract class CommandComponent {
 	 * @param component component to run when no matches are found for param if one is given
 	 * @return this
 	 */
-	public CommandComponent setComponent(CommandLoader component) {
+	public final CommandComponent setLoader(CommandLoader component) {
 		this.execComponent = component;
+		if(component != null)
+			component.chainer = this.chainer;
 		return this;
 	}
 	
@@ -104,7 +118,7 @@ public abstract class CommandComponent {
 	 * @param parameter parameter the component has
 	 * @return removed command component
 	 */
-	public CommandComponent removeComponent(String parameter) {
+	public final CommandComponent removeComponent(String parameter) {
 		return components.remove(parameter.toLowerCase());
 	}
 	
@@ -114,7 +128,7 @@ public abstract class CommandComponent {
 	 * @param param param to chain the components with
 	 * @return null if no components were found, true if successful run, false if incorrect parameters
 	 */
-	protected Boolean chainComponents(String param, CommandSender sender, Command cmd, String label, String[] args) {
+	protected final Boolean chainComponents(String param, CommandSender sender, Command cmd, String label, String[] args) {
 		if(components == null)
 			return null;
 		
@@ -126,13 +140,13 @@ public abstract class CommandComponent {
 			comp = components.get(chainer.getRealParam(param));
 		
 		// if components were not found, run all of the executable components until true
-		if(comp == null) {
+		/*if(comp == null) {
 			if(this.execComponent == null)
 				return null;
 			
 			// run all consecutive components
 			return this.execComponent.exec(sender, cmd, label, args);
-		}
+		}*/
 		
 		return comp.exec(sender, cmd, label, args);
 	}
@@ -143,7 +157,7 @@ public abstract class CommandComponent {
 	 * @param param param to chain the components with
 	 * @return null if no components were found, true if successful run, false if incorrect parameters
 	 */
-	protected List<String> chainAutofill(String param, CommandSender sender, Command cmd, String label, String[] args) {
+	protected final List<String> chainAutofill(String param, CommandSender sender, Command cmd, String label, String[] args) {
 		if(components == null)
 			return null;
 		
@@ -184,7 +198,7 @@ public abstract class CommandComponent {
 	 * @param args args where the first param is removed
 	 * @return shortened args
 	 */
-	protected String[] removeNth(String[] args, int index) {
+	protected final String[] removeNth(String[] args, int index) {
 		if(args == null || args.length == 0 || args.length == 1)
 			return new String[0];
 		return (String[]) ArrayUtils.remove(args, index);
@@ -200,6 +214,10 @@ public abstract class CommandComponent {
 	 * @return true if success, false if invalid args
 	 */
 	public boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
+		// if there is a loader running before this, run it
+		if(this.execComponent != null && this.execComponent.isBefore())
+			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
+		
 		// run the possible chain if there is anything to chain
 		if(args != null && args.length > 0) {
 			Boolean chainResult = chainComponents(args[0], sender, cmd, label, cutArgs(args));
@@ -208,7 +226,12 @@ public abstract class CommandComponent {
 		}
 		
 		// run the code of this component
-		return runComponent(sender, cmd, label, args);
+		boolean executed = runComponent(sender, cmd, label, args);
+		
+		// if the loader is supposed to run after this, run it after this
+		if(executed && this.execComponent != null && !this.execComponent.isBefore())
+			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
+		return executed;
 	}
 	
 	
@@ -242,7 +265,7 @@ public abstract class CommandComponent {
 	 * @param args
 	 * @return
 	 */
-	public List<String> execAutofill(CommandSender sender, Command cmd, String label, String[] args) {
+	public final List<String> execAutofill(CommandSender sender, Command cmd, String label, String[] args) {
 		// run the possible chain if there is anything to chain
 		if(args != null && args.length > 0) {
 			List<String> chainResult = chainAutofill(args[0], sender, cmd, label, cutArgs(args));

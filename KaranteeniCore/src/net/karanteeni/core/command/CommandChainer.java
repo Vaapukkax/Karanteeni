@@ -11,8 +11,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.core.information.sounds.Sounds;
-import net.karanteeni.core.information.text.Prefix;
 
 /**
  * Chains a given command using it's arguments as parameters
@@ -21,7 +19,7 @@ import net.karanteeni.core.information.text.Prefix;
  */
 public abstract class CommandChainer extends AbstractCommand {
 	private HashMap<String, CommandComponent> components;
-	private CommandComponent execComponent;
+	private CommandLoader execComponent;
 	private HashMap<String, Object> data;
 	
 	public CommandChainer(KaranteeniPlugin plugin, String command, String usage, String description,
@@ -30,10 +28,19 @@ public abstract class CommandChainer extends AbstractCommand {
 	}
 
 	
+    /**
+     * Returns the superclass plugin
+     * @return the plugin using this command
+     */
+    protected KaranteeniPlugin getPlugin() {
+    	return this.plugin;
+    }
+	
+	
 	/**
 	 * Initializes the data map
 	 */
-	private void initDataMap() {
+	private final void initDataMap() {
 		if(data == null)
 			data = new HashMap<String, Object>();
 	}
@@ -44,7 +51,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @param key
 	 * @param data
 	 */
-	public void setObject(String key, Object data) {
+	public final void setObject(String key, Object data) {
 		initDataMap();
 		this.data.put(key, data);
 	}
@@ -55,7 +62,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @param key with which the data was stored in
 	 * @return the found data or null if not found
 	 */
-	public Object getObject(String key) {
+	public final Object getData(String key) {
 		if(data == null)
 			return null;
 		return data.get(key);
@@ -68,7 +75,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @return the found data or null if not found
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getData(String key) throws ClassCastException {
+	public final <T> T getObject(String key) throws ClassCastException {
 		if(data == null)
 			return null;
 		return (T)data.get(key);
@@ -80,7 +87,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @param key key to access the player data
 	 * @param player player to add
 	 */
-	public void setPlayer(String key, Player player) {
+	public final void setPlayer(String key, Player player) {
 		initDataMap();
 		this.data.put(key, player);
 	}
@@ -91,7 +98,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @param key key to access the data with
 	 * @return player if one is found
 	 */
-	public Player getPlayer(String key) {
+	public final Player getPlayer(String key) {
 		if(data == null)
 			return null;
 		return (Player)data.get(key);
@@ -103,7 +110,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> List<T> getList(String key) throws ClassCastException {
+	public final <T> List<T> getList(String key) throws ClassCastException {
 		if(data == null)
 			return null;
 		return (List<T>)data.get(key);
@@ -115,11 +122,12 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * @param arg
 	 * @param component
 	 */
-	public void addComponent(String arg, CommandComponent component) {
+	public final void addComponent(String arg, CommandComponent component) {
 		if(components == null)
 			components = new HashMap<String, CommandComponent>();
 		components.put(arg, component);
-		component.setChainer(this);
+		if(component != null)
+			component.setChainer(this);
 	}
 	
 	
@@ -127,43 +135,72 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * Adds the given loader to the command parameters. Run always if no match in parameters
 	 * @param component
 	 */
-	public void addComponent(CommandComponent component) {
+	public final void setLoader(CommandLoader component) {
 		this.execComponent = component;
 		component.setChainer(this);
 	}
 	
 	
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		// if the loader should be run before this, run it
+		if (this.execComponent != null && this.execComponent.isBefore()) {
+			// if no component was found, run the excess components which run with any parameters
+			if(!this.execComponent.exec(sender, cmd, label, args)) {
+				/*KaranteeniPlugin.getMessager().sendMessage(sender, 
+						Sounds.NO.get(),
+						Prefix.NEGATIVE + 
+						KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+				return true;
+			}
+		}
+		
 		// before execution check if there is anything to chain
 		if(components != null && args.length > 0) {
 			// get the stored component with parameter
-			CommandComponent component = components.get(args[0]);
+			CommandComponent component = components.get(args[0].toLowerCase());
 			// execute component if one is found
 			if(component != null) {
 				if(!component.exec(sender, cmd, label, args)) {
-					KaranteeniPlugin.getMessager().sendMessage(sender, 
+					/*KaranteeniPlugin.getMessager().sendMessage(sender, 
 							Sounds.NO.get(),
 							Prefix.NEGATIVE + 
-							KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));
+							KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
 				}
 				
 				// clear data after cmd execution
 				data = null;
-				return true;
-			} else if (this.execComponent != null){
-				// if no component was found, run the excess components which run with any parameters
-				if(!this.execComponent.exec(sender, cmd, label, args)) {
-					KaranteeniPlugin.getMessager().sendMessage(sender, 
-							Sounds.NO.get(),
-							Prefix.NEGATIVE + 
-							KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));
+				
+				// if the loader has not been run, run it
+				if (this.execComponent != null && !this.execComponent.isBefore()){
+					// if no component was found, run the excess components which run with any parameters
+					if(!this.execComponent.exec(sender, cmd, label, args)) {
+						/*KaranteeniPlugin.getMessager().sendMessage(sender, 
+								Sounds.NO.get(),
+								Prefix.NEGATIVE + 
+								KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+						return true;
+					}
 				}
+				
+				return true;
 			}
 		}
 		
 		// run possible command if no params given
 		boolean res = runCommand(sender, cmd, label, args);
+		
+		// if the loader has not been run, run it
+		if (this.execComponent != null && !this.execComponent.isBefore()){
+			// if no component was found, run the excess components which run with any parameters
+			if(!this.execComponent.exec(sender, cmd, label, args)) {
+				/*KaranteeniPlugin.getMessager().sendMessage(sender, 
+						Sounds.NO.get(),
+						Prefix.NEGATIVE + 
+						KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+				return true;
+			}
+		}
 		
 		// clear data after cmd execution
 		data = null;
@@ -177,7 +214,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+	public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
 		if(args.length == 0 || (this.components == null && this.execComponent == null))
 			return null;
 		
@@ -207,7 +244,7 @@ public abstract class CommandChainer extends AbstractCommand {
      * @param prefix Prefix by which the strings will be filtered
      * @return List of filtered strings
      */
-    protected List<String> filterByPrefix(Collection<String> list, String prefix)
+    protected final List<String> filterByPrefix(Collection<String> list, String prefix)
     {
     	if(prefix == null)
     		return new ArrayList<String>();

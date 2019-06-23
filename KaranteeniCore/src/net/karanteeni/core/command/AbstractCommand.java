@@ -117,6 +117,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     	return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
     }
     
+    
     /**
      * Returns the real parameter which is defined in the actual command
      * from the users alias to it

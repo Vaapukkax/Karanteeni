@@ -1,6 +1,7 @@
 package net.karanteeni.core.command;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,8 +12,8 @@ public abstract class CommandLoader extends CommandComponent {
 	/**
 	 * Initialize component without next components
 	 */
-	public CommandLoader() {
-		this.before = true;
+	public CommandLoader(boolean before) {
+		this.before = before;
 	}
 	
 	
@@ -22,6 +23,9 @@ public abstract class CommandLoader extends CommandComponent {
 	public CommandLoader(HashMap<String, CommandComponent> components) {
 		this.components = components;
 		this.before = true;
+		if(components != null)
+			for(Entry<String, CommandComponent> entry : components.entrySet())
+				entry.getValue().chainer = this.chainer;
 	}
 	
 	
@@ -34,18 +38,32 @@ public abstract class CommandLoader extends CommandComponent {
 		this.components = new HashMap<String, CommandComponent>();
 		this.components.put(name.toLowerCase(), component);
 		this.before = true;
+		if(component != null)
+			component.chainer = this.chainer;
 	}
 	
 	
 	/**
-	 * Initializes a commandcomponent with always executable component
+	 * Initializes a command component with always executable component
 	 * @param component component to run always if no other matches are found
 	 * @param before should the loader be run before the next actual parameter
 	 */
-	public CommandLoader(CommandComponent component, boolean before) {
+	public CommandLoader(CommandLoader component, boolean before) {
 		this.execComponent = component;
 		this.before = before;
+		if(component != null)
+			component.chainer = this.chainer;
 	}
+	
+	
+	/**
+	 * Checks if this loader should be run before or after the param this is assigned to
+	 * @return true if this should be run before the container, false if after
+	 */
+	public final boolean isBefore() {
+		return this.before;
+	}
+	
 	
 	/**
 	 * Chain and always execute this component
@@ -55,7 +73,7 @@ public abstract class CommandLoader extends CommandComponent {
 	 * @param args command args
 	 * @return true if success, false if invalid args
 	 */
-	public boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
+	public final boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
 		// run the loader before continuing forward
 		boolean retValue = runComponent(sender, cmd, label, args);
 		
