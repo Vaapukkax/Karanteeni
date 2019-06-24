@@ -17,8 +17,9 @@ import org.bukkit.command.CommandSender;
  * @author Nuubles
  *
  */
-public abstract class CommandComponent {
+public abstract class CommandComponent implements ChainerInterface {
 	// a map of new components
+	protected String permission;
 	protected HashMap<String, CommandComponent> components;
 	protected CommandLoader execComponent;
 	protected CommandChainer chainer;
@@ -87,6 +88,21 @@ public abstract class CommandComponent {
 	
 	
 	/**
+	 * Run after this component has been registered
+	 */
+	protected abstract void onRegister();
+	
+	
+	/**
+	 * Set the required permission for this node
+	 * @param permission permission required to use this component
+	 */
+	public void setPermission(String permission) {
+		this.permission = permission;
+	}
+	
+	
+	/**
 	 * Adds the given command component to the chain
 	 * @param parameter parameter this component is accessed with
 	 * @param component component to be run with the given parameter
@@ -96,6 +112,7 @@ public abstract class CommandComponent {
 	public final CommandComponent addComponent(String parameter, CommandComponent component) {
 		if(component != null)
 			component.chainer = this.chainer;
+		component.onRegister();
 		return components.put(parameter.toLowerCase(), component);
 	}
 	
@@ -107,8 +124,10 @@ public abstract class CommandComponent {
 	 */
 	public final CommandComponent setLoader(CommandLoader component) {
 		this.execComponent = component;
-		if(component != null)
+		if(component != null) {
 			component.chainer = this.chainer;
+			component.onRegister();
+		}
 		return this;
 	}
 	
@@ -153,31 +172,40 @@ public abstract class CommandComponent {
 	
 	
 	/**
-	 * Chains components using the given param
+	 * Chains autofill components using the given param. Does not run this autofill
 	 * @param param param to chain the components with
 	 * @return null if no components were found, true if successful run, false if incorrect parameters
 	 */
 	protected final List<String> chainAutofill(String param, CommandSender sender, Command cmd, String label, String[] args) {
-		if(components == null)
-			return null;
+		if(components == null && execComponent == null)
+			return this.autofill(sender, cmd, label, args);
 		
 		CommandComponent comp = null;
 		
-		if(chainer != null)
-			comp = components.get(param.toLowerCase());
-		else
-			comp = components.get(chainer.getRealParam(param));
-		
-		// if components were not found, run all of the executable components until true
-		if(comp == null) {
-			if(this.execComponent == null)
-				return null;
-			
-			// run the consecutive component
-			return this.execAutofill(sender, cmd, label, args);
+		// if there are components, check them first
+		if(components != null) {
+			if(chainer != null)
+				comp = components.get(param.toLowerCase());
+			else
+				comp = components.get(chainer.getRealParam(param));
 		}
 		
-		return comp.execAutofill(sender, cmd, label, args);
+		// run the autofill of the component if there is a component found
+		if(comp != null) {
+			List<String> componentAutofill = comp.execAutofill(sender, cmd, label, args);
+			
+			// if autofill fillings was found, return them
+			if(componentAutofill != null && !componentAutofill.isEmpty())
+				return componentAutofill;
+		}
+		
+		// run the executable component if no return from the previous components
+		// no executable component, return null
+		if(this.execComponent == null)
+			return null;
+		
+		// run the loader component autofill and return its results as the final result
+		return this.execComponent.execAutofill(sender, cmd, label, args);
 	}
 	
 	
@@ -211,9 +239,15 @@ public abstract class CommandComponent {
 	 * @param cmd command
 	 * @param label command label
 	 * @param args command args
-	 * @return true if success, false if invalid args
+	 * @return true if success, false if command could not be executed
 	 */
 	public boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
+		// check if sender has the permission to execute this parameter
+		if(!hasPermission(sender)) {
+			noPermission(sender);
+			return false;
+		}
+		
 		// if there is a loader running before this, run it
 		if(this.execComponent != null && this.execComponent.isBefore())
 			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
@@ -228,6 +262,10 @@ public abstract class CommandComponent {
 		// run the code of this component
 		boolean executed = runComponent(sender, cmd, label, args);
 		
+		// if the execution if false, the given argument was invalid
+		if(!executed)
+			invalidArguments(sender);
+		
 		// if the loader is supposed to run after this, run it after this
 		if(executed && this.execComponent != null && !this.execComponent.isBefore())
 			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
@@ -241,11 +279,13 @@ public abstract class CommandComponent {
      * @param prefix Prefix by which the strings will be filtered
      * @return List of filtered strings
      */
-    protected List<String> filterByPrefix(Collection<String> list, String prefix)
+    protected List<String> filterByPrefix(Collection<String> list, String prefix, boolean caseSensitive)
     {
     	if(prefix == null)
     		return new ArrayList<String>();
-    	return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
+    	if(caseSensitive)
+    		return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());	
+    	return list.stream().filter(param -> param.toLowerCase().startsWith(prefix.toLowerCase())).collect(Collectors.toList());
     }
 	
 	
@@ -258,6 +298,18 @@ public abstract class CommandComponent {
 	
 	
 	/**
+	 * Checks if player has the permission to use this component
+	 * @param sender command sender
+	 * @return true if has permission, false otherwise
+	 */
+	public boolean hasPermission(CommandSender sender) {
+		if(permission == null)
+			return true;
+		return sender.hasPermission(permission);
+	}
+	
+	
+	/**
 	 * Returns the parameters for tab completion. By default returns the next params if there are any
 	 * @param sender
 	 * @param cmd
@@ -266,16 +318,50 @@ public abstract class CommandComponent {
 	 * @return
 	 */
 	public final List<String> execAutofill(CommandSender sender, Command cmd, String label, String[] args) {
+		// check the permission
+		if(!hasPermission(sender))
+			return null;
+		
 		// run the possible chain if there is anything to chain
-		if(args != null && args.length > 0) {
+		if(((components != null && !components.isEmpty()) || (execComponent != null)) 
+				&& args != null 
+				&& args.length > 0 
+				&& chainer != null) {
+			
 			List<String> chainResult = chainAutofill(args[0], sender, cmd, label, cutArgs(args));
 			return chainResult;
 		}
 		
 		// run the code of this component
+		return autofill(sender, cmd, label, args);
+	}
+	
+	
+	/**
+	 * Returns the default autofill fill
+	 * @param sender
+	 * @param cmd
+	 * @param label
+	 * @param args
+	 * @return
+	 */
+	public final List<String> defaultAutofill(CommandSender sender, Command cmd, String label, String[] args) {
 		if(this.components == null || this.components.isEmpty())
 			return null;
 		
-		return this.filterByPrefix(new ArrayList<String>(this.components.keySet()), args[args.length-1]);
+		return this.filterByPrefix(new ArrayList<String>(this.components.keySet()), args[args.length-1], false);
+	}
+	
+	
+	/**
+	 * Returns the autofill to this component. By default returns the params for next components. Can be overriden
+	 * @param sender
+	 * @param cmd
+	 * @param label
+	 * @param args
+	 * @return
+	 */
+	public List<String> autofill(CommandSender sender, Command cmd, String label, String[] args) {
+		return defaultAutofill(sender, cmd, label, args);
 	}
 }

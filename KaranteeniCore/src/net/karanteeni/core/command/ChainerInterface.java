@@ -14,4 +14,11 @@ public interface ChainerInterface {
 	 * @param sender sender with missing permission
 	 */
 	public abstract void noPermission(CommandSender sender);
+	
+	/**
+	 * Checks if player has the permission to use this component
+	 * @param sender command sender
+	 * @return true if has permission, false otherwise
+	 */
+	public boolean hasPermission(CommandSender sender);
 }

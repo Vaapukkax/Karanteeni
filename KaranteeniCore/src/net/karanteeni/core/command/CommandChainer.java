@@ -18,16 +18,38 @@ import net.karanteeni.core.KaranteeniPlugin;
  * @author Nuubles
  *
  */
-public abstract class CommandChainer extends AbstractCommand {
+public abstract class CommandChainer extends AbstractCommand implements ChainerInterface {
 	private HashMap<String, CommandComponent> components;
 	private CommandLoader execComponent;
 	private HashMap<String, Object> data;
+	private String permission;
 	
 	public CommandChainer(KaranteeniPlugin plugin, String command, String usage, String description,
 			String permissionMessage, List<String> params) {
 		super(plugin, command, usage, description, permissionMessage, params);
 	}
 
+	
+	/**
+	 * Checks if player has the permission to use this component
+	 * @param sender command sender
+	 * @return true if has permission, false otherwise
+	 */
+	public boolean hasPermission(CommandSender sender) {
+		if(permission == null)
+			return true;
+		return sender.hasPermission(permission);
+	}
+	
+	
+	/**
+	 * Sets the permission which is required to use this chainer
+	 * @param permission permission to check when using this chainer
+	 */
+	public void setPermission(String permission) {
+		this.permission = permission;
+	}
+	
 	
     /**
      * Returns the superclass plugin
@@ -127,8 +149,10 @@ public abstract class CommandChainer extends AbstractCommand {
 		if(components == null)
 			components = new HashMap<String, CommandComponent>();
 		components.put(arg, component);
-		if(component != null)
+		if(component != null) {
 			component.setChainer(this);
+			component.onRegister();
+		}
 	}
 	
 	
@@ -139,6 +163,7 @@ public abstract class CommandChainer extends AbstractCommand {
 	public final void setLoader(CommandLoader component) {
 		this.execComponent = component;
 		component.setChainer(this);
+		component.onRegister();
 	}
 	
 	
@@ -156,16 +181,17 @@ public abstract class CommandChainer extends AbstractCommand {
 	
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		// check if sender has permission to this command
+		if(!hasPermission(sender)) {
+			noPermission(sender);
+			return true;
+		}
+		
 		// if the loader should be run before this, run it
 		if (this.execComponent != null && this.execComponent.isBefore()) {
 			// if no component was found, run the excess components which run with any parameters
-			if(!this.execComponent.exec(sender, cmd, label, args)) {
-				/*KaranteeniPlugin.getMessager().sendMessage(sender, 
-						Sounds.NO.get(),
-						Prefix.NEGATIVE + 
-						KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+			if(!this.execComponent.exec(sender, cmd, label, args))
 				return true;
-			}
 		}
 		
 		// before execution check if there is anything to chain
@@ -174,27 +200,22 @@ public abstract class CommandChainer extends AbstractCommand {
 			CommandComponent component = components.get(args[0].toLowerCase());
 			// execute component if one is found
 			if(component != null) {
+				// execute the found component
 				if(!component.exec(sender, cmd, label, cutArgs(args))) {
-					/*KaranteeniPlugin.getMessager().sendMessage(sender, 
-							Sounds.NO.get(),
-							Prefix.NEGATIVE + 
-							KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+					// clear data after cmd execution
+					data = null;
+					return true;
 				}
-				
-				// clear data after cmd execution
-				data = null;
 				
 				// if the loader has not been run, run it
 				if (this.execComponent != null && !this.execComponent.isBefore()){
 					// if no component was found, run the excess components which run with any parameters
-					if(!this.execComponent.exec(sender, cmd, label, cutArgs(args))) {
-						/*KaranteeniPlugin.getMessager().sendMessage(sender, 
-								Sounds.NO.get(),
-								Prefix.NEGATIVE + 
-								KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+					if(!this.execComponent.exec(sender, cmd, label, cutArgs(args)))
 						return true;
-					}
 				}
+				
+				// clear data after cmd execution
+				data = null;
 				
 				return true;
 			}
@@ -203,14 +224,18 @@ public abstract class CommandChainer extends AbstractCommand {
 		// run possible command if no params given
 		boolean res = runCommand(sender, cmd, label, args);
 		
+		// if the command run returned false, run the invalid arguments method
+		if(!res) {
+			invalidArguments(sender);
+			return true;
+		}
+		
 		// if the loader has not been run, run it
 		if (this.execComponent != null && !this.execComponent.isBefore()){
 			// if no component was found, run the excess components which run with any parameters
 			if(!this.execComponent.exec(sender, cmd, label, args)) {
-				/*KaranteeniPlugin.getMessager().sendMessage(sender, 
-						Sounds.NO.get(),
-						Prefix.NEGATIVE + 
-						KaranteeniPlugin.getDefaultMsgs().incorrectParameters(sender));*/
+				// clear data after cmd execution
+				data = null;
 				return true;
 			}
 		}
@@ -228,6 +253,10 @@ public abstract class CommandChainer extends AbstractCommand {
 	 */
 	@Override
 	public final List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+		// check if sender has permission to this command
+		if(!hasPermission(sender))
+			return null;
+		
 		if(args.length == 0 || (this.components == null && this.execComponent == null))
 			return null;
 		
@@ -241,8 +270,13 @@ public abstract class CommandChainer extends AbstractCommand {
 		}
 		
 		// if no found matches, get autofill from random parameter components
-		if((autoFill == null || autoFill.isEmpty()) && this.execComponent != null)
-			return this.execComponent.execAutofill(sender, cmd, label, args);
+		if(autoFill == null || autoFill.isEmpty()) {
+			if(this.execComponent != null)
+				return this.execComponent.execAutofill(sender, cmd, label, args);
+		} else {
+			// autofill found stuff to return to autofill
+			return autoFill;
+		}
 		
 		// if no return value from random parameter components, return autofill for the params in the chainer
 		if(args.length == 1)
@@ -261,7 +295,8 @@ public abstract class CommandChainer extends AbstractCommand {
     {
     	if(prefix == null)
     		return new ArrayList<String>();
-    	return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
+    	//return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
+    	return list.stream().filter(param -> param.toLowerCase().startsWith(prefix.toLowerCase())).collect(Collectors.toList());
     }
 	
 	

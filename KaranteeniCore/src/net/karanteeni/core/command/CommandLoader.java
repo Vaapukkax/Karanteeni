@@ -74,8 +74,19 @@ public abstract class CommandLoader extends CommandComponent {
 	 * @return true if success, false if invalid args
 	 */
 	public final boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
+		if(!hasPermission(sender)) {
+			noPermission(sender);
+			return false;
+		}
+		
 		// run the loader before continuing forward
 		boolean retValue = runComponent(sender, cmd, label, args);
+		
+		// if the execution if false, the given argument was invalid
+		if(!retValue) {
+			invalidArguments(sender);
+			return false;
+		}
 		
 		// run the possible chain if there is anything to chain
 		if(args != null && args.length > 0) {
