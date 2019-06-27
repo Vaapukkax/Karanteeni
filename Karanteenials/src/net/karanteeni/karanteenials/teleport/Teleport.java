@@ -141,7 +141,7 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			}
 		
 		//Add all players found
-		players.addAll(Karanteenials.getPlayerHandler().getOnlinePlayers(((Player)sender).getLocation(), args[0]));
+		players.addAll(Karanteenials.getPlayerHandler().getOnlinePlayers(sender, args[0]));
 		
 		Player dest = Bukkit.getPlayer(args[1]);
 		//Player player = Bukkit.getPlayer(args[0]);
@@ -217,7 +217,7 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			}
 		
 		//Add all players found
-		players.addAll(Karanteenials.getPlayerHandler().getOnlinePlayers(((Player)sender).getLocation(), args[0]));
+		players.addAll(Karanteenials.getPlayerHandler().getOnlinePlayers(sender, args[0]));
 			
 		if(players.isEmpty()) {
 			printPlayerNotFoundError(sender, args[0]);

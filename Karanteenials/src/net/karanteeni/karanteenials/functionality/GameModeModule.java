@@ -41,10 +41,10 @@ public class GameModeModule extends TableContainer {
 		// get online players based on name and location
 		List<Player> players = null;
 		
-		if(setter instanceof Player)
-			players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(((Player)setter).getLocation(), name);
-		else
-			players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(Bukkit.getWorlds().get(0).getSpawnLocation(), name);
+		//if(setter instanceof Player)
+			players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(setter, name);
+		//else
+		//	players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(Bukkit.getWorlds().get(0).getSpawnLocation(), name);
 		
 		// if no players found, msg about it
 		if(players.isEmpty()) {

@@ -66,7 +66,8 @@ public abstract class CommandLoader extends CommandComponent {
 	
 	
 	/**
-	 * Chain and always execute this component
+	 * Chain and always executes this component.
+	 * The loader component of this component is run either before this AND chain or after this AND chain
 	 * @param sender command sender
 	 * @param cmd command
 	 * @param label command label
@@ -79,10 +80,13 @@ public abstract class CommandLoader extends CommandComponent {
 			return false;
 		}
 		
+		if(this.execComponent != null && this.execComponent.isBefore())
+			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
+		
 		// run the loader before continuing forward
 		boolean retValue = runComponent(sender, cmd, label, args);
 		
-		// if the execution if false, the given argument was invalid
+		// if the execution is false, the given argument was invalid
 		if(!retValue) {
 			invalidArguments(sender);
 			return false;
@@ -92,8 +96,12 @@ public abstract class CommandLoader extends CommandComponent {
 		if(args != null && args.length > 0) {
 			Boolean chainResult = chainComponents(args[0], sender, cmd, label, cutArgs(args));
 			if(chainResult != null)
-				return chainResult;
+				retValue = chainResult; // retValue is ALWAYS true here so no need to combine both
 		}
+		
+		// run the loader component after this chain and this
+		if(retValue && this.execComponent != null && !this.execComponent.isBefore())
+			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
 		
 		// run the code of this component
 		return retValue;

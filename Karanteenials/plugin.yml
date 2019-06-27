@@ -69,10 +69,44 @@ permissions:
     description: change your own gamemode to spectator
   karanteenials.player.gamemode.spectator.other:
     description: change someones gamemode to spectator
+    
+  karanteenials.player.command.feed.self:
+    description: 
+  karanteenials.player.command.feed.other:
+    description:
+  karanteenials.player.command.starve.self:
+    description: 
+  karanteenials.player.command.starve.other:
+    description:  
+  karanteenials.player.command.heal.self:
+    description: 
+  karanteenials.player.command.heal.other:
+    description: 
+  karanteenials.player.command.god.self:
+    description: 
+  karanteenials.player.command.god.other:
+    description: 
+  karanteenials.player.command.kill.self:
+    description: 
+  karanteenials.player.command.kill.other:
+    description: 
+  karanteenials.player.command.burn.self:
+    description: 
+  karanteenials.player.command.burn.other:
+    description: 
+  karanteenials.player.command.extinguish.self:
+    description: 
+  karanteenials.player.command.extinguish.other:
+    description: 
+  karanteenials.player.command.lightning.self:
+    description: 
+  karanteenials.player.command.lightning.other:
+    description: 
   #unimplemented  
   karanteenials.antiblock:
     description: players with this permission cannot be blocked
     
+   
   #wildcards
   karanteenials.home.other.*: #access to others homes
     children:
@@ -87,6 +121,7 @@ permissions:
     children:
       karanteenials.home.own.*: true
       karanteenials.home.other.*: true
+  
   karanteenials.teleport.itself.*:
     children:
       karanteenials.teleport.itself.location: true
@@ -103,16 +138,19 @@ permissions:
       karanteenials.teleport.back: true
       karanteenials.teleport.itself.*: true
       karanteenials.teleport.others.*: true
+  
   karanteenials.player.speed.*:
     children:
       karanteenials.player.speed.self.walk: true
       karanteenials.player.speed.self.fly: true
       karanteenials.player.speed.other.walk: true
       karanteenials.player.speed.other.fly: true
+  
   karanteenials.player.fly.*:
     children:
       karanteenials.player.fly.self: true
       karanteenials.player.fly.other: true
+  
   karanteenials.player.gamemode.survival.*:
     children:
       karanteenials.player.gamemode.survival.self: true
@@ -135,11 +173,55 @@ permissions:
       karanteenials.player.gamemode.creative.*: true
       karanteenials.player.gamemode.adventure.*: true
       karanteenials.player.gamemode.spectator.*: true
+  
+  karanteenials.player.command.feed.*: # feed self or others
+    children:
+      karanteenials.player.command.feed.self: true
+      karanteenials.player.command.feed.other: true
+  karanteenials.player.command.starve.*: # heal self or others
+    children:
+      karanteenials.player.command.starve.self: true
+      karanteenials.player.command.starve.other: true
+  karanteenials.player.command.heal.*: # heal self or others
+    children:
+      karanteenials.player.command.heal.self: true
+      karanteenials.player.command.heal.other: true
+  karanteenials.player.command.god.*: # enable god for self or others
+    children:
+      karanteenials.player.command.god.self: true
+      karanteenials.player.command.god.other: true
+  karanteenials.player.command.kill.*: # kill self or others
+    children:
+      karanteenials.player.command.kill.self: true
+      karanteenials.player.command.kill.other: true
+  karanteenials.player.command.burn.*: # set self or others on fire
+    children:
+      karanteenials.player.command.burn.self: true
+      karanteenials.player.command.burn.other: true
+  karanteenials.player.command.extinguish.*: # extinguish self or others
+    children:
+      karanteenials.player.command.extinguish.self: true
+      karanteenials.player.command.extinguish.other: true
+  karanteenials.player.command.lightning.*: # lightning
+    children:
+      karanteenials.player.command.lightning.self: true
+      karanteenials.player.command.lightning.other: true
+  karanteenials.player.command.*:
+    children:
+      karanteenials.player.command.feed.*: true
+      karanteenials.player.command.starve.*: true
+      karanteenials.player.command.heal.*: true
+      karanteenials.player.command.god.*: true
+      karanteenials.player.command.kill.*: true
+      karanteenials.player.command.burn.*: true
+      karanteenials.player.command.extinguish.*: true
+      karanteenials.player.command.lightning.*: true
   karanteenials.player.*:
     children:
       karanteenials.player.fly.*: true
       karanteenials.player.speed.*: true
       karanteenials.player.gamemode.*: true
+      karanteenials.player.command.*: true
       
       
       

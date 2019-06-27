@@ -11,15 +11,15 @@ permissions:
   kcurrency.baltop:
     description: check the baltop
   kcurrency.pay: 
-    descrption: pay another player with X amount of money
+    description: pay another player with X amount of money
   kcurrency.bal.own: 
-    descrption: check your own balance
+    description: check your own balance
   kcurrency.bal.other: 
-    descrption: check someone elses balance
+    description: check someone elses balance
   kcurrency.eco.take: 
-    descrption: take money away from player
+    description: take money away from player
   kcurrency.eco.give: 
-    descrption: give money to player
+    description: give money to player
   #wildcards
   kcurrency.bal.*:
     children:

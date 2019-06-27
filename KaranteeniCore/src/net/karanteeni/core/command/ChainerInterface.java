@@ -1,19 +1,32 @@
 package net.karanteeni.core.command;
 
 import org.bukkit.command.CommandSender;
+import net.karanteeni.core.KaranteeniCore;
+import net.karanteeni.core.information.sounds.Sounds;
+import net.karanteeni.core.information.text.Prefix;
 
 public interface ChainerInterface {
+	
 	/**
 	 * Run when the given argument does not match the required arguments
 	 * @param sender command sender
 	 */
-	public abstract void invalidArguments(CommandSender sender);
+	default public void invalidArguments(CommandSender sender) {
+		KaranteeniCore.getMessager().sendMessage(sender, Sounds.NO.get(), 
+				Prefix.NEGATIVE + 
+				KaranteeniCore.getDefaultMsgs().incorrectParameters(sender));
+	}
+	
 	
 	/**
 	 * Command sender does not have the required permission to this command
 	 * @param sender sender with missing permission
 	 */
-	public abstract void noPermission(CommandSender sender);
+	default public void noPermission(CommandSender sender) {
+		KaranteeniCore.getMessager().sendMessage(sender, Sounds.NO.get(), 
+				Prefix.NEGATIVE + 
+				KaranteeniCore.getDefaultMsgs().noPermission(sender));
+	}
 	
 	/**
 	 * Checks if player has the permission to use this component

@@ -82,6 +82,24 @@ public class Messager {
 		}
 	}
 	
+	
+	/**
+	 * Sends a message to commandsender with sound
+	 * @param player
+	 * @param sound
+	 * @param component
+	 */
+	public void sendMessage(final CommandSender sender, final SoundType sound, final BaseComponent component)
+	{
+		if(sender instanceof Player) {
+			((Player)sender).spigot().sendMessage(component);
+			KaranteeniCore.getSoundHandler().playSound((Player)sender, sound);
+		} else {
+			sender.sendMessage(component.toLegacyText());
+		}
+	}
+	
+	
 	/**
 	 * Sends a message to a player with sound
 	 * @param player
@@ -93,6 +111,7 @@ public class Messager {
 		player.spigot().sendMessage(component);
 		KaranteeniCore.getSoundHandler().playSound(player, sound);
 	}
+	
 	
 	/**
 	 * Sends a message to players with sound
@@ -108,6 +127,7 @@ public class Messager {
 			KaranteeniCore.getSoundHandler().playSound(player, sound);
 		}
 	}
+	
 	
 	/**
 	 * Sends a message to a player with sound

@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -325,7 +324,7 @@ public abstract class CommandComponent implements ChainerInterface {
 		// run the possible chain if there is anything to chain
 		if(((components != null && !components.isEmpty()) || (execComponent != null)) 
 				&& args != null 
-				&& args.length > 0 
+				&& args.length > 1
 				&& chainer != null) {
 			
 			List<String> chainResult = chainAutofill(args[0], sender, cmd, label, cutArgs(args));

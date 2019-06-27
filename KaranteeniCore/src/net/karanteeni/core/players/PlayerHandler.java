@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import org.bukkit.command.BlockCommandSender;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import net.karanteeni.core.KaranteeniCore;
@@ -137,7 +139,7 @@ public class PlayerHandler {
 	 * @param name
 	 * @return
 	 */
-	public List<Player> getOnlinePlayers(Location location, String name)
+	public List<Player> getOnlinePlayers(CommandSender sender, String name)
 	{
 		Set<Player> foundPlayers = new HashSet<Player>();
 		String[] playerNames = name.split(",");
@@ -153,7 +155,7 @@ public class PlayerHandler {
 				continue;
 			}
 			//Get all players on server
-			if(playerNames[i].equalsIgnoreCase("@a") || playerNames[i].equalsIgnoreCase("all"))
+			if(playerNames[i].equalsIgnoreCase("@a"))
 			{
 				foundPlayers.addAll(Bukkit.getOnlinePlayers());
 				continue;
@@ -161,10 +163,21 @@ public class PlayerHandler {
 			//Gets the closes player
 			else if(playerNames[i].equalsIgnoreCase("@p")) 
 			{
-				Player p = KaranteeniCore.getEntityManager().getNearestPlayer(location);
-				if(p != null)
-					foundPlayers.add(p);
-				continue;
+				// if the sender is console, prevent search
+				if(sender instanceof Entity) { // get entity command sender
+					Player p = KaranteeniCore.getEntityManager().getNearestPlayer(((Entity)sender).getLocation());
+					if(p != null)
+						foundPlayers.add(p);
+					continue;
+				} else if(sender instanceof BlockCommandSender) { // get command block command sender
+					Player p = KaranteeniCore.getEntityManager().getNearestPlayer(
+							((BlockCommandSender)sender).getBlock().getLocation());
+					if(p != null)
+						foundPlayers.add(p);
+					continue;
+				} else {
+					continue;
+				}
 			}
 			else if(playerNames[i].equalsIgnoreCase("@r"))
 			{

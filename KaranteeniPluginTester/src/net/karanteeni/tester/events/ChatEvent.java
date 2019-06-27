@@ -122,9 +122,6 @@ public class ChatEvent implements Listener{
 		String prefix = pp.getPrefix(event.getPlayer(), DATA_TYPE.GROUP_AND_PLAYER, false);
 		event.setFormat(prefix + "%s" + pp.getSuffix(DATA_TYPE.GROUP_AND_PLAYER) + "%s");
 		
-		
-		if(event.getPlayer().hasPermission("perm.oof"))
-			Bukkit.broadcastMessage("Has permission perm.oof");
 		/*String[] parts = event.getMessage().split(" ");
 		if(parts.length == 3)
 		{

@@ -29,7 +29,7 @@ public class TpAskHere extends AbstractCommand implements TranslationContainer {
 		//Does player have permission to ask tpa
 		if(!sender.hasPermission("karanteenials.teleport.askhere")) {
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NO.get(),
-					KaranteeniPlugin.getDefaultMsgs().noPermission(sender));
+					Prefix.NEGATIVE + KaranteeniPlugin.getDefaultMsgs().noPermission(sender));
 			return true;
 		}
 		
