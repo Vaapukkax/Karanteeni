@@ -6,6 +6,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.command.CommandLoader;
+import net.karanteeni.core.command.CommandResult;
+import net.karanteeni.core.command.CommandResult.ResultType;
+import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.translation.TranslationContainer;
 
 /**
@@ -16,6 +19,7 @@ import net.karanteeni.core.information.translation.TranslationContainer;
  */
 public class BinaryComponent extends CommandLoader implements TranslationContainer {
 	private final BINARY binary;
+	public final static String BINARY_KEY = "core.binary";
 	
 	/**
 	 * Initializes the binary loader class
@@ -47,19 +51,35 @@ public class BinaryComponent extends CommandLoader implements TranslationContain
 	
 
 	@Override
-	protected boolean runComponent(CommandSender sender, Command cmd, String label, String[] args) {
-		// no players has been requested
-		if(args.length == 0)
-			return true;
+	protected CommandResult runComponent(CommandSender sender, Command cmd, String label, String[] args) {
+		// no truth has been requested
+		if(args.length == 0) {
+				return new CommandResult(KaranteeniCore.getTranslator().getTranslation(
+						KaranteeniCore.getPlugin(KaranteeniCore.class), 
+						sender, 
+						"command.component-error.true-false")
+						.replace("%true%", binary.TRUE)
+						.replace("%false%", binary.FALSE), 
+						ResultType.INVALID_ARGUMENTS, 
+						Sounds.NO.get());
+		}
+			
 		
 		Boolean res = binary.asBoolean(args[0]);
 		if(res == null)
-			return false;
+			return new CommandResult(KaranteeniCore.getTranslator().getTranslation(
+					KaranteeniCore.getPlugin(KaranteeniCore.class), 
+					sender, 
+					"command.component-error.true-false")
+					.replace("%true%", binary.TRUE)
+					.replace("%false%", binary.FALSE), 
+					ResultType.INVALID_ARGUMENTS, 
+					Sounds.NO.get());
 		
 		// set the result into memory
-		this.chainer.setObject("core.binary", res.booleanValue());
+		this.chainer.setObject(BINARY_KEY, res.booleanValue());
 		
-		return true;
+		return CommandResult.SUCCESS;
 	}
 	
 	
@@ -123,6 +143,19 @@ public class BinaryComponent extends CommandLoader implements TranslationContain
 			return null;
 		}
 	}
+	
+	
+	/*@Override
+	public void invalidArguments(CommandSender sender) {
+		KaranteeniCore.getMessager().sendMessage(sender, Sounds.NO.get(), 
+				Prefix.NEGATIVE +
+				KaranteeniCore.getTranslator().getTranslation(
+						KaranteeniCore.getPlugin(KaranteeniCore.class), 
+						sender, 
+						"command.component-error.true-false")
+						.replace("%true%", binary.TRUE)
+						.replace("%false%", binary.FALSE));
+	}*/
 
 
 	@Override

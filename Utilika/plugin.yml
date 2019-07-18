@@ -1,0 +1,15 @@
+main: net.karanteeni.utilika.Utilika
+name: Utilika
+version: 1.0
+author: Nuubles
+description: Adds custom structures and mechanics to the game such as elevators
+api-version: 1.13
+depend: [KaranteeniCore]
+database: true
+
+permissions:
+  #all permissions
+  utilika.elevator.use:
+    description: allows to use blocks as elevators
+  utilika.repair:
+    description: repair the item in your hand

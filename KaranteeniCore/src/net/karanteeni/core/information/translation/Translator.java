@@ -205,6 +205,42 @@ public class Translator {
 		return yml.getString(key);
 	}
 	
+	
+	/**
+	 * Checks if a translation exists with the given locale
+	 * @param plugin
+	 * @param locale
+	 * @param key
+	 * @return
+	 */
+	public boolean hasTranslation(KaranteeniPlugin plugin, Locale locale, String key)
+	{
+		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
+		
+		//Use default locale if not recognized
+		if(yml == null)
+			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+		
+		return yml.isSet(key);
+	}
+	
+	
+	/**
+	 * Checks if a translation exists with the given locale
+	 * @param plugin
+	 * @param sender
+	 * @param key
+	 * @return
+	 */
+	public boolean hasTranslation(KaranteeniPlugin plugin, CommandSender sender, String key)
+	{
+		if(sender instanceof Player)
+			return hasTranslation(plugin, getLocale((Player)sender), key);
+		else
+			return hasTranslation(plugin, defaultLocale, key);
+	}
+	
+	
 	/**
 	 * Returns a translation for this plugin associated to the given key
 	 * @param plugin

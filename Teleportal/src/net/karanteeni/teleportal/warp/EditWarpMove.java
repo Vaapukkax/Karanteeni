@@ -3,9 +3,9 @@ package net.karanteeni.teleportal.warp;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import net.karanteeni.core.command.CommandComponent;
 import net.karanteeni.core.command.CommandLoader;
+import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
@@ -19,13 +19,10 @@ public class EditWarpMove extends CommandComponent implements TranslationContain
 	
 	
 	@Override
-	protected boolean runComponent(CommandSender sender, Command arg1, String arg2, String[] arg3) {
+	protected CommandResult runComponent(CommandSender sender, Command arg1, String arg2, String[] arg3) {
 		// verify that sender is player
 		if(!(sender instanceof Player)) {
-			Teleportal.getMessager().sendMessage(sender, Sounds.NO.get(), 
-					Prefix.NEGATIVE +
-					Teleportal.getDefaultMsgs().defaultNotForConsole());
-			return true;
+			return CommandResult.NOT_FOR_CONSOLE;
 		}
 		
 		Warp warp = this.chainer.getObject("warp");
@@ -42,7 +39,7 @@ public class EditWarpMove extends CommandComponent implements TranslationContain
 				Prefix.ERROR +
 				Teleportal.getDefaultMsgs().databaseError(sender));
 		
-		return true;
+		return CommandResult.SUCCESS;
 	}
 
 	

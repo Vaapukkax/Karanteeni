@@ -10,19 +10,12 @@ public interface DatabaseObject {
 	 * Save the 
 	 * @return true if save was successful
 	 */
-	public boolean save();
-	
-	
-	/**
-	 * Initialize the object (create tables)
-	 * @return true if initialization was successful
-	 */
-	public boolean initialize();
+	public abstract boolean save();
 	
 	
 	/**
 	 * Deletes this instance of an object from the database 
 	 * @return true if deletion was successful
 	 */
-	public boolean delete();
+	public abstract boolean delete();
 }

@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import net.karanteeni.core.command.CommandChainer;
 import net.karanteeni.core.command.CommandLoader;
+import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
@@ -33,10 +34,10 @@ public class WarpCommand extends CommandChainer implements TranslationContainer 
 
 
 	@Override
-	protected boolean runCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
+	protected CommandResult runCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		// invalid arguments
 		if(args.length != 1 && args.length != 2)
-			return false;
+			return CommandResult.INVALID_ARGUMENTS;
 		
 		// get the loaded warp
 		Warp warp = this.<Warp>getObject("warp");
@@ -50,21 +51,19 @@ public class WarpCommand extends CommandChainer implements TranslationContainer 
 				Teleportal.getMessager().sendMessage(sender, Sounds.NO.get(),
 						Prefix.NEGATIVE +
 						Teleportal.getDefaultMsgs().defaultNotForConsole());
-				return true;
+				return CommandResult.OTHER;
 			}
 			
 			// check if sender has the permission to warp
 			if(!sender.hasPermission("teleportal.warp.use")) {
-				noPermission(sender);
-				return true;
+				return CommandResult.NO_PERMISSION;
 			}
 			
 			teleported.add((Player)sender);
 		} else {
 			// teleporting other players, check permission
 			if(!sender.hasPermission("teleportal.warp.send")) {
-				noPermission(sender);
-				return true;
+				return CommandResult.NO_PERMISSION;
 			}
 			
 			// teleporting other players, get them
@@ -119,7 +118,7 @@ public class WarpCommand extends CommandChainer implements TranslationContainer 
 			}
 		}
 		
-		return true;
+		return CommandResult.SUCCESS;
 	}
 
 

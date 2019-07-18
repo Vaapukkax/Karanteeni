@@ -11,9 +11,14 @@ public class CoreTranslations {
 	public void registerCoreTranslations()
 	{
 		//Menutranslations
-		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory-back", "§cBack");
-		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory-close", "§cClose");
-		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory-empty", "§7#");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.return", "§cReturn");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.close", "§4Close");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.accept", "§aAccept");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.empty", "§7");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.next_page", "§aNext Page");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.previous_page", "§aPrevious Page");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.no_permission", "§7No permission");
+		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "INVENTORY.accept-not-ready", "§cPlease finish action");
 		
 		/*KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "year", "Y");
 		KaranteeniPlugin.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), "month", "MON");

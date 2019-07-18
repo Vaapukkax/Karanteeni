@@ -2,7 +2,6 @@ package net.karanteeni.core.command;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 
@@ -74,34 +73,58 @@ public abstract class CommandLoader extends CommandComponent {
 	 * @param args command args
 	 * @return true if success, false if invalid args
 	 */
-	public final boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
+	public final CommandResult exec(CommandSender sender, Command cmd, String label, String[] args) {
 		if(!hasPermission(sender)) {
-			noPermission(sender);
-			return false;
+			noPermission(sender, 
+					CommandResult.NO_PERMISSION.getSound(), 
+					CommandResult.NO_PERMISSION.getDisplayFormat(), 
+					CommandResult.NO_PERMISSION.getMessage());
+			return CommandResult.NO_PERMISSION;
 		}
 		
-		if(this.execComponent != null && this.execComponent.isBefore())
-			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
-		
+		// if there is a loader running before this, run it
+		if(this.execComponent != null && this.execComponent.isBefore()) {
+			CommandResult result = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
+			// if the command execution a success
+			if(!CommandResult.SUCCESS.equals(result)) 
+				return result; // if incorrect result, return loader result
+		}
+			
 		// run the loader before continuing forward
-		boolean retValue = runComponent(sender, cmd, label, args);
+		CommandResult retValue = runComponent(sender, cmd, label, args);
 		
 		// if the execution is false, the given argument was invalid
-		if(!retValue) {
-			invalidArguments(sender);
-			return false;
+		// if errors in execution handle them
+		if(!CommandResult.SUCCESS.equals(retValue)) {
+			if(CommandResult.INVALID_ARGUMENTS.equals(retValue)) {
+				invalidArguments(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
+			} else if(CommandResult.NO_PERMISSION.equals(retValue)) {
+				noPermission(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
+			} else if(CommandResult.OTHER.equals(retValue)) {
+				other(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
+			} else if(CommandResult.ERROR.equals(retValue)) {
+				error(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
+			} else if(CommandResult.NOT_FOR_CONSOLE.equals(retValue)) {
+				notForConsole(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
+			} else if(CommandResult.ONLY_CONSOLE.equals(retValue)) {
+				onlyConsole(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
+			}
+			
+			return retValue;
 		}
 		
 		// run the possible chain if there is anything to chain
-		if(args != null && args.length > 0) {
-			Boolean chainResult = chainComponents(args[0], sender, cmd, label, cutArgs(args));
+		if(args != null && args.length > parameterLength) {
+			CommandResult chainResult = chainComponents(args[parameterLength], sender, cmd, label, cutArgs(args, parameterLength+1));
 			if(chainResult != null)
 				retValue = chainResult; // retValue is ALWAYS true here so no need to combine both
 		}
 		
 		// run the loader component after this chain and this
-		if(retValue && this.execComponent != null && !this.execComponent.isBefore())
-			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
+		if(CommandResult.SUCCESS.equals(retValue) && this.execComponent != null && !this.execComponent.isBefore()) {
+			CommandResult res = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
+			if(!CommandResult.SUCCESS.equals(res)) return res;
+		}
 		
 		// run the code of this component
 		return retValue;

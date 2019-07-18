@@ -1,9 +1,11 @@
 package net.karanteeni.core.players;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,7 +14,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
-
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.database.DatabaseConnector;
 
@@ -29,8 +30,7 @@ public class KPlayerJoin implements Listener{
 	/**
 	 * Initializes onJoin and creates config data
 	 */
-	public KPlayerJoin()
-	{
+	public KPlayerJoin() {
 		core = KaranteeniCore.getPlugin(KaranteeniCore.class);
 		if(!core.getConfig().isSet("Cache.in-memory-seconds")) {
 			core.getConfig().set("Cache.in-memory-seconds", 600);
@@ -40,13 +40,13 @@ public class KPlayerJoin implements Listener{
 		cacheLongetivity = core.getConfig().getInt("Cache.in-memory-seconds");
 	}
 	
+	
 	/**
 	 * Adds player to KPlayer list when player joins
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void playerJoin(PlayerJoinEvent event)
-	{
+	private void playerJoin(PlayerJoinEvent event) {
 		//Don't reload the player to the list
 		if(KPlayer.getKPlayer(event.getPlayer()) == null)
 			new KPlayer(event.getPlayer());
@@ -55,21 +55,40 @@ public class KPlayerJoin implements Listener{
 		if(cacheRemovers.containsKey(event.getPlayer().getUniqueId()))
 			cacheRemovers.get(event.getPlayer().getUniqueId()).cancel();
 		
+		// check if player has changed the name
+		boolean nameSameAsBefore = nameMatches(event.getPlayer());
+		
 		//Add player to database
 		addToDatabase(event.getPlayer());
+		
+		// if player has changed name reset the displayname
+		if(!nameSameAsBefore)
+			resetDisplayName(event.getPlayer());
+			
+		// load and set player display name from database
+		event.getPlayer().setDisplayName(
+				KaranteeniCore.getPlayerHandler().getOfflineDisplayName(event.getPlayer().getUniqueId()));
 	}
+	
+	
+	/**
+	 * Sets the display name for player and if the name does not match
+	 * @param player player whose displayname will be set
+	 */
+	private void resetDisplayName(Player player) {
+		KaranteeniCore.getPlayerHandler().setDisplayName(player.getUniqueId(), player.getName());
+	}
+	
 	
 	/**
 	 * Removes player from KPlayer list when player quits
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.MONITOR)
-	private void onQuit(PlayerQuitEvent event)
-	{
+	private void onQuit(PlayerQuitEvent event) {
 		KPlayer kp = KPlayer.getKPlayer(event.getPlayer());
 		
-		if(kp != null)
-		{
+		if(kp != null) {
 			kp.destroy();
 			
 			//Is there data in cache, if not then don't create timer
@@ -93,20 +112,55 @@ public class KPlayerJoin implements Listener{
 	
 	
 	/**
+	 * Checks if players name in database matches the name player currently has
+	 * @param player player whose name is being checked
+	 * @return true if name is the same as before or error, false otherwise
+	 */
+	private boolean nameMatches(final Player player) {
+		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
+		if(!db.isConnected()) return true;
+		
+		// select all names with this players uuid
+		String query = "SELECT " + PlayerHandler.PlayerDataKeys.NAME + " FROM "+
+				PlayerHandler.PlayerDataKeys.PLAYER_TABLE +
+				" WHERE " + PlayerHandler.PlayerDataKeys.UUID + " = '" + player.getUniqueId().toString() + "';";
+		
+		try {
+			Statement stmt = db.getStatement();
+			ResultSet set = stmt.executeQuery(query);
+			String name = "";
+			if(set.next())
+				name = set.getString(1);
+			// if players name is the same the player has not changed the name
+			return player.getName().equals(name);
+		} catch(SQLException e) {
+			e.printStackTrace();
+			return true;
+		}
+	}
+	
+	
+	/**
 	 * Adds the given player to database
 	 * @param player
 	 */
-	private void addToDatabase(final Player player)
-	{
+	private void addToDatabase(final Player player) {
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return;
 		
-		String query = 
+		/*String query = 
 			"INSERT IGNORE INTO " + PlayerHandler.PlayerDataKeys.PLAYER_TABLE +
 			" (" + PlayerHandler.PlayerDataKeys.UUID + ", " + 
 			PlayerHandler.PlayerDataKeys.DISPLAY_NAME + ", " + 
 			PlayerHandler.PlayerDataKeys.NAME +
-			") VALUES (?, ?, ?);";
+			") VALUES (?, ?, ?);";*/
+		
+		String query = "INSERT INTO " + PlayerHandler.PlayerDataKeys.PLAYER_TABLE + 
+				" (" + PlayerHandler.PlayerDataKeys.UUID + ", " +
+				PlayerHandler.PlayerDataKeys.DISPLAY_NAME + ", " +
+				PlayerHandler.PlayerDataKeys.NAME +
+				") VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE " +
+				PlayerHandler.PlayerDataKeys.NAME + " = ?;";
 		
 		//Save the players data to the database
 		try {
@@ -114,6 +168,7 @@ public class KPlayerJoin implements Listener{
 			st.setString(1, player.getUniqueId().toString());
 			st.setString(2, player.getDisplayName());
 			st.setString(3, player.getName());
+			st.setString(4, player.getName());
 			
 			st.executeUpdate();
 			st.close();

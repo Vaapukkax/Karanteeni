@@ -30,23 +30,17 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		//Check that all arguments exist
-		if(args.length == 3)
-		{
-			if(this.getRealParam(args[0]).equalsIgnoreCase("give"))
-			{
+		if(args.length == 3) {
+			if(this.getRealParam(args[0]).equalsIgnoreCase("give")) {
 				giveCMD(sender, args);
 			}
-			else if(this.getRealParam(args[0]).equalsIgnoreCase("take"))
-			{
+			else if(this.getRealParam(args[0]).equalsIgnoreCase("take")) {
 				takeCMD(sender, args);
 			}
-			else if(this.getRealParam(args[0]).equalsIgnoreCase("set"))
-			{
+			else if(this.getRealParam(args[0]).equalsIgnoreCase("set")) {
 				setCMD(sender, args);
 			}
-		}
-		else
-		{
+		} else {
 			//Player typed command incorrectly, send help to the command
 			sendHelp(sender);
 		}
@@ -54,10 +48,8 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		return true;
 	}
 	
-	private void giveCMD(CommandSender sender, String[] args) 
-	{
-		if(!sender.hasPermission("kcurrency.eco.give"))
-		{
+	private void giveCMD(CommandSender sender, String[] args)  {
+		if(!sender.hasPermission("kcurrency.eco.give")) {
 			KCurrency.getMessager().sendMessage(
 					sender, 
 					Sounds.NO.get(), 
@@ -67,8 +59,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
 		//Check if player was found
-		if(uuid == null)
-		{
+		if(uuid == null) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
 			return;
 		}
@@ -76,8 +67,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		double amount = TextUtil.parseDouble(args[2]);
 		
 		//Check if the double is valid
-		if(Double.isNaN(amount) || amount < 0.001)
-		{
+		if(Double.isNaN(amount) || amount < 0.01) {
 			sendInvalidNumber(sender);
 			return;
 		}
@@ -86,33 +76,28 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		Double result = ecoGive(uuid, amount);
 		
 		//Player does not exist
-		if(result == null)
-		{
+		if(result == null) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-		}
-		else if(Double.isNaN(result))
-		{
+		} else if(Double.isNaN(result)) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
 					Prefix.NEGATIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "payment-failed"));
-		}
-		else
-		{
+		} else {
 			//Send the confirmation message to the command executor that the command succeeded
 			KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_RECEIVED, 
 					Prefix.POSITIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "give-balance-of")
 					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-					.replace("%amount%", String.format("%.3f", amount))
-					.replace("%newbal%", String.format("%.3f", result))
+					.replace("%amount%", String.format("%.2f", amount))
+					.replace("%newbal%", String.format("%.2f", result))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
 			
-			if(Bukkit.getPlayer(uuid).isOnline())
-			{
+			Player player = Bukkit.getPlayer(uuid);
+			if(player != null && player.isOnline()) {
 				BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
 						KCurrency.getPlugin(KCurrency.class), 
 						Bukkit.getPlayer(uuid), "you-received")
-						.replace("%amount%", String.format("%.3f", amount))
+						.replace("%amount%", String.format("%.2f", amount))
 						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
 						, BarColor.GREEN, BarStyle.SOLID);
 				
@@ -121,10 +106,8 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		}
 	}
 	
-	private void takeCMD(CommandSender sender, String[] args) 
-	{
-		if(!sender.hasPermission("kcurrency.eco.take"))
-		{
+	private void takeCMD(CommandSender sender, String[] args)  {
+		if(!sender.hasPermission("kcurrency.eco.take")) {
 			KCurrency.getMessager().sendMessage(
 					sender, 
 					Sounds.NO.get(), 
@@ -134,8 +117,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
 		//Check if player was found
-		if(uuid == null)
-		{
+		if(uuid == null) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
 			return;
 		}
@@ -143,8 +125,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		double amount = TextUtil.parseDouble(args[2]);
 		
 		//Check if the double is valid
-		if(Double.isNaN(amount) || amount < 0.001)
-		{
+		if(Double.isNaN(amount) || amount < 0.01) {
 			sendInvalidNumber(sender);
 			return;
 		}
@@ -153,32 +134,27 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		Double result = ecoTake(uuid, amount);
 		
 		//Player does not exist
-		if(result == null)
-		{
+		if(result == null) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-		}
-		else if(Double.isNaN(result))
-		{
+		} else if(Double.isNaN(result)) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
 					Prefix.NEGATIVE + KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "payment-failed"));
-		}
-		else
-		{
+		} else {
 			//Send the confirmation message to the command executor that the command succeeded
 			KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_LOST, 
 					Prefix.POSITIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "take-balance-of")
 					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-					.replace("%amount%", String.format("%.3f", amount))
-					.replace("%newbal%", String.format("%.3f", result))
+					.replace("%amount%", String.format("%.2f", amount))
+					.replace("%newbal%", String.format("%.2f", result))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
 			
-			if(Bukkit.getPlayer(uuid).isOnline())
-			{
+			Player player = Bukkit.getPlayer(uuid);
+			if(player != null && player.isOnline()) {
 				BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
 						KCurrency.getPlugin(KCurrency.class), 
 						Bukkit.getPlayer(uuid), "you-lost")
-						.replace("%amount%", String.format("%.3f", amount))
+						.replace("%amount%", String.format("%.2f", amount))
 						.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
 						, BarColor.GREEN, BarStyle.SOLID);
 				
@@ -187,10 +163,8 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		}
 	}
 	
-	private void setCMD(CommandSender sender, String[] args) 
-	{
-		if(!sender.hasPermission("kcurrency.eco.set"))
-		{
+	private void setCMD(CommandSender sender, String[] args)  {
+		if(!sender.hasPermission("kcurrency.eco.set")) {
 			KCurrency.getMessager().sendMessage(
 					sender, 
 					Sounds.NO.get(), 
@@ -200,8 +174,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(args[1]);
 		//Check if player was found
-		if(uuid == null)
-		{
+		if(uuid == null) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
 			return;
 		}
@@ -209,8 +182,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		double amount = TextUtil.parseDouble(args[2]);
 		
 		//Check if the double is valid
-		if(Double.isNaN(amount) || amount < 0.001)
-		{
+		if(Double.isNaN(amount) || amount < 0.01) {
 			sendInvalidNumber(sender);
 			return;
 		}
@@ -219,27 +191,23 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 		boolean result = ecoSet(uuid, amount);
 		
 		//Player does not exist
-		if(!result)
-		{
+		if(!result) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + KCurrency.getDefaultMsgs().playerNotFound(sender, args[1]));
-		}
-		else
-		{
+		} else {
 			//Send the confirmation message to the command executor that the command succeeded
 			KCurrency.getMessager().sendMessage(sender, KCurrency.MONEY_RECEIVED,
 					Prefix.POSITIVE + 
 					KCurrency.getTranslator().getTranslation(KCurrency.getPlugin(KCurrency.class), sender, "set-balance-of")
 					.replace("%player%", KCurrency.getPlayerHandler().getOfflineName(uuid))
-					.replace("%amount%", String.format("%.3f", amount))
+					.replace("%amount%", String.format("%.2f", amount))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit()));
 		}
 		
-		if(Bukkit.getPlayer(uuid) != null && Bukkit.getPlayer(uuid).isOnline())
-		{
+		if(Bukkit.getPlayer(uuid) != null && Bukkit.getPlayer(uuid).isOnline()) {
 			BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getTranslation(
 					KCurrency.getPlugin(KCurrency.class), 
 					Bukkit.getPlayer(uuid), "your-balance-set")
-					.replace("%amount%", String.format("%.3f", amount))
+					.replace("%amount%", String.format("%.2f", amount))
 					.replace("%unit%", KCurrency.getPlugin(KCurrency.class).getConfigHandler().getCurrencyUnit())
 					, BarColor.GREEN, BarStyle.SOLID);
 			KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(uuid), KCurrency.MONEY_RECEIVED, 3, 1, true, bar);
@@ -250,8 +218,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 	 * Player typed an invalid number. Sends the error message
 	 * @param sender
 	 */
-	private void sendInvalidNumber(CommandSender sender)
-	{
+	private void sendInvalidNumber(CommandSender sender) {
 		KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + 
 			KCurrency.getTranslator().getTranslation(
 					KCurrency.getPlugin(KCurrency.class), (Player)sender, "min-amount").replace("%unit%", 
@@ -262,8 +229,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 	 * Sends the help message to player
 	 * @param sender
 	 */
-	private void sendHelp(CommandSender sender)
-	{
+	private void sendHelp(CommandSender sender) {
 		KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE + "/eco <give/take/set> <player> <amount>");
 	}
 	
@@ -272,8 +238,7 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 	 * @param player
 	 * @param amount
 	 */
-	private Double ecoGive(final UUID uuid, double amount)
-	{
+	private Double ecoGive(final UUID uuid, double amount) {
 		return KCurrency.getBalances().addToBalance(uuid, amount);
 	}
 	
@@ -283,13 +248,11 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 	 * @param amount
 	 * @return
 	 */
-	private Double ecoTake(final UUID uuid, double amount)
-	{
+	private Double ecoTake(final UUID uuid, double amount) {
 		return KCurrency.getBalances().removeFromBalance(uuid, amount);
 	}
 	
-	private boolean ecoSet(final UUID uuid, double amount)
-	{
+	private boolean ecoSet(final UUID uuid, double amount) {
 		return KCurrency.getBalances().setBalance(uuid, amount);
 	}
 
@@ -310,11 +273,9 @@ public class Eco extends AbstractCommand implements CommandExecutor,TranslationC
 			String realParam = getRealParam(args[0]);
 			if(realParam.equals("give") && sender.hasPermission("kcurrency.eco.give")) {
 				return getPlayerNames(args[1]);
-			}
-			else if(realParam.equals("take") && sender.hasPermission("kcurrency.eco.take")) {
+			} else if(realParam.equals("take") && sender.hasPermission("kcurrency.eco.take")) {
 				return getPlayerNames(args[1]);			
-			}
-			else if(realParam.equals("set") && sender.hasPermission("kcurrency.eco.set")) {
+			} else if(realParam.equals("set") && sender.hasPermission("kcurrency.eco.set")) {
 				return getPlayerNames(args[1]);
 			}
 		}

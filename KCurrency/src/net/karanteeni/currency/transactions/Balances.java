@@ -17,8 +17,7 @@ public class Balances {
 	 * @param uuid
 	 * @return
 	 */
-	public Double getBalance(UUID uuid)
-	{
+	public Double getBalance(UUID uuid) {
 		try {
 			if(!confirmAccountExistance(uuid))
 				return null;
@@ -29,8 +28,7 @@ public class Balances {
 					KCurrency.getTableName()+" WHERE "+
 					KCurrency.getUUIDName()+"='"+uuid+"'");
 			
-			if(rs.first())
-			{
+			if(rs.first()) {
 				double bal = rs.getDouble(1);
 				st.close();
 				return bal;
@@ -41,13 +39,13 @@ public class Balances {
 		}
 	}
 	
+	
 	/**
 	 * Returns the balance of a player
 	 * @param name
 	 * @return
 	 */
-	public Double getBalance(String name)
-	{
+	public Double getBalance(String name) {
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 		
 		if(!confirmAccountExistance(uuid))
@@ -56,14 +54,14 @@ public class Balances {
 		return getBalance(uuid);
 	}
 	
+	
 	/**
 	 * Set the balance of a player to a value
 	 * @param uuid
 	 * @param amount
 	 * @return
 	 */
-	public boolean setBalance(UUID uuid, double amount)
-	{
+	public boolean setBalance(UUID uuid, double amount) {
 		try {
 			if(!confirmAccountExistance(uuid))
 				return false;
@@ -78,14 +76,14 @@ public class Balances {
 		}
 	}
 	
+	
 	/**
 	 * Set the balance of a player to a value
 	 * @param name
 	 * @param amount
 	 * @return
 	 */
-	public boolean setBalance(String name, double amount)
-	{
+	public boolean setBalance(String name, double amount) {
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 		
 		if(!confirmAccountExistance(uuid))
@@ -94,14 +92,14 @@ public class Balances {
 		return setBalance(uuid, amount);
 	}
 	
+	
 	/**
 	 * Adds money for player
 	 * @param uuid
 	 * @param amount
 	 * @return NaN if balance not found/error adding and null if player does not exist on global server
 	 */
-	public Double addToBalance(UUID uuid, double amount)
-	{
+	public Double addToBalance(UUID uuid, double amount) {
 		try {
 			if(!confirmAccountExistance(uuid))
 				return null;
@@ -121,14 +119,14 @@ public class Balances {
 		}
 	}
 	
+	
 	/**
 	 * Adds money for player
 	 * @param name
 	 * @param amount
 	 * @return NaN if balance not found/error adding and null if player does not exist on global server
 	 */
-	public Double addToBalance(String name, double amount)
-	{
+	public Double addToBalance(String name, double amount) {
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 		
 		if(!confirmAccountExistance(uuid))
@@ -137,14 +135,14 @@ public class Balances {
 		return addToBalance(uuid, amount);
 	}
 	
+	
 	/**
 	 * Adds money for player
 	 * @param uuid
 	 * @param amount
 	 * @return NaN if balance not found/error adding
 	 */
-	public Double removeFromBalance(UUID uuid, double amount)
-	{
+	public Double removeFromBalance(UUID uuid, double amount) {
 		try {
 			if(!confirmAccountExistance(uuid))
 				return null;
@@ -165,14 +163,14 @@ public class Balances {
 		}
 	}
 	
+	
 	/**
 	 * Adds money for player
 	 * @param name
 	 * @param amount
 	 * @return NaN if balance not found/error adding
 	 */
-	public Double removeFromBalance(String name, double amount)
-	{
+	public Double removeFromBalance(String name, double amount) {
 		UUID uuid = KCurrency.getPlayerHandler().getUUID(name);
 		if(!confirmAccountExistance(uuid))
 			return null;
@@ -180,12 +178,12 @@ public class Balances {
 		return removeFromBalance(uuid, amount);
 	}
 	
+	
 	/**
 	 * Creates an account for player on this server if it does not yet exist
 	 * @param uuid
 	 */
-	private boolean confirmAccountExistance(UUID uuid)
-	{
+	private boolean confirmAccountExistance(UUID uuid) {
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return false;
 		

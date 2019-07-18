@@ -2,17 +2,15 @@ package net.karanteeni.karanteenials.player.home;
 
 import java.util.Collection;
 import java.util.UUID;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
-import net.karanteeni.groups.KaranteeniPerms;
-import net.karanteeni.groups.player.Group;
+import net.karanteeni.karanteeniperms.KaranteeniPerms;
+import net.karanteeni.karanteeniperms.groups.player.Group;
 
 public class SetHomeCommand extends AbstractCommand {
 	private int distanceLimit = 10;

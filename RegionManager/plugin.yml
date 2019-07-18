@@ -1,0 +1,9 @@
+main: net.karanteeni.utilika.Utilika
+name: RegionManager
+version: 1.0
+author: Nuubles
+description: Manages region flags events dependecies to WE and WG etc.
+api-version: 1.13
+depend: [KaranteeniCore]
+softdepend: [WorldEdit, WorldGuard]
+database: true

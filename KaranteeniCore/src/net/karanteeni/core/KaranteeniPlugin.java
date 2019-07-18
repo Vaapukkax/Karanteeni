@@ -54,8 +54,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	/**
 	 * A new instance of KaranteeniPlugin is created
 	 */
-	public KaranteeniPlugin(boolean usesTranslator)
-	{
+	public KaranteeniPlugin(boolean usesTranslator) {
 		super();
 		this.usesTranslation = usesTranslator;
 		
@@ -74,8 +73,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 		/** Loads the server ID */
 		if(this.getConfig().isSet(SERVERID))
 			serverID = this.getConfig().getString(SERVERID);
-		else
-		{
+		else {
 			this.getConfig().set(SERVERID, TextUtil.getRandomString(5, true));
 			serverID = this.getConfig().getString(SERVERID);
 			this.saveConfig();
@@ -85,15 +83,13 @@ public class KaranteeniPlugin extends JavaPlugin {
 	/**
 	 * Called when the core plugin is enabled
 	 */
-	protected void enable()
-	{
+	protected void enable() {
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		translator = new Translator();
 		cfgm = new ConfigManager();
 		
 		//Connect to database
-		if(dbConnector == null)
-		{
+		if(dbConnector == null) {
 			dbConnector = createDatabaseConnector();
 			if(dbConnector.isConnected())
 				createTables();
@@ -147,39 +143,33 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Connects to mysql database according to config
 	 * @return
 	 */
-	private DatabaseConnector createDatabaseConnector()
-	{
+	private DatabaseConnector createDatabaseConnector() {
 		//Load host, database, username, password and port from config
-		if(!this.getConfig().isSet("Database.host"))
-		{
+		if(!this.getConfig().isSet("Database.host")) {
 			this.getConfig().set("Database.host", "localhost");
 			this.saveConfig();
 		}
 		String host = this.getConfig().getString("Database.host");
 		
-		if(!this.getConfig().isSet("Database.database"))
-		{
+		if(!this.getConfig().isSet("Database.database")) {
 			this.getConfig().set("Database.database", "Karanteeni");
 			this.saveConfig();
 		}
 		String database = this.getConfig().getString("Database.database");
 		
-		if(!this.getConfig().isSet("Database.user"))
-		{
+		if(!this.getConfig().isSet("Database.user")) {
 			this.getConfig().set("Database.user", "root");
 			this.saveConfig();
 		}
 		String user = this.getConfig().getString("Database.user");
 		
-		if(!this.getConfig().isSet("Database.password"))
-		{
+		if(!this.getConfig().isSet("Database.password")) {
 			this.getConfig().set("Database.password", "");
 			this.saveConfig();
 		}
 		String password = this.getConfig().getString("Database.password");
 		
-		if(!this.getConfig().isSet("Database.port"))
-		{
+		if(!this.getConfig().isSet("Database.port")) {
 			this.getConfig().set("Database.port", 3306);
 			this.saveConfig();
 		}
@@ -191,10 +181,12 @@ public class KaranteeniPlugin extends JavaPlugin {
 	/**
 	 * Called when the core plugin is disabled
 	 */
-	public void disable()
-	{
+	protected void disable() {
+		// close database connection
 		if(dbConnector != null && dbConnector.isConnected())
 			dbConnector.closeConnection();
+		// stop all the timers
+		timerInitiater.closeTimers();
 	}
 	
 	/**
@@ -202,8 +194,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * tick based timers
 	 * @return Registrer of timers
 	 */
-	public final static KaranteeniTimerInitiater getTimerHandler()
-	{
+	public final static KaranteeniTimerInitiater getTimerHandler() {
 		return timerInitiater;
 	}
 	
@@ -211,8 +202,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Return the soundhandler which will play sound to a player
 	 * @return the plugins soundhandler
 	 */
-	public final static SoundHandler getSoundHandler()
-	{
+	public final static SoundHandler getSoundHandler() {
 		return soundHandler;
 	}
 	
@@ -220,13 +210,11 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the messagehandler for this plugin
 	 * @return
 	 */
-	public final static Messager getMessager()
-	{
+	public final static Messager getMessager() {
 		return messager;
 	}
 	
-	public final static DatabaseConnector getDatabaseConnector()
-	{
+	public final static DatabaseConnector getDatabaseConnector() {
 		return dbConnector;
 	}
 	
@@ -246,8 +234,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * }
 	 * @return
 	 */
-	public final static Translator getTranslator()
-	{
+	public final static Translator getTranslator() {
 		return translator;
 	}
 	
@@ -255,8 +242,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the entitymanager of this plugin
 	 * @return
 	 */
-	public final static EntityManager getEntityManager()
-	{
+	public final static EntityManager getEntityManager() {
 		return entityManager;
 	}
 	
@@ -265,8 +251,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Useful for translation unit usage
 	 * @return
 	 */
-	public final static List<KaranteeniPlugin> getPluginInstances()
-	{
+	public final static List<KaranteeniPlugin> getPluginInstances() {
 		return new ArrayList<KaranteeniPlugin>(kPluginInstances.values());
 	}
 	
@@ -275,8 +260,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * @param string
 	 * @return
 	 */
-	public final KaranteeniPlugin getPluginInstance(String string)
-	{
+	public final KaranteeniPlugin getPluginInstance(String string) {
 		return (KaranteeniPlugin) kPluginInstances.get(string);
 	}
 	
@@ -284,8 +268,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns whether this plugin uses the Core Translator service
 	 * @return
 	 */
-	public final boolean pluginUsesTranslator()
-	{
+	public final boolean pluginUsesTranslator() {
 		return this.usesTranslation;
 	}
 	
@@ -293,8 +276,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the blockmanager of the coreplugin
 	 * @return
 	 */
-	public final static BlockManager getBlockManager()
-	{
+	public final static BlockManager getBlockManager() {
 		return blockManager;
 	}
 	
@@ -302,8 +284,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the ID of this server
 	 * @return
 	 */
-	public final static String getServerIdentificator()
-	{
+	public final static String getServerIdentificator() {
 		return serverID;
 	}
 	
@@ -311,8 +292,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the DefaultMessages class which contains some default messages for children
 	 * @return
 	 */
-	public final static DefaultMessages getDefaultMsgs()
-	{
+	public final static DefaultMessages getDefaultMsgs() {
 		return defaultMessages;
 	}
 	
@@ -320,8 +300,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the configmanager of the core plugin
 	 * @return
 	 */
-	public static ConfigManager getConfigManager()
-	{
+	public static ConfigManager getConfigManager() {
 		return cfgm;
 	}
 	
@@ -329,8 +308,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the PlayerHandler of the coreplugin
 	 * @return
 	 */
-	public final static PlayerHandler getPlayerHandler()
-	{
+	public final static PlayerHandler getPlayerHandler() {
 		return playerHandler;
 	}
 	
@@ -338,8 +316,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 * Returns the itemmanager of the coreplugin
 	 * @return
 	 */
-	public final static ItemManager getItemManager()
-	{
+	public final static ItemManager getItemManager() {
 		return itemManager;
 	}
 	

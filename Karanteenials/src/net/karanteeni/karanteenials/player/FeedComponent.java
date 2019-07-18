@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import net.karanteeni.core.command.CommandComponent;
+import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.information.sounds.SoundType;
 import net.karanteeni.core.information.sounds.Sounds;
@@ -22,25 +23,19 @@ public class FeedComponent extends CommandComponent implements TranslationContai
 	
 
 	@Override
-	protected boolean runComponent(CommandSender sender, Command arg1, String arg2, String[] arg3) {
+	protected CommandResult runComponent(CommandSender sender, Command arg1, String arg2, String[] arg3) {
 		List<Player> players = this.chainer.getList("core.players");
 		
 		// no players given, feed self
 		if(players == null) {
 			// if console, prevent
 			if(!(sender instanceof Player)) {
-				Karanteenials.getMessager().sendMessage(
-						sender, 
-						Sounds.NO.get(),
-						Prefix.NEGATIVE +
-						Karanteenials.getDefaultMsgs().defaultNotForConsole());
-				return false;
+				return CommandResult.NOT_FOR_CONSOLE;
 			}
 			
 			// does sender have the required permission
 			if(!sender.hasPermission("karanteenials.player.command.feed.self")) {
-				this.noPermission(sender);
-				return false;
+				return CommandResult.NO_PERMISSION;
 			}
 			
 			((Player)sender).setExhaustion(0);
@@ -56,12 +51,12 @@ public class FeedComponent extends CommandComponent implements TranslationContai
 					Karanteenials.getTranslator().getTranslation(
 							this.chainer.getPlugin(), 
 							sender, "player-command.feed-self"));
+			return CommandResult.SUCCESS;
 		} else {
 			// feed multiple players
 			// does sender have the required permission
 			if(!sender.hasPermission("karanteenials.player.command.feed.other")) {
-				this.noPermission(sender);
-				return false;
+				return CommandResult.NO_PERMISSION;
 			}
 			
 			// loop and feed each player
@@ -89,15 +84,9 @@ public class FeedComponent extends CommandComponent implements TranslationContai
 							sender, 
 							"player-command.feed-others")
 					.replace("%players%", ArrayFormat.joinSort(ArrayFormat.playersToArray(players), ", ")));
-			return true;
+			return CommandResult.SUCCESS;
 		}
-		
-		return false;
 	}
-	
-	
-	@Override
-	public void invalidArguments(CommandSender sender) { }
 	
 
 	@Override

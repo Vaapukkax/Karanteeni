@@ -6,18 +6,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
-
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
-
 import net.karanteeni.core.KaranteeniPlugin;
 
-public class KPlayer {
+public class KPlayer implements Listener {
 	//Player held by this KPlayer class
 	private final Player player;
+	private boolean invincible = false;
 	
 	/* List of all players */
 	private static final Map<UUID, KPlayer> players = new HashMap<UUID, KPlayer>();
@@ -34,13 +34,11 @@ public class KPlayer {
 	 * may still remain if player is rejoining
 	 * @param player Player of this KPlayer
 	 */
-	protected KPlayer(Player player)
-	{
+	protected KPlayer(Player player) {
 		this.player = player;		
 		players.put(player.getUniqueId(), this); //Put player to list
 		//Load player cache
-		if(cache.containsKey(player.getUniqueId()))
-		{
+		if(cache.containsKey(player.getUniqueId())) {
 			//Load and remove cache from memory
 			HashMap<NamespacedKey, Entry<Object, Boolean>> data = clearCache(player.getUniqueId());
 			if(data != null) //Set data only if it's not null
@@ -48,15 +46,16 @@ public class KPlayer {
 		}
 	}
 	
+	
 	/**
 	 * Returns the KPlayer entity
 	 * @param player
 	 * @returnQ
 	 */
-	public static KPlayer getKPlayer(Player player)
-	{
+	public static KPlayer getKPlayer(Player player) {
 		return players.get(player.getUniqueId());
 	}
+	
 	
 	/**
 	 * Checks if KPlayer has still cached data in memory
@@ -66,12 +65,12 @@ public class KPlayer {
 	protected static boolean hasCachedData(UUID uuid)
 	{ return cache.containsKey(uuid); }
 	
+	
 	/**
 	 * Destroys this instance of KPlayer and
 	 * saves the cache of this player
 	 */
-	public void destroy()
-	{
+	public void destroy() {
 		HashMap<NamespacedKey, Entry<Object, Boolean>> data = players.remove(player.getUniqueId()).playerData;
 		HashMap<NamespacedKey, Entry<Object, Boolean>> storable = new HashMap<NamespacedKey, Entry<Object, Boolean>>();
 		
@@ -86,43 +85,61 @@ public class KPlayer {
 			cache.put(player.getUniqueId(), storable);
 	}
 	
+	
 	/**
 	 * Clears the cache held by KPlayer but may not clear all cache data in
 	 * other places
 	 * @param uuid UUID of player to remove the cache
 	 * @return cached data
 	 */
-	public static HashMap<NamespacedKey, Entry<Object,Boolean>> clearCache(UUID uuid)
-	{
+	public static HashMap<NamespacedKey, Entry<Object,Boolean>> clearCache(UUID uuid) {
 		return cache.remove(uuid);
 	}
+	
 	
 	/**
 	 * Fades in a red screen effect to player
 	 * @param percentage
 	 */
-	public void fadeInScreenTint(int percentage, long time)
-	{
+	public void fadeInScreenTint(int percentage, long time) {
 		(new RedScreenTint()).fadeInBorder(player, percentage, time);
 	}
+	
 	
 	/**
 	 * Fades out a red screen effect to player
 	 * @param percentage
 	 */
-	public void fadeOutScreenTint(int percentage, long time)
-	{
+	public void fadeOutScreenTint(int percentage, long time) {
 		(new RedScreenTint()).fadeOutBorder(player, percentage, time);
 	}
+	
 	
 	/**
 	 * Sets a red screen effect to player
 	 * @param percentage
 	 */
-	public void setScreenTint(int percentage)
-	{
+	public void setScreenTint(int percentage) {
 		(new RedScreenTint()).setBorder(player, percentage);
 	}
+
+	
+	/**
+	 * Check if this player is invincible
+	 * @return true if player is invincible, false if not
+	 */
+	public boolean isInvincible() {
+		return this.invincible;
+	}
+	
+	
+	/**
+	 * Set the invincibility of player
+	 */
+	public void setInvincible(boolean invincible) {
+		this.invincible = invincible;
+	}
+	
 	
 	/**
 	 * Sets a specific data for player
@@ -130,11 +147,11 @@ public class KPlayer {
 	 * @param data data to store
 	 * @return previous data if exists
 	 */
-	public Object setData(final NamespacedKey key, final Object data)
-	{
+	public Object setData(final NamespacedKey key, final Object data) {
 		return playerData.put(key, new SimpleEntry<Object,Boolean>(data,false));
 	}
 	
+	
 	/**
 	 * Sets a specific data to player
 	 * @param plugin which plugin does this data belong to
@@ -142,10 +159,10 @@ public class KPlayer {
 	 * @param data the data to be stores
 	 * @return previous data if exists
 	 */
-	public Object setData(final KaranteeniPlugin plugin, final String key, final Object data)
-	{
+	public Object setData(final KaranteeniPlugin plugin, final String key, final Object data) {
 		return playerData.put(new NamespacedKey(plugin, key), new SimpleEntry<Object,Boolean>(data,false));
 	}
+	
 	
 	/**
 	 * Sets a specific data for player
@@ -153,10 +170,10 @@ public class KPlayer {
 	 * @param data data to store
 	 * @return previous data if exists
 	 */
-	public Object setCacheData(final NamespacedKey key, final Object data)
-	{
+	public Object setCacheData(final NamespacedKey key, final Object data) {
 		return playerData.put(key, new SimpleEntry<Object,Boolean>(data,true));
 	}
+	
 	
 	/**
 	 * Sets a specific data to player
@@ -165,70 +182,69 @@ public class KPlayer {
 	 * @param data the data to be stores
 	 * @return previous data if exists
 	 */
-	public Object setCacheData(final KaranteeniPlugin plugin, final String key, final Object data)
-	{
+	public Object setCacheData(final KaranteeniPlugin plugin, final String key, final Object data) {
 		return playerData.put(new NamespacedKey(plugin, key), new SimpleEntry<Object,Boolean>(data,true));
 	}	
 	
-	/**
-	 * Tests if player has data assosiated for this key
-	 * @param key
-	 * @return
-	 */
-	public boolean dataExists(final NamespacedKey key)
-	{
-		return playerData.containsKey(key);
-	}
 	
 	/**
 	 * Tests if player has data assosiated for this key
 	 * @param key
 	 * @return
 	 */
-	public boolean dataExists(final Plugin plugin, final String key)
-	{
+	public boolean dataExists(final NamespacedKey key) {
+		return playerData.containsKey(key);
+	}
+	
+	
+	/**
+	 * Tests if player has data assosiated for this key
+	 * @param key
+	 * @return
+	 */
+	public boolean dataExists(final Plugin plugin, final String key) {
 		return playerData.containsKey(new NamespacedKey(plugin, key));
 	}
+	
 	
 	/**
 	 * Deletes a data associated to key and returns it
 	 * @param key
 	 * @return data deleted
 	 */
-	public Object removeData(final Plugin plugin, final String key)
-	{
+	public Object removeData(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.remove(new NamespacedKey(plugin, key));
 		if(entry != null)
 			return entry.getKey();
 		return null;
 	}
 	
+	
 	/**
 	 * Deletes a data associated to key and returns it
 	 * @param key
 	 * @return data deleted
 	 */
-	public Object removeData(final NamespacedKey key)
-	{
+	public Object removeData(final NamespacedKey key) {
 		return playerData.remove(key);
 	}
+	
 	
 	/**
 	 * Returns the player associated with this class
 	 * @return
 	 */
-	public Player getPlayer()
-	{
+	public Player getPlayer() {
 		return player;
 	}
 		
+	
 	/**
 	 * Gets nonspecific datavalue from players data
 	 * @param key
 	 * @return
 	 */
-	public Object getData(final NamespacedKey key)
-	{
+	public Object getData(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		
 		if(entry == null)
@@ -236,13 +252,28 @@ public class KPlayer {
 		return entry.getKey();
 	}
 	
+	
 	/**
 	 * Gets nonspecific datavalue from players data
 	 * @param key
 	 * @return
 	 */
-	public List<?> getList(final NamespacedKey key)
-	{
+	@SuppressWarnings("unchecked")
+	public <T> T getObject(final NamespacedKey key) throws ClassCastException {
+		Entry<Object,Boolean> entry = playerData.get(key);
+		
+		if(entry == null)
+			return null;
+		return (T)entry.getKey();
+	}
+	
+	
+	/**
+	 * Gets nonspecific datavalue from players data
+	 * @param key
+	 * @return
+	 */
+	public List<?> getList(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -252,13 +283,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Is the boolean data stored to player true or false
 	 * @param key data to find
 	 * @return boolean data value or false if not found
 	 */
-	public boolean getBoolean(final NamespacedKey key)
-	{
+	public boolean getBoolean(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return false;
@@ -270,24 +301,24 @@ public class KPlayer {
 		return false;
 	}
 	
+	
 	/**
 	 * Drops the given items at the location of the player
 	 * @param items
 	 */
-	public void dropItemsAtPlayer(List<ItemStack> items)
-	{
+	public void dropItemsAtPlayer(List<ItemStack> items) {
 		Location l = player.getLocation();
 		for(ItemStack item : items)
 			l.getWorld().dropItemNaturally(l, item);
 	}
+	
 	
 	/**
 	 * Returns a string data from player
 	 * @param key
 	 * @return
 	 */
-	public String getString(final NamespacedKey key)
-	{
+	public String getString(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -298,13 +329,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a float data from player
 	 * @param key
 	 * @return
 	 */
-	public Float getFloat(final NamespacedKey key)
-	{
+	public Float getFloat(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -315,13 +346,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a double data from player
 	 * @param key
 	 * @return
 	 */
-	public Double getDouble(final NamespacedKey key)
-	{
+	public Double getDouble(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -332,13 +363,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns an integer data from player
 	 * @param key
 	 * @return
 	 */
-	public Integer getInt(final NamespacedKey key)
-	{
+	public Integer getInt(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -349,13 +380,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a character data from player
 	 * @param key
 	 * @return
 	 */
-	public Character getChar(final NamespacedKey key)
-	{
+	public Character getChar(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -366,13 +397,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a location data from player
 	 * @param key
 	 * @return
 	 */
-	public Location getLocationData(final NamespacedKey key)
-	{
+	public Location getLocationData(final NamespacedKey key) {
 		Entry<Object,Boolean> entry = playerData.get(key);
 		if(entry == null)
 			return null;
@@ -383,13 +414,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Gets nonspecific datavalue from players data
 	 * @param key
 	 * @return
 	 */
-	public Object getData(final Plugin plugin, final String key)
-	{
+	public Object getData(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;
@@ -397,13 +428,28 @@ public class KPlayer {
 		return entry.getKey();
 	}
 	
+	
+	/**
+	 * Gets nonspecific datavalue from players data
+	 * @param key
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getObject(final Plugin plugin, final String key) throws ClassCastException {
+		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
+		if(entry == null)
+			return null;
+		
+		return (T)entry.getKey();
+	}
+	
+	
 	/**
 	 * Is the boolean data stored to player true or false
 	 * @param key data to find
 	 * @return boolean data value or false if not found
 	 */
-	public boolean getBoolean(final Plugin plugin, final String key)
-	{
+	public boolean getBoolean(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return false;
@@ -414,13 +460,13 @@ public class KPlayer {
 		return false;
 	}
 	
+	
 	/**
 	 * Returns a string data from player
 	 * @param key
 	 * @return
 	 */
-	public String getString(final Plugin plugin, final String key)
-	{
+	public String getString(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;
@@ -431,13 +477,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a float data from player
 	 * @param key
 	 * @return
 	 */
-	public Float getFloat(final Plugin plugin, final String key)
-	{
+	public Float getFloat(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;
@@ -447,13 +493,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a double data from player
 	 * @param key
 	 * @return
 	 */
-	public Double getDouble(final Plugin plugin, final String key)
-	{
+	public Double getDouble(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;
@@ -463,13 +509,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns an integer data from player
 	 * @param key
 	 * @return
 	 */
-	public Integer getInt(final Plugin plugin, final String key)
-	{
+	public Integer getInt(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;
@@ -479,13 +525,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a character data from player
 	 * @param key
 	 * @return
 	 */
-	public Character getChar(final Plugin plugin, final String key)
-	{
+	public Character getChar(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;
@@ -495,13 +541,13 @@ public class KPlayer {
 		return null;
 	}
 	
+	
 	/**
 	 * Returns a location data from player
 	 * @param key
 	 * @return
 	 */
-	public Location getLocationData(final Plugin plugin, final String key)
-	{
+	public Location getLocationData(final Plugin plugin, final String key) {
 		Entry<Object,Boolean> entry = playerData.get(new NamespacedKey(plugin, key));
 		if(entry == null)
 			return null;

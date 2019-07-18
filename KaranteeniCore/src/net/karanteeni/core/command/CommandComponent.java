@@ -22,6 +22,7 @@ public abstract class CommandComponent implements ChainerInterface {
 	protected HashMap<String, CommandComponent> components;
 	protected CommandLoader execComponent;
 	protected CommandChainer chainer;
+	protected int parameterLength = 1;
 	
 	
 	/**
@@ -109,8 +110,8 @@ public abstract class CommandComponent implements ChainerInterface {
 	 * (A null return can also indicate that the map previously associated null with key.)
 	 */
 	public final CommandComponent addComponent(String parameter, CommandComponent component) {
-		if(component != null)
-			component.chainer = this.chainer;
+		if(components == null) components = new HashMap<String, CommandComponent>();
+		if(component != null) component.chainer = this.chainer;
 		component.onRegister();
 		return components.put(parameter.toLowerCase(), component);
 	}
@@ -146,17 +147,15 @@ public abstract class CommandComponent implements ChainerInterface {
 	 * @param param param to chain the components with
 	 * @return null if no components were found, true if successful run, false if incorrect parameters
 	 */
-	protected final Boolean chainComponents(String param, CommandSender sender, Command cmd, String label, String[] args) {
+	protected final CommandResult chainComponents(String param, CommandSender sender, Command cmd, String label, String[] args) {
 		if(components == null)
 			return null;
 		
 		CommandComponent comp = null;
 		
-		if(chainer != null)
-			comp = components.get(param.toLowerCase());
-		else
+		comp = components.get(param.toLowerCase());
+		if(comp == null)
 			comp = components.get(chainer.getRealParam(param));
-		
 		// if components were not found, run all of the executable components until true
 		/*if(comp == null) {
 			if(this.execComponent == null)
@@ -166,7 +165,9 @@ public abstract class CommandComponent implements ChainerInterface {
 			return this.execComponent.exec(sender, cmd, label, args);
 		}*/
 		
-		return comp.exec(sender, cmd, label, args);
+		if(comp != null)
+			return comp.exec(sender, cmd, label, args);
+		return null;
 	}
 	
 	
@@ -182,10 +183,9 @@ public abstract class CommandComponent implements ChainerInterface {
 		CommandComponent comp = null;
 		
 		// if there are components, check them first
-		if(components != null) {
-			if(chainer != null)
-				comp = components.get(param.toLowerCase());
-			else
+		if(components != null && !components.isEmpty()) {
+			comp = components.get(param.toLowerCase());
+			if(comp == null)
 				comp = components.get(chainer.getRealParam(param));
 		}
 		
@@ -196,6 +196,13 @@ public abstract class CommandComponent implements ChainerInterface {
 			// if autofill fillings was found, return them
 			if(componentAutofill != null && !componentAutofill.isEmpty())
 				return componentAutofill;
+		}
+		
+		// return the next components as autofill result
+		if(components != null && !components.isEmpty() && args.length == 1) {
+			List<String> res = this.defaultAutofill(sender, cmd, label, args);
+			if(res != null && !res.isEmpty())
+				return res;
 		}
 		
 		// run the executable component if no return from the previous components
@@ -213,10 +220,10 @@ public abstract class CommandComponent implements ChainerInterface {
 	 * @param args args where the first param is removed
 	 * @return shortened args
 	 */
-	protected String[] cutArgs(String[] args) {
-		if(args == null || args.length == 0 || args.length == 1)
+	protected String[] cutArgs(String[] args, int argLength) {
+		if(args == null || args.length == 0 || args.length <= argLength)
 			return new String[0];
-		return Arrays.copyOfRange(args, 1, args.length);
+		return Arrays.copyOfRange(args, argLength, args.length);
 	}
 	
 	
@@ -240,34 +247,60 @@ public abstract class CommandComponent implements ChainerInterface {
 	 * @param args command args
 	 * @return true if success, false if command could not be executed
 	 */
-	public boolean exec(CommandSender sender, Command cmd, String label, String[] args) {
+	public CommandResult exec(CommandSender sender, Command cmd, String label, String[] args) {
 		// check if sender has the permission to execute this parameter
 		if(!hasPermission(sender)) {
-			noPermission(sender);
-			return false;
+			noPermission(sender, 
+					CommandResult.NO_PERMISSION.getSound(), 
+					CommandResult.NO_PERMISSION.getDisplayFormat(), 
+					CommandResult.NO_PERMISSION.getMessage());
+			return CommandResult.NO_PERMISSION;
 		}
 		
 		// if there is a loader running before this, run it
-		if(this.execComponent != null && this.execComponent.isBefore())
-			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
-		
+		if(this.execComponent != null && this.execComponent.isBefore()) {
+			CommandResult result = this.execComponent.exec(sender, cmd, label, args);
+			// if the command execution a success
+			if(!CommandResult.SUCCESS.equals(result)) 
+				return result; // if incorrect result, return loader result
+		}
+			
 		// run the possible chain if there is anything to chain
-		if(args != null && args.length > 0) {
-			Boolean chainResult = chainComponents(args[0], sender, cmd, label, cutArgs(args));
+		if(args != null && args.length > parameterLength) {
+			CommandResult chainResult = chainComponents(args[parameterLength], sender, cmd, label, cutArgs(args, parameterLength+1));
 			if(chainResult != null)
 				return chainResult;
 		}
 		
 		// run the code of this component
-		boolean executed = runComponent(sender, cmd, label, args);
+		CommandResult executed = runComponent(sender, cmd, label, args);
 		
-		// if the execution if false, the given argument was invalid
-		if(!executed)
-			invalidArguments(sender);
+		// if errors in execution handle them
+		if(!CommandResult.SUCCESS.equals(executed)) {
+			if(CommandResult.INVALID_ARGUMENTS.equals(executed)) {
+				invalidArguments(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
+			} else if(CommandResult.NO_PERMISSION.equals(executed)) {
+				noPermission(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
+			} else if(CommandResult.OTHER.equals(executed)) {
+				other(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
+			} else if(CommandResult.ERROR.equals(executed)) {
+				error(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
+			} else if(CommandResult.NOT_FOR_CONSOLE.equals(executed)) {
+				notForConsole(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
+			} else if(CommandResult.ONLY_CONSOLE.equals(executed)) {
+				onlyConsole(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
+			}
+			
+			return executed;
+		}
 		
-		// if the loader is supposed to run after this, run it after this
-		if(executed && this.execComponent != null && !this.execComponent.isBefore())
-			if(!this.execComponent.exec(sender, cmd, label, args)) return false;
+		// if the loader is supposed to run after this, run it after this component execution
+		if(this.execComponent != null && !this.execComponent.isBefore()) {
+			CommandResult result = this.execComponent.exec(sender, cmd, label, args);
+			return result;
+		}
+		
+		// return the earlier execution of loader has nothing to return
 		return executed;
 	}
 	
@@ -293,7 +326,7 @@ public abstract class CommandComponent implements ChainerInterface {
 	 * and if a match is found runs that component instead
 	 * @return true if command exec was a success, false if invalid arguments
 	 */
-	protected abstract boolean runComponent(CommandSender sender, Command cmd, String label, String[] args);
+	protected abstract CommandResult runComponent(CommandSender sender, Command cmd, String label, String[] args);
 	
 	
 	/**
@@ -324,10 +357,10 @@ public abstract class CommandComponent implements ChainerInterface {
 		// run the possible chain if there is anything to chain
 		if(((components != null && !components.isEmpty()) || (execComponent != null)) 
 				&& args != null 
-				&& args.length > 1
+				&& args.length > parameterLength
 				&& chainer != null) {
 			
-			List<String> chainResult = chainAutofill(args[0], sender, cmd, label, cutArgs(args));
+			List<String> chainResult = chainAutofill(args[parameterLength], sender, cmd, label, cutArgs(args, parameterLength));
 			return chainResult;
 		}
 		

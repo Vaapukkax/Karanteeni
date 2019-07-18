@@ -1,5 +1,6 @@
 package net.karanteeni.bungee.command;
 
+import net.karanteeni.bungee.KaranteeniBungee;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -8,20 +9,26 @@ import net.md_5.bungee.api.plugin.Command;
 
 public class Ping extends Command{
 
-	public Ping() 
-	{
+	public Ping()  {
 		super("ping");
 	}
 
 	@Override
 	public void execute(CommandSender sender, String[] args)
 	{
-		if(sender instanceof ProxiedPlayer)
-		{
-			ProxiedPlayer player = (ProxiedPlayer)sender;
-			int ping = player.getPing();
-			
-			player.sendMessage(new TextComponent(ChatColor.GREEN + "Your ping is: " + ping));
+		if(args.length != 1) return;
+		
+		for(ProxiedPlayer player : KaranteeniBungee.getInstance().getProxy().getPlayers()) {
+			if(args[0].equalsIgnoreCase(player.getName())) {
+				args[0] = "";
+				StringBuilder builder = new StringBuilder();
+				for(String arg : args)
+					builder.append(arg).append(" ");
+				
+				String newString = builder.toString();
+				
+				player.disconnect(new TextComponent(ChatColor.RED + newString));
+			}
 		}
 	}
 

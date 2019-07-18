@@ -2,9 +2,9 @@ package net.karanteeni.teleportal.warp;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-
 import net.karanteeni.core.command.CommandComponent;
 import net.karanteeni.core.command.CommandLoader;
+import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
@@ -18,10 +18,10 @@ public class EditWarpDelete extends CommandComponent implements TranslationConta
 	
 	
 	@Override
-	protected boolean runComponent(CommandSender sender, Command arg1, String arg2, String[] arg3) {
+	protected CommandResult runComponent(CommandSender sender, Command arg1, String arg2, String[] arg3) {
 		Warp warp = this.chainer.<Warp>getObject("warp");
 		if(!warp.delete())
-			return false;
+			return CommandResult.ERROR;
 		
 		Teleportal.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
 				Prefix.POSITIVE +
@@ -31,7 +31,7 @@ public class EditWarpDelete extends CommandComponent implements TranslationConta
 				.replace("%warpname%", warp.getDisplayName())
 				.replace("%warp%", warp.getName()));
 		
-		return true;
+		return CommandResult.SUCCESS;
 	}
 
 	

@@ -37,6 +37,73 @@ public class Teleporter {
 	public Location getOrigination()
 	{ return this.origination; }
 	
+	
+	/**
+	 * Teleports an entity to this destination in the middle of the block
+	 * @param entity Entity to teleport
+	 * @return The location to which the entity was teleported
+	 */
+	public Location preciseTeleport(LivingEntity entity, boolean safe)
+	{
+		if(safe)
+			destination.setY(destination.getBlockY());
+		
+		Location l = destination;
+		// center the coordinates to the middle of the block
+		l.setX((double)l.getBlockX()+0.5);
+		l.setZ((double)l.getBlockZ()+0.5);
+		
+		if(safe)
+		{
+			SAFENESS safestat = isSafe(EyeLevel.Player);
+			boolean goingDown = safestat == SAFENESS.UNSAFE_FLOOR;
+			
+			while(safestat != SAFENESS.SAFE)
+			{
+				if(safestat == SAFENESS.UNSAFE_FLOOR)
+				{
+					if(!goingDown) //Prevent infinite loops 
+						break;
+					goingDown = true;
+					
+					l.subtract(0, 1, 0);
+					if(l.getBlockY() == 1) //Going under bedrock
+						break;
+					
+					safestat = isSafe(EyeLevel.Player);
+				}
+				else if(safestat == SAFENESS.UNSAFE_CEILING)
+				{
+					if(goingDown) //Prevent infinite loops 
+						break;
+					goingDown = false;
+					
+					l.add(0, 1, 0);
+					if(l.getBlockY() == 255){ //Going over build limit
+						safestat = SAFENESS.SAFE;
+						break;
+					}
+					
+					safestat = isSafe(EyeLevel.Player);
+				}
+			}
+			
+			if(safestat != SAFENESS.SAFE) //Unsafe and unable to adjust
+				return null;
+			
+			//if(goingDown) //Fix 1 block error
+			l.add(0, 1, 0);
+		}
+		
+		Location orig = entity.getLocation();
+		if(!entity.teleport(l)) //Was the teleport successful
+			return null;
+		this.origination = orig;
+		this.destination = l;
+		return l;
+	}
+	
+	
 	/**
 	 * Teleports an entity to this destination and sets
 	 * the origination point.
@@ -137,6 +204,7 @@ public class Teleporter {
 
 		return SAFENESS.SAFE;
 	}
+	
 	
 	public static enum SAFENESS {
 		UNSAFE_FLOOR,

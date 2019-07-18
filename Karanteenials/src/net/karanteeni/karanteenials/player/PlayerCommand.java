@@ -4,6 +4,7 @@ import java.util.Arrays;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import net.karanteeni.core.command.CommandChainer;
+import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.karanteenials.Karanteenials;
 
 public class PlayerCommand extends CommandChainer {
@@ -18,7 +19,7 @@ public class PlayerCommand extends CommandChainer {
 	}
 
 	@Override
-	protected boolean runCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
-		return false;
+	protected CommandResult runCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
+		return CommandResult.INVALID_ARGUMENTS;
 	}
 }

@@ -3,271 +3,279 @@
  */
 package net.karanteeni.core.inventory;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
+import java.util.HashMap;
+import java.util.LinkedList;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.sounds.Sounds;
-import net.karanteeni.core.players.KPlayer;
 
 /**
- * @author Matti
+ * Multi page inventory menu manager which automizes menu creation out of minecraft inventories.
+ * @author Nuubles
  *
  */
-public abstract class InventoryMenu implements Listener {
+public abstract class InventoryMenu<T extends KaranteeniPlugin> implements Listener {
 
-	protected Inventory inventory;
-	protected Player player;
-	private ItemStack back;
-	private ItemStack close;
-	private ItemStack empty;
-	private boolean allowClose;
-	private boolean openingClosed = false;
-
+	protected HashMap<String, InventoryBase<T>> inventories = new HashMap<String, InventoryBase<T>>();
+	protected Player player;	
+	protected LinkedList<InventoryBase<T>> history = new LinkedList<InventoryBase<T>>();
+	protected HashMap<String, Object> data = new HashMap<String, Object>();
+	KaranteeniPlugin plugin;
+	
+	private final static short RESULT_DIV = 11;
+	public static final byte 
+	SUCCESS 				= 0,
+	FAIL 					= 1,
+	CLICK 					= 2,
+	NO_PERMISSION 			= 3,
+	NEXT_PAGE 				= 4,
+	PREVIOUS_PAGE 			= 5,
+	RETURN 					= 6,
+	OPEN_PAGE 				= 7,
+	CLOSE_PAGE 				= 8,
+	CHANGE 					= 9,
+	SILENT 					= 10,
+	SUCCESS_CLOSE 				= 11,
+	FAIL_CLOSE 					= 12,
+	CLICK_CLOSE 				= 13,
+	NO_PERMISSION_CLOSE 		= 14,
+	NEXT_PAGE_CLOSE 			= 15,
+	PREVIOUS_PAGE_CLOSE 		= 16,
+	RETURN_CLOSE 				= 17,
+	OPEN_PAGE_CLOSE 			= 18,
+	CLOSE_PAGE_CLOSE 			= 19,
+	CHANGE_CLOSE 				= 20,
+	SILENT_CLOSE 				= 21,
+	SUCCESS_RETURN 			= 22,
+	FAIL_RETURN 			= 23,
+	CLICK_RETURN 			= 24,
+	NO_PERMISSION_RETURN 	= 25,
+	NEXT_PAGE_RETURN 		= 26,
+	PREVIOUS_PAGE_RETURN 	= 27,
+	RETURN_RETURN 			= 28,
+	OPEN_PAGE_RETURN 		= 29,
+	CLOSE_PAGE_RETURN 		= 30,
+	CHANGE_RETURN 			= 31,
+	SILENT_RETURN 			= 32;
+	
 	/**
 	 * Creates a new translated inventorymenu for player
 	 * @param player
 	 */
-	public InventoryMenu(KaranteeniPlugin plugin, Player player, InventoryType type, int size, boolean useEmptyItems, boolean allowClose, String title)
-	{
+	public InventoryMenu(KaranteeniPlugin plugin, Player player, InventoryBase<T> main) {
 		//Can player close this inventory
-		this.allowClose = allowClose;
 		this.player = player;
-		//Creates the inventory
-		if(type.equals(InventoryType.CHEST))
-			inventory = Bukkit.createInventory(player, size, title);
-		else
-			inventory = Bukkit.createInventory(player, type, title);
-		
-		//Create the BACK item
-		back = new ItemStack(Material.ARROW, 1);
-		ItemMeta meta = back.getItemMeta();
-		meta.setDisplayName(KaranteeniPlugin.getTranslator().getTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), player, "inventory-back"));
-		back.setItemMeta(meta);
-		
-		//Create the CLOSE item
-		close = new ItemStack(Material.BARRIER, 1);
-		meta = close.getItemMeta();
-		meta.setDisplayName(KaranteeniPlugin.getTranslator().getTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), player, "inventory-close"));
-		close.setItemMeta(meta);
-
-		//Create the EMPTY item
-		empty = new ItemStack(Material.GRAY_STAINED_GLASS_PANE, 1);
-		meta = empty.getItemMeta();
-		meta.setDisplayName(KaranteeniPlugin.getTranslator().getTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), player, "inventory-empty"));
-		empty.setItemMeta(meta);
-		
-		//Fill the inventory with empty items
-		if(useEmptyItems)
-			for(int i = 0; i < inventory.getSize(); ++i)
-				inventory.setItem(i, empty);
-		
-		//Register inventory events
-		Bukkit.getPluginManager().registerEvents(this, plugin);
-
-		//Allow subclass to fill items
-		fillItems();
-		
-		//Open inventory to player
-		openInventory();
+		//this.history.addFirst(main);
+		this.inventories.put("main", main);
+		main.setHolder(this);
 	}
-	
-	/**
-	 * Player clicks this inventory
-	 * @param event
-	 */
-	@EventHandler
-	public abstract void menuClick(InventoryClickEvent event);
 	
 	/**
 	 * Click sounds etc.
+	 * Action types are the following:
+	 * 0 - do nothing
+	 * 1 - close inventory
+	 * 2 - go to the previous inventory
 	 */
-	protected void onClick(MenuClick click)
-	{		
-		if(click == MenuClick.CLICK)
+	public void clickResult(byte click) {		
+		byte action = (byte)(click / InventoryMenu.RESULT_DIV);
+		
+		switch(click % InventoryMenu.RESULT_DIV) {
+		case InventoryMenu.CHANGE:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_CHANGE.get());
+			break;
+		case InventoryMenu.CLICK:
 			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK.get());
-		else if(click == MenuClick.SUCCESS)
-			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_SUCCESS.get());
-		else if(click == MenuClick.NO_PERMISSION)
+			break;
+		case InventoryMenu.NO_PERMISSION:
 			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_NO_PERMISSION.get());
-		else if(click == MenuClick.FAIL)
+			break;
+		case InventoryMenu.SUCCESS:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_SUCCESS.get());
+			break;
+		case InventoryMenu.CLOSE_PAGE:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_CLOSE_PAGE.get());
+			break;
+		case InventoryMenu.FAIL:
 			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_FAIL.get());
-	}
-	
-	/**
-	 * Fills the inventoryItems to this inventory
-	 */
-	protected abstract void fillItems();
-	
-	/**
-	 * Is this inventory the current inventory and is the item not null
-	 * @param inv
-	 * @param item
-	 * @return
-	 */
-	protected boolean isValid(Inventory inv, ItemStack item, Player player)
-	{
-		if(inventory.equals(inv))
-			if(item != null)
-				if(this.player.getUniqueId().equals(player.getUniqueId()))
-					return true;
-		
-		return false;
-	}
-	
-	/**
-	 * Opens this inventory to player
-	 */
-	private void openInventory()
-	{
-		if(player != null && player.isOnline())
-		{
-			Bukkit.getScheduler().scheduleSyncDelayedTask(KaranteeniCore.getPlugin(KaranteeniCore.class), new Runnable() {
-				@Override
-				public void run() {
-					//Set this inventory to be the current inventory of the player
-					KPlayer kp = KPlayer.getKPlayer(player);
-					kp.setData(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory", inventory);
-					player.openInventory(inventory);
-				}
-			}, 0);
+			break;
+		case InventoryMenu.NEXT_PAGE:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_NEXT_PAGE.get());
+			break;
+		case InventoryMenu.OPEN_PAGE:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_OPEN_PAGE.get());
+			break;
+		case InventoryMenu.PREVIOUS_PAGE:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_PREVIOUS_PAGE.get());
+			break;
+		case InventoryMenu.RETURN:
+			KaranteeniCore.getSoundHandler().playSound(player, Sounds.CLICK_RETURN.get());
+			break;
+		default:
+			break;
 		}
-		else
-			this.closeInventory();
+		
+		switch(action) {
+		case 1:
+			history.peek().close();
+			break;
+		case 2:
+			previousPage();
+			break;
+		default:
+			break;
+		}
 	}
-	
-	/**
-	 * Player drags items in this inventory
-	 * @param event
-	 */
-	@EventHandler
-	public void menuDrag(InventoryDragEvent event) 
-	{
-		if(inventory.equals(event.getInventory()) && event.getInventorySlots().size() > 1)
-			event.setCancelled(true);
-	}
-	
-	/**
-	 * Player closes this inventory
-	 * @param event
-	 */
-	@EventHandler
-	public void inventoryClose(InventoryCloseEvent event) {
-		if(event.getPlayer().getUniqueId().equals(this.player.getUniqueId()) && this.inventory.equals(event.getInventory())) {
 
-			//Get the current inventory of the player
-			KPlayer kp = KPlayer.getKPlayer((Player)event.getPlayer());
-			Object data = kp.getData(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory");
-			
-			//Can this inventory be closed this way OR is player holding different inventory
-			if(this.allowClose || (data != null && !((Inventory)data).equals(inventory)))
-			{
-				this.closeInventory();
+	
+	/**
+	 * Returns the inventory found with the given key
+	 * @param key key to look for the stored inventory
+	 * @return found inventory or null if none found
+	 */
+	public InventoryBase<T> getInventory(String key) {
+		return this.inventories.get(key);
+	}
+	
+	
+	/**
+	 * Opens the inventory with given key to player
+	 * @param key
+	 */
+	public void openInventory(String key) {
+		if(player != null && player.isOnline()) {
+			InventoryBase<T> menu = inventories.get(key);
+			if(menu != null) {
+				//InventoryBase<T> inv = this.history.peek();
+				
+				// if opening first inventory as in the first open ever don't close
+				//if(history.size() != 1 && inv != menu) {
+				InventoryBase<T> old = this.history.peek();
+				// if there's a previous inventory close it
+				if(old != null)
+					old.close();
+				
+				this.history.addFirst(menu); // to history
+				//}
+				
+				menu.openInventory(); // open the active inventory
 			}
-			else
-			{
-				if(!openingClosed)
-				{
-					openingClosed = true;
-					//Open the inventory back up to player
-					openInventory();
-					closeDenied();
-					openingClosed = false;
-				}
+		}
+	}
+
+	
+	/**
+	 * Opens the inventory with given key to player
+	 * @param key
+	 */
+	public void openInventory(String key, boolean storeInHistory) {
+		if(player != null && player.isOnline()) {
+			InventoryBase<T> menu = inventories.get(key);
+			if(menu != null) {
+				//InventoryBase<T> inv = this.history.peek();
+				
+				//if(history.size() != 1 && inv != menu) {
+					this.history.peek().close();
+					if(storeInHistory)
+						this.history.addFirst(menu); // to history
+				//}
+				menu.openInventory(); // open the active inventory
 			}
 		}
 	}
 	
-	/**
-	 * Player tries to close this inventory but is not allowed to
-	 */
-	private void closeDenied()
-	{
-		//Play the deny sound
-		KaranteeniPlugin.getSoundHandler().playSound(player, Sounds.NO.get());
-	}
 	
 	/**
-	 * Close this inventory if player leaves the game
-	 * @param event
+	 * Returns to the previous page in history;
+	 * @return true if a previous inventory is found, false if not found and inventory is closed
 	 */
-	@EventHandler
-	public void playerLeave(PlayerQuitEvent event)
-	{
-		if(event.getPlayer().getUniqueId().equals(player.getUniqueId()))
-			this.closeInventory();
-	}
-	
-	/**
-	 * Returns the empty item
-	 * @return
-	 */
-	protected ItemStack getEmpty()
-	{
-		return new ItemStack(empty);
-	}
-	
-	/**
-	 * Returns the close item
-	 * @return
-	 */
-	protected ItemStack getClose()
-	{
-		return new ItemStack(close);
-	}
-	
-	/**
-	 * Returns the back item
-	 * @return
-	 */
-	protected ItemStack getBack()
-	{
-		return new ItemStack(back);
-	}
-	
-	/**
-	 * Closes this inventory which has been opened by the player
-	 * @param p
-	 */
-	public void closeInventory() {
-		//Get the current holding inventory of the player
-		KPlayer kp = KPlayer.getKPlayer(player);
+	public boolean previousPage() {
+		history.removeFirst().close();
+		InventoryBase<T> openable = history.peek();
 		
-		//Player was found
-		if(kp != null)
-		{
-			Object data = kp.getData(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory");
-			
-			//Remove the inventory only if it is the current one
-			if(data != null && ((Inventory)data).equals(inventory))
-				KPlayer.getKPlayer(player).removeData(KaranteeniCore.getPlugin(KaranteeniCore.class), "inventory");
+		
+		if(openable == null) {
+			close();
+			return false;
+		} else {
+			openable.openInventory();
+			return true;
 		}
-		
-		InventoryClickEvent.getHandlerList().unregister(this);
-		InventoryCloseEvent.getHandlerList().unregister(this);
-		InventoryDragEvent.getHandlerList().unregister(this);
-		PlayerQuitEvent.getHandlerList().unregister(this);
-		this.allowClose = true;
-		if(player.isOnline())
-			player.closeInventory();
 	}
 	
-	public static enum MenuClick {
-		SUCCESS,
-		FAIL,
-		NO_PERMISSION,
-		CLICK;
+	
+	/**
+	 * Closes the inventory system
+	 */
+	public void close() {
+		for(InventoryBase<T> inventory : inventories.values())
+			inventory.close();
+	}
+	
+	
+	/**
+	 * Returns the currently active inventory
+	 * @return the currently active inventory
+	 */
+	public InventoryBase<T> getActiveInventory() {
+		return this.history.peek();
+	}
+	
+	
+	/**
+	 * Returns a given value from the datamap
+	 * @param key key to retrieve the object with
+	 * @return the found object
+	 */
+	@SuppressWarnings("unchecked")
+	public <V> V getObject(String key) {
+		return (V)this.data.get(key);
+	}
+	
+	
+	/**
+	 * Sets a value to the data map
+	 * @param key key to store the value with
+	 * @param value value to store
+	 * @return null or possible previous value at this location
+	 */
+	@SuppressWarnings("unchecked")
+	public <V> V setObject(String key, V value) {
+		Object t = this.data.put(key, value);
+		if(t == null) return null;
+		return (V)t;
+	}
+	
+	
+	/**
+	 * Check if there exists an inventory with the given key
+	 * @param key key the inventory is stored with
+	 * @return true if inventory exists, false otherwise
+	 */
+	public boolean hasInventory(String key) {
+		return this.inventories.containsKey(key);
+	}
+	
+	
+	/**
+	 * Checks if theres data stored to the map with the given key
+	 * @param key key to check
+	 * @return true if data is stored with the given key, false if not
+	 */
+	public boolean hasObject(String key) {
+		return this.data.containsKey(key);
+	}
+	
+	
+	/**
+	 * Adds a new inventory to the inventory collection 
+	 * @param inv inventory to add
+	 * @param key key to get to the inventory
+	 */
+	public void addInventory(InventoryBase<T> inv, String key) {
+		this.inventories.put(key, inv);
+		inv.setHolder(this);
 	}
 }

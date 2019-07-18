@@ -5,21 +5,19 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
-
 import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.Teleporter;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
-import net.karanteeni.groups.KaranteeniPerms;
-import net.karanteeni.groups.player.Group;
 import net.karanteeni.karanteenials.functionality.Back;
+import net.karanteeni.karanteeniperms.KaranteeniPerms;
+import net.karanteeni.karanteeniperms.groups.player.Group;
 
 public class HomeCommand extends AbstractCommand implements TranslationContainer {
 	private boolean 		safeTeleport 	= true;

@@ -136,7 +136,7 @@ public class KCurrency extends KaranteeniPlugin {
 			st.executeUpdate(
 					"CREATE TABLE IF NOT EXISTS "+getTableName()+" ("+
 					getUUIDName()+" VARCHAR(60) NOT NULL, " + 
-					getBalanceName() + " DECIMAL(20, 3) NOT NULL DEFAULT 0," + 
+					getBalanceName() + " DECIMAL(20, 2) NOT NULL DEFAULT 0," + 
 					"PRIMARY KEY("+UUID+"), " + 
 					"FOREIGN KEY ("+UUID+") REFERENCES "+
 						PlayerHandler.PlayerDataKeys.PLAYER_TABLE

@@ -122,7 +122,7 @@ public class SpeedCommand extends AbstractCommand implements TranslationContaine
 
 		player.setWalkSpeed(((float) speed) / 5);
 		Karanteenials.getMessager().sendActionBar(player, Sounds.SETTINGS.get(),
-				Prefix.NEUTRAL + Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.walk")
+				Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.walk")
 						.replace("%speed%", speed + ""));
 	}
 
@@ -138,7 +138,7 @@ public class SpeedCommand extends AbstractCommand implements TranslationContaine
 
 		player.setFlySpeed(((float) speed) / 5);
 		Karanteenials.getMessager().sendActionBar(player, Sounds.SETTINGS.get(),
-				Prefix.NEUTRAL + Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.fly")
+				Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.fly")
 						.replace("%speed%", speed + ""));
 	}
 
@@ -154,7 +154,7 @@ public class SpeedCommand extends AbstractCommand implements TranslationContaine
 
 		player.setWalkSpeed(((float) speed) / 5);
 		Karanteenials.getMessager().sendActionBar(player, Sounds.SETTINGS.get(),
-				Prefix.NEUTRAL + Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.walk")
+				Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.walk")
 						.replace("%speed%", speed + ""));
 		Karanteenials.getMessager().sendMessage(sender, Sounds.SETTINGS.get(),
 				Prefix.NEUTRAL
@@ -174,7 +174,7 @@ public class SpeedCommand extends AbstractCommand implements TranslationContaine
 
 		player.setFlySpeed(((float) speed) / 5);
 		Karanteenials.getMessager().sendActionBar(player, Sounds.SETTINGS.get(),
-				Prefix.NEUTRAL + Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.fly")
+				Karanteenials.getTranslator().getTranslation(plugin, player, "settings.speed.set.fly")
 						.replace("%speed%", speed + ""));
 		Karanteenials.getMessager().sendMessage(sender, Sounds.SETTINGS.get(),
 				Prefix.NEUTRAL

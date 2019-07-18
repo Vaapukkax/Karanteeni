@@ -1,0 +1,28 @@
+main: net.karanteeni.chatar.Chatar
+name: Chatar
+version: 1.0
+author: Nuubles
+description: Manages messaging and chat in the game
+api-version: 1.13
+depend: [KaranteeniCore]
+database: true
+
+permissions:
+  chatar.message.use:
+    description: gives access to the /message command
+  chatar.message.color:
+    description: use colors in /message
+  chatar.message.format:
+    description: use formatting in /message
+  chatar.message.magic:
+    description: use random text in /message
+  chatar.reply:
+    description: gives access reply instantly to a message using /reply
+    
+  chatar.socialspy:
+    description: listen to other peoples messages
+  chatar.party.create:
+    description: create a chat party
+  chatar.party.info:
+    description: view party info
+    

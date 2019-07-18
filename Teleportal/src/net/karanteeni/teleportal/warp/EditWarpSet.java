@@ -4,6 +4,8 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import net.karanteeni.core.command.CommandComponent;
+import net.karanteeni.core.command.CommandResult;
+import net.karanteeni.core.command.CommandResult.ResultType;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
@@ -16,17 +18,14 @@ public class EditWarpSet extends CommandComponent implements TranslationContaine
 	
 	
 	@Override
-	protected boolean runComponent(CommandSender sender, Command arg1, String arg2, String[] args) {
+	protected CommandResult runComponent(CommandSender sender, Command arg1, String arg2, String[] args) {
 		if(!(sender instanceof Player)) {
-			Teleportal.getMessager().sendMessage(sender, Sounds.NO.get(),
-					Prefix.NEGATIVE +
-					Teleportal.getDefaultMsgs().defaultNotForConsole());
-			return true;
+			return CommandResult.NOT_FOR_CONSOLE;
 		}
 		
 		// check if there's correct amount of parameters
 		if(args.length != 1 && args.length != 2 && args.length != 3)
-			return false;
+			return CommandResult.INVALID_ARGUMENTS;
 		
 		String name = null;
 		String displayname = null;
@@ -50,11 +49,11 @@ public class EditWarpSet extends CommandComponent implements TranslationContaine
 		
 		// the warp with name already exists
 		if(warp != null) {
-			Teleportal.getMessager().sendMessage(sender, Sounds.NO.get(), 
-					Prefix.NEGATIVE +
+			return new CommandResult(
 					Teleportal.getTranslator().getTranslation(this.chainer.getPlugin(), sender, "warp.exists")
-					.replace(WARP, warp.getName()));
-			return true;
+					.replace(WARP, warp.getName()),
+					ResultType.INVALID_ARGUMENTS,
+					Sounds.NO.get());
 		}
 			
 			
@@ -63,9 +62,7 @@ public class EditWarpSet extends CommandComponent implements TranslationContaine
 		
 		if(permission == null) {
 			if(!warp.save()) {
-				Teleportal.getMessager().sendMessage(sender, Sounds.ERROR.get(), 
-						Prefix.ERROR + Teleportal.getDefaultMsgs().databaseError(sender));
-				return true;
+				return CommandResult.ERROR;
 			}
 			Teleportal.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
 					Prefix.NEUTRAL + 
@@ -74,9 +71,7 @@ public class EditWarpSet extends CommandComponent implements TranslationContaine
 		} else {
 			warp.setPermission(permission);
 			if(!warp.save()) {
-				Teleportal.getMessager().sendMessage(sender, Sounds.ERROR.get(), 
-						Prefix.ERROR + Teleportal.getDefaultMsgs().databaseError(sender));
-				return true;
+				return CommandResult.ERROR;
 			}
 			Teleportal.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
 					Prefix.NEUTRAL + 
@@ -84,7 +79,7 @@ public class EditWarpSet extends CommandComponent implements TranslationContaine
 					.replace(WARP, name).replace(WARP_NAME, displayname).replace(PERMISSION, permission));
 		}
 		
-		return true;
+		return CommandResult.SUCCESS;
 	}
 	
 

@@ -11,6 +11,8 @@ permissions:
     description: Drop broken spawner if player has silk pickaxe
   katura.dropspawner.always:
     description: Drop broken spawner if broken with picaxe
+  katura.setspawner.ENTITY_TYPE:
+    description: Sets the entity type of the spawner in hand
   katura.choptree:
     description: Allow player to use choptree functionality
   
@@ -28,3 +30,15 @@ permissions:
     description: Ticks per entity spawn
   katura.world.pvp:
     description: Is pvp enabled in this world
+  katura.time.set:
+    description: Set world time
+  katura.time.add:
+    description: add to world time
+  katura.time.remove:
+    description: remove from world time
+  katura.weather.clear:
+    description: set weather to clear
+  katura.weather.rain:
+    description: set weather to rain
+  katura.weather.storm:
+    description: set weather to storm

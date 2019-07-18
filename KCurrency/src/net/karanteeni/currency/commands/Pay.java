@@ -32,8 +32,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		//Does the player have permission for this
-		if(!sender.hasPermission("kcurrency.pay"))
-		{
+		if(!sender.hasPermission("kcurrency.pay")) {
 			KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), Prefix.NEGATIVE+KCurrency.getDefaultMsgs().noPermission(sender));
 			return true;
 		}
@@ -44,8 +43,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			return true;
 		}
 		
-		if(args.length == 2)
-		{
+		if(args.length == 2) {
 			Player sender_ = (Player)sender;
 			Player player = Bukkit.getPlayer(args[0]);
 			UUID uuid = null;
@@ -80,7 +78,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 				return true;
 			}
 			
-			if(transferAmount < 0.001)
+			if(transferAmount < 0.01)
 			{
 				KCurrency curr = KCurrency.getPlugin(KCurrency.class);
 				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), curr.getConfigHandler().getPrefix()+
@@ -135,28 +133,28 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 			receiverName = KCurrency.getPlayerHandler().getOfflineName(to);
 		
 		//Transaction was successful
-		if(result.equals(TransactionResult.SUCCESSFUL))
-		{
+		if(result.equals(TransactionResult.SUCCESSFUL)) {
 			BossBar bar = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getRandomTranslation(
 					plugin, 
 					Bukkit.getPlayer(who), "paid-x-money-to-y-player")
-					.replace("%amount%", String.format("%.3f", amount))
+					.replace("%amount%", String.format("%.2f", amount))
 					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
 					.replace("%player%", receiverName), BarColor.GREEN, BarStyle.SOLID);
 			
 			//Send the message to the sender
 			KCurrency.getMessager().sendBossbar(Bukkit.getPlayer(who), KCurrency.MONEY_LOST, 3, 1, true, bar);
 			
-			BossBar bar2 = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getRandomTranslation(
-					plugin, 
-					receiver, "player-x-paid-y-to-you")
-					.replace("%amount%", String.format("%.3f", amount))
-					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
-					.replace("%player%", senderName), BarColor.GREEN, BarStyle.SOLID);
-			
 			//Send the message to the receiver
-			if(receiver != null)
+			if(receiver != null) {
+				BossBar bar2 = Bukkit.getServer().createBossBar(KCurrency.getTranslator().getRandomTranslation(
+						plugin, 
+						receiver, "player-x-paid-y-to-you")
+						.replace("%amount%", String.format("%.2f", amount))
+						.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit())
+						.replace("%player%", senderName), BarColor.GREEN, BarStyle.SOLID);
+				
 				KCurrency.getMessager().sendBossbar(receiver, KCurrency.MONEY_RECEIVED, 3, 1, true, bar2);
+			}
 		}
 		//There was not enough money
 		else if(result.equals(TransactionResult.INSUFFICIENT_CREDITS))
@@ -168,7 +166,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 					Bukkit.getPlayer(who), 
 					"not-enough-currency")
 					.replace("%balance%", KCurrency.getBalances().getBalance(who).toString())
-					.replace("%amount%",String.format("%.3f", amount))
+					.replace("%amount%",String.format("%.2f", amount))
 					.replace("%unit%", plugin.getConfigHandler().getCurrencyUnit()));
 			
 			// %balance% is not enough for %amount%%unit% 
@@ -192,7 +190,7 @@ public class Pay extends AbstractCommand implements TranslationContainer{
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "payment-failed", "Your payment failed");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "invalid-pay-arguments", "/pay <player> <amount>");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "cannot-pay-yourself", "You cannot transfer money to yourself!");
-		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "min-amount", "The minimum amount you can use is 0.001%unit%!");
+		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "min-amount", "The minimum amount you can use is 0.01%unit%!");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "you-received", "You received %amount%%unit%!");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "you-lost", "You lost %amount%%unit%!");
 		KCurrency.getTranslator().registerTranslation(KCurrency.getPlugin(KCurrency.class), "your-balance-set", "Your balance was set to %amount%%unit%!");

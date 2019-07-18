@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import net.karanteeni.core.command.CommandComponent;
 import net.karanteeni.core.command.CommandLoader;
+import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
@@ -52,7 +53,7 @@ public class EditWarpPermission extends CommandComponent implements TranslationC
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected boolean runComponent(CommandSender sender, Command arg1, String arg2, String[] args) {
+	protected CommandResult runComponent(CommandSender sender, Command arg1, String arg2, String[] args) {
 		Warp warp = this.chainer.getObject("warp");
 		
 		// set the permission to this warp
@@ -61,15 +62,11 @@ public class EditWarpPermission extends CommandComponent implements TranslationC
 		else if(args.length == 2) // permission set = set permission to given permission (only one!)
 			warp.setPermission(args[1].toLowerCase());
 		else
-			return false;
+			return CommandResult.INVALID_ARGUMENTS;
 		
 		// save the modified warp
 		if(!warp.save()) {
-			Teleportal.getMessager().sendMessage(sender, 
-					Sounds.ERROR.get(),
-					Prefix.ERROR +
-					Teleportal.getDefaultMsgs().databaseError(sender));
-			return true;
+			return CommandResult.ERROR;
 		}
 		
 		// saving was successful, return result
@@ -92,6 +89,6 @@ public class EditWarpPermission extends CommandComponent implements TranslationC
 					.replace("%warp%", warp.getName())
 					.replace("%warpname%", warp.getDisplayName())
 					.replace("%permission%", warp.getPermission()));
-		return true;
+		return CommandResult.SUCCESS;
 	}
 }

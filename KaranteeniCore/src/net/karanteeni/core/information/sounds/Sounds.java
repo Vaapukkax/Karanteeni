@@ -19,11 +19,19 @@ public enum Sounds {
 	FIREWORK_LOW(Sound.ENTITY_FIREWORK_ROCKET_BLAST, 2f, 0.2f),
 	PLING_HIGH(Sound.BLOCK_NOTE_BLOCK_CHIME, 2f, 2f),
 	PLING_LOW(Sound.BLOCK_NOTE_BLOCK_CHIME, 2f, 1.4f),
-	CLICK_SUCCESS(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 0.8f),
 	//CLICK_FAIL(new Sound[] {Sound.BLOCK_STONE_BUTTON_CLICK_ON, Sound.ITEM_AXE_STRIP}, new Float[] {0.4f, 100f}, new Float[] {1.7f, 1.8f}),
-	CLICK_FAIL(Sound.BLOCK_SNOW_PLACE, 5f, 1.8f),
+	CLICK_SUCCESS(Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.7f),
+	CLICK_FAIL(Sound.ITEM_BOTTLE_FILL_DRAGONBREATH, 0.6f, 0.8f),
 	CLICK(Sound.BLOCK_STONE_BUTTON_CLICK_ON, 0.7f, 1.7f),
-	CLICK_NO_PERMISSION(Sound.BLOCK_END_PORTAL_FRAME_FILL, 100f, 1.6f);
+	CLICK_NO_PERMISSION(Sound.BLOCK_ENDER_CHEST_CLOSE, 0.5f, 2f),
+	
+	CLICK_NEXT_PAGE(Sound.BLOCK_WOOL_PLACE, 0.9f, 2f),
+	CLICK_PREVIOUS_PAGE(Sound.BLOCK_WOOL_PLACE, 1f, 1.7f),
+	
+	CLICK_RETURN(Sound.BLOCK_LADDER_FALL, 1f, 1.7f),
+	CLICK_OPEN_PAGE(Sound.ITEM_FLINTANDSTEEL_USE, 0.5f, 1.5f),
+	CLICK_CLOSE_PAGE(Sound.ENTITY_ARMOR_STAND_BREAK, 0.5f, 0.5f),
+	CLICK_CHANGE(Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 1.7f);
 	
 	/**
 	 * Rakennin enumille
@@ -31,8 +39,7 @@ public enum Sounds {
 	 * @param volume volumes for sounds
 	 * @param pitch pitch for sounds
 	 */
-	Sounds(Sound[] sounds, Float[] volume, Float[] pitch)
-	{
+	Sounds(Sound[] sounds, Float[] volume, Float[] pitch) {
 		this.type = new SoundType(sounds, volume, pitch);
 	}
 	
@@ -42,8 +49,7 @@ public enum Sounds {
 	 * @param volume volume for sound
 	 * @param pitch pitch for sound
 	 */
-	Sounds(Sound sounds, Float volume, Float pitch)
-	{
+	Sounds(Sound sounds, Float volume, Float pitch) {
 		this.type = new SoundType(new Sound[] {sounds}, new Float[] {volume}, new Float[] {pitch});
 	}
 	

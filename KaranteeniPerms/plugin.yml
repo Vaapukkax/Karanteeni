@@ -1,10 +1,11 @@
-main: net.karanteeni.groups.KaranteeniPerms
+main: net.karanteeni.karanteeniperms.KaranteeniPerms
 name: KaranteeniPerms
 version: 1.0
 author: Nuubles
 description: This plugin handles all BASIC permissions and groups in worlds
 api-version: 1.13
 depend: [KaranteeniCore]
+softdepend: [Chatar]
 
 permissions:
   #all permissions

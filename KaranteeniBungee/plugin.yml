@@ -1,4 +1,4 @@
-main: net.karanteeni.bungee.BungeeMain
+main: net.karanteeni.bungee.KaranteeniBungee
 name: KaranteeniBungee
 version: 1.0
 author: Nuubles

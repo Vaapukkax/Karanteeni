@@ -1,0 +1,21 @@
+main: net.karanteeni.statmanager.StatManager
+name: StatManager
+version: 1.0
+author: Nuubles
+description: Adds functionality to the playtime and enable events to happen when given requirements are met
+api-version: 1.13
+depend: [KaranteeniCore]
+softdepend: [KaranteeniPerms]
+database: true
+
+permissions:
+  statmanager.check-self:
+    description: check your own play time
+  statmanager.check-other:
+    description: check someone elses play time
+  statmanager.set:
+    description: set playtime
+  statmanager.remove:
+    description: remove from playtime
+  statmanager.add:
+    description: add to playtime

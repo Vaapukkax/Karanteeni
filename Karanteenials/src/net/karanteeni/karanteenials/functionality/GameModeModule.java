@@ -32,27 +32,27 @@ public class GameModeModule extends TableContainer {
 	 * @return List of players whose gamemode has been changed
 	 */
 	public List<Player> setGamemode(CommandSender setter, 
-			String name, 
+			List<Player> players, 
 			GameMode gm, 
 			boolean checkPower, 
 			boolean multiple, 
 			boolean save) {
 		Karanteenials pl = Karanteenials.getPlugin(Karanteenials.class);
 		// get online players based on name and location
-		List<Player> players = null;
+		//List<Player> players = null;
 		
 		//if(setter instanceof Player)
-			players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(setter, name);
+			//players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(setter, name);
 		//else
 		//	players = KaranteeniPlugin.getPlayerHandler().getOnlinePlayers(Bukkit.getWorlds().get(0).getSpawnLocation(), name);
 		
 		// if no players found, msg about it
-		if(players.isEmpty()) {
+		/*if(players.isEmpty()) {
 			KaranteeniPlugin.getMessager().sendMessage(setter, Sounds.NO.get(), 
 					Prefix.NEGATIVE + 
 					KaranteeniPlugin.getDefaultMsgs().playerNotFound(setter, name));
 			return null;
-		}
+		}*/
 		
 		// only one player allowed and more than one was found
 		if(!multiple && players.size() != 1) {

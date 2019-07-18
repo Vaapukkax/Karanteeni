@@ -1,12 +1,10 @@
 package net.karanteeni.karanteenials.functionality;
 
 import java.util.UUID;
-
 import org.bukkit.entity.Player;
-
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.groups.KaranteeniPerms;
-import net.karanteeni.groups.player.Group;
+import net.karanteeni.karanteeniperms.KaranteeniPerms;
+import net.karanteeni.karanteeniperms.groups.player.Group;
 
 public class PowerLevel {
 	private final KaranteeniPlugin plugin;

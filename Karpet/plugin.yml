@@ -1,0 +1,20 @@
+main: net.karanteeni.karpet.Karpet
+name: Karpet
+version: 1.0
+author: Nuubles
+description: Flying carpets
+api-version: 1.13
+depend: [KaranteeniCore]
+database: true
+
+permissions:
+  karpet.blocks.BLOCK_TYPE:
+    description: replace block_type to allow player use the given block as carpet block
+  karpet.use:
+    description: use the magic carpet
+  karpet.change-others:
+    description: enable or disable other players magic carpet
+  karpet.reset:
+    description: reset your carpet
+  karpet.reset-others:
+    description: reset other players carpet

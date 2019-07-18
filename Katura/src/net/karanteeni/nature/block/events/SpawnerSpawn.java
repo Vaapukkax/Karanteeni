@@ -1,7 +1,6 @@
 package net.karanteeni.nature.block.events;
 
 import java.util.Arrays;
-
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -9,8 +8,6 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.EventHandler;
@@ -22,35 +19,25 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-
 import net.karanteeni.core.block.BlockEffects;
-import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.sounds.SoundType;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.core.item.ItemType;
 import net.karanteeni.nature.Katura;
 
-public class SpawnerSpawn extends AbstractCommand implements Listener,TranslationContainer {
+public class SpawnerSpawn implements Listener,TranslationContainer {
 	private static Katura pl = Katura.getPlugin(Katura.class);
 	private static String ratePrefix = "entity.%s.spawner.rate";
 	private static String allowSpawnPrefix = "entity.%s.spawner.allow.spawn";
 	private static String allowSetPrefix = "entity.%s.spawner.allow.commandeggset";
 	private static String entityNotAllowed = "entity-not-allowed";
 	
-	public SpawnerSpawn()
-	{
-		super(Katura.getPlugin(Katura.class), 
-				"setspawner", 
-				"/setspawner <entity>", 
-				"Set the spawner type", 
-				Katura.getDefaultMsgs().defaultNoPermission());
-		
+	public SpawnerSpawn() {
 		registerTranslations();
 		
 		for(EntityType type : EntityType.values())
-			if(type.isSpawnable())
-			{
+			if(type.isSpawnable()) {
 				if(!pl.getConfig().isSet(String.format(ratePrefix, type.toString()))) 
 					pl.getConfig().set(String.format(ratePrefix, type.toString()), 1.0);
 				
@@ -68,8 +55,7 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void onCreatureSpawn(CreatureSpawnEvent event)
-	{
+	private void onCreatureSpawn(CreatureSpawnEvent event) {
 		if(!event.getSpawnReason().equals(SpawnReason.SPAWNER))
 			return;
 		
@@ -86,8 +72,7 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onSpawnerBreak(BlockBreakEvent event)
-	{
+	private void onSpawnerBreak(BlockBreakEvent event) {
 		if(!event.getBlock().getType().equals(Material.SPAWNER))
 			return;
 		if(!ItemType.PICKAXE.contains(event.getPlayer().getInventory().getItemInMainHand().getType()))
@@ -113,6 +98,7 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 			//Add the spawned type to lore
 			blockMeta.setLore(Arrays.asList("§7"+cs.getSpawnedType().toString()));
 			spawner.setItemMeta(blockMeta);
+			event.setExpToDrop(0); // don't drop any xp on silk touch drop
 		
 			event.getBlock().getLocation().getWorld().dropItemNaturally(
 				event.getBlock().getLocation(), spawner);
@@ -131,8 +117,7 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.HIGHEST)
-	private void onSpawnerPlace(BlockPlaceEvent event)
-	{
+	private void onSpawnerPlace(BlockPlaceEvent event) {
 		//Only for spawners
 		if(!event.getBlock().getType().equals(Material.SPAWNER))
 			return;
@@ -143,8 +128,7 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 		EntityType entity = EntityType.PIG;
 		
 		//Get the entityType from lore
-		if(event.getItemInHand().getItemMeta().getLore() != null)
-		{
+		if(event.getItemInHand().getItemMeta().getLore() != null) {
 			EntityType ent = null;
 			try{
 				ent = EntityType.valueOf(
@@ -162,8 +146,7 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 				pl.getConfig().getDouble(String.format(ratePrefix, entity.toString()))));
 		
 		//Check whether this entitytype is allowed in spawners
-		if(!pl.getConfig().getBoolean(String.format(allowSpawnPrefix, entity.toString())))
-		{
+		if(!pl.getConfig().getBoolean(String.format(allowSpawnPrefix, entity.toString()))) {
 			Katura.getMessager().sendMessage(event.getPlayer(), Sounds.NO.get(), 
 					Katura.getTranslator().getTranslation(
 							Katura.getPlugin(Katura.class), event.getPlayer(), entityNotAllowed).replace("%type%", entity.toString()));
@@ -175,14 +158,6 @@ public class SpawnerSpawn extends AbstractCommand implements Listener,Translatio
 		spawner.update();
 	}
 	
-	/**
-	 * Player changes the spawner type
-	 */
-	@Override
-	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
-		
-		return true;
-	}
 
 	@Override
 	public void registerTranslations() {

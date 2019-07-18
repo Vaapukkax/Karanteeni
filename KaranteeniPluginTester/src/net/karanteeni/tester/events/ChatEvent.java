@@ -1,22 +1,32 @@
 package net.karanteeni.tester.events;
 
 import java.util.Random;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.permissions.Permission;
-
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.particle.ParticleShape;
 import net.karanteeni.core.timers.KaranteeniTimer;
-import net.karanteeni.groups.KaranteeniPerms;
-import net.karanteeni.groups.player.PermissionPlayer;
-import net.karanteeni.groups.player.PermissionPlayer.DATA_TYPE;
 import net.karanteeni.tester.TesterMain;
+import net.md_5.bungee.api.ChatColor;
+import net.minecraft.server.v1_13_R2.PacketPlayInFlying.PacketPlayInLook;
+import net.minecraft.server.v1_13_R2.PacketPlayInFlying.PacketPlayInPosition;
+import net.minecraft.server.v1_13_R2.PacketPlayInFlying.PacketPlayInPositionLook;
+import net.minecraft.server.v1_13_R2.PacketPlayOutBlockChange;
+import net.minecraft.server.v1_13_R2.PacketPlayOutTileEntityData;
+import net.minecraft.server.v1_13_R2.PacketPlayOutUpdateTime;
 
 public class ChatEvent implements Listener{
 	KaranteeniPlugin plugin = TesterMain.getPlugin(TesterMain.class);
@@ -26,6 +36,67 @@ public class ChatEvent implements Listener{
 		TesterMain.getTranslator().registerTranslation(plugin, "chat-message", "Chat message has been sent!");
 		TesterMain.getTranslator().registerTranslation(plugin, "actionbar-message", "Actionbar has been sent!");
 	}
+	
+	
+	@EventHandler
+	private void onLeave(PlayerQuitEvent event) {
+		//removePlayer(event.getPlayer());
+	}
+	
+	
+	@EventHandler
+	private void onJoin(PlayerJoinEvent event) {
+		//injectPlayer(event.getPlayer());
+	}
+	
+	
+	private void removePlayer(Player player) {
+		Channel channel = ((CraftPlayer)player).getHandle().playerConnection.networkManager.channel;
+		channel.eventLoop().submit(() -> {
+			channel.pipeline().remove(player.getName());
+			return null;
+		});
+	}
+	
+	
+	private void injectPlayer(Player player) {
+		ChannelDuplexHandler channelDuplexHandler = new ChannelDuplexHandler(){
+			
+			
+			@Override
+			public void channelRead(ChannelHandlerContext channelHandlerContext, Object packet) throws Exception {
+				if(!((packet instanceof PacketPlayInPosition) || (packet instanceof PacketPlayInLook) || (packet instanceof PacketPlayInPositionLook))) {
+					if(packet instanceof PacketPlayOutBlockChange) {
+						PacketPlayOutBlockChange p = (PacketPlayOutBlockChange)packet;
+						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.LIGHT_PURPLE + p.toString() + " eet");
+					} else if(packet instanceof PacketPlayOutTileEntityData) {
+						PacketPlayOutTileEntityData p = (PacketPlayOutTileEntityData)packet;
+						Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.BLUE + p.toString() + " eeee");
+					}
+					
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.YELLOW + "PACKET READ" + ChatColor.RED + packet.toString());
+				}
+				super.channelRead(channelHandlerContext, packet);
+			}
+			
+			
+			@Override
+			public void write(ChannelHandlerContext channelHandlerContext, Object packet, ChannelPromise channelPromise) throws Exception {
+				if(!(packet instanceof PacketPlayOutUpdateTime)) {
+					Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.AQUA + "PACKET WRITE" + ChatColor.GREEN + packet.toString());
+				}
+				super.write(channelHandlerContext, packet, channelPromise);
+			}
+		};
+		
+		ChannelPipeline pipeline = ((CraftPlayer)player).getHandle().playerConnection.networkManager.channel.pipeline();
+		pipeline.addBefore("packet_handler", player.getName(), channelDuplexHandler);
+	}
+	
+	
+	
+	
+	
 	
 	@EventHandler
 	public void onChat(AsyncPlayerChatEvent event)
@@ -114,13 +185,13 @@ public class ChatEvent implements Listener{
 			pshape = null;
 		}*/
 		
-		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+		/*KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 		//Group playerGroup = perms.getPlayerModel().getLocalGroup(event.getPlayer());
 		//String prefix = playerGroup.getPrefix(event.getPlayer(), false);
 		
 		PermissionPlayer pp = perms.getPlayerModel().getPermissionPlayer(event.getPlayer().getUniqueId());
 		String prefix = pp.getPrefix(event.getPlayer(), DATA_TYPE.GROUP_AND_PLAYER, false);
-		event.setFormat(prefix + "%s" + pp.getSuffix(DATA_TYPE.GROUP_AND_PLAYER) + "%s");
+		event.setFormat(prefix + "%s" + pp.getSuffix(DATA_TYPE.GROUP_AND_PLAYER) + "%s");*/
 		
 		/*String[] parts = event.getMessage().split(" ");
 		if(parts.length == 3)

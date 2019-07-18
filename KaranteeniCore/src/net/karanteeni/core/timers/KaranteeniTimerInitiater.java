@@ -23,8 +23,7 @@ public class KaranteeniTimerInitiater {
 	/**
 	 * Creates and starts the timer
 	 */
-	public KaranteeniTimerInitiater()
-	{
+	public KaranteeniTimerInitiater() {
 		BukkitRunnable timer = new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -40,8 +39,7 @@ public class KaranteeniTimerInitiater {
 	 * @param timer timer which is called
 	 * @param tickLimit tickes between each call
 	 */
-	public void registerTimer(KaranteeniTimer timer, int tickLimit) throws IllegalArgumentException
-	{
+	public void registerTimer(KaranteeniTimer timer, int tickLimit) throws IllegalArgumentException {
 		if(tickLimit > 0)
 			listeners.put(timer, tickLimit);
 		else
@@ -55,34 +53,59 @@ public class KaranteeniTimerInitiater {
 	public void unregisterTimer(KaranteeniTimer timer)
 	{ unregisterable.add(timer); }
 	
+	
+	/**
+	 * Stop all of the timers
+	 */
+	public void closeTimers() {
+		for(KaranteeniTimer timer : listeners.keySet()) {
+			unregisterable.add(timer);
+			timer.timerStopped();
+		}
+	}
+	
+	
 	/**
 	 * Runs all timers once
 	 */
-	public void runTimer()
-	{
+	public void runTimer() {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, 
 		new Runnable() {
 			
 			@Override
-			public void run()
-			{
-				for(KaranteeniTimer timer : unregisterable) //Unregister the timer before next runtime
-				{
-					timer.timerStopped();
+			public void run() {
+				for(KaranteeniTimer timer : unregisterable) {//Unregister theXq timer before next runtime 
+					// run timer synchronously
+					Bukkit.getScheduler().runTask(plugin, new Runnable() {
+						@Override
+						public void run() { timer.timerStopped(); }
+					});
+					
 					listeners.remove(timer);
 				}
 			
 				for (Entry<KaranteeniTimer, Integer> entry : listeners.entrySet())
 				if(tickCount % entry.getValue() == 0)			
-					try
-					{ entry.getKey().runTimer(); }
-					catch(Exception e)
-					{ plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", e); }
+					try {
+						// run timer synchronously
+						Bukkit.getScheduler().runTask(plugin, new Runnable() {
+							@Override
+							public void run() { entry.getKey().runTimer(); }
+						});
+					}
+					catch(Exception e) { 
+						plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", e); 
+					}
 				else
-					try
-					{ entry.getKey().timerWait(); }
-					catch(Exception e)
-					{ plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e); }
+					try { 
+						Bukkit.getScheduler().runTask(plugin, new Runnable() {
+							@Override
+							public void run() { entry.getKey().timerWait(); }
+						}); 
+					}
+					catch(Exception e) { 
+						plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e); 
+					}
 			}
 		});
 	}

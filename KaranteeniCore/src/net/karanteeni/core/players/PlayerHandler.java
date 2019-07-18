@@ -139,30 +139,29 @@ public class PlayerHandler {
 	 * @param name
 	 * @return
 	 */
-	public List<Player> getOnlinePlayers(CommandSender sender, String name)
-	{
+	public List<Player> getOnlinePlayers(CommandSender sender, String name) {
 		Set<Player> foundPlayers = new HashSet<Player>();
 		String[] playerNames = name.split(",");
 		
-		for(int i = 0; i < playerNames.length; ++i)
-		{
+		for(int i = 0; i < playerNames.length; ++i) {
+			if(playerNames[i].length() == 0)
+				continue;
 			Player player = Bukkit.getPlayer(playerNames[i]);
 			
 			//Player was found by name
-			if(player != null)
-			{
+			if(player != null) {
 				foundPlayers.add(player);
 				continue;
 			}
+			
 			//Get all players on server
-			if(playerNames[i].equalsIgnoreCase("@a"))
-			{
+			if(playerNames[i].equalsIgnoreCase("@a")) {
 				foundPlayers.addAll(Bukkit.getOnlinePlayers());
 				continue;
 			}
+			
 			//Gets the closes player
-			else if(playerNames[i].equalsIgnoreCase("@p")) 
-			{
+			else if(playerNames[i].equalsIgnoreCase("@p"))  {
 				// if the sender is console, prevent search
 				if(sender instanceof Entity) { // get entity command sender
 					Player p = KaranteeniCore.getEntityManager().getNearestPlayer(((Entity)sender).getLocation());
@@ -178,9 +177,7 @@ public class PlayerHandler {
 				} else {
 					continue;
 				}
-			}
-			else if(playerNames[i].equalsIgnoreCase("@r"))
-			{
+			} else if(playerNames[i].equalsIgnoreCase("@r")) {
 				List<Player> pr = new ArrayList<Player>(Bukkit.getOnlinePlayers());
 				foundPlayers.add(pr.get((new Random()).nextInt(pr.size())));
 				continue;
@@ -190,15 +187,41 @@ public class PlayerHandler {
 		return new ArrayList<Player>(foundPlayers);
 	}
 	
+	
 	/**
 	 * Get the name of a player who is not online
 	 * @param uuid
 	 * @return
 	 */
-	public String getOfflineName(UUID uuid)
-	{
+	public String getName(UUID uuid) {
 		if(Bukkit.getPlayer(uuid) != null)
 			return Bukkit.getPlayer(uuid).getName();
+		
+		return getOfflineName(uuid);
+	}
+	
+	
+	/**
+	 * Get the name of a player who is not online
+	 * @param uuid
+	 * @return
+	 */
+	public String getDisplayName(UUID uuid) {
+		if(Bukkit.getPlayer(uuid) != null)
+			return Bukkit.getPlayer(uuid).getDisplayName();
+		
+		return getOfflineDisplayName(uuid);
+	}
+	
+	
+	/**
+	 * Get the name of a player who is not online
+	 * @param uuid
+	 * @return
+	 */
+	public String getOfflineName(UUID uuid) {
+		/*if(Bukkit.getPlayer(uuid) != null)
+			return Bukkit.getPlayer(uuid).getName();*/
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return null;
 		
@@ -206,9 +229,11 @@ public class PlayerHandler {
 			Statement st = db.getStatement();
 			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.NAME+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
 					" WHERE UUID='"+uuid+"';");
-			st.close();
+			String result = null;
 			if(rs.first())
-				return rs.getString(1);
+				result =  rs.getString(1);
+			st.close();
+			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -223,8 +248,8 @@ public class PlayerHandler {
 	 */
 	public String getOfflineDisplayName(UUID uuid)
 	{
-		if(Bukkit.getPlayer(uuid) != null)
-			return Bukkit.getPlayer(uuid).getDisplayName();
+		/*if(Bukkit.getPlayer(uuid) != null)
+			return Bukkit.getPlayer(uuid).getDisplayName();*/
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
 		if(!db.isConnected()) return null;
 		
@@ -243,6 +268,34 @@ public class PlayerHandler {
 		
 		return null;
 	}
+	
+	
+	/**
+	 * Sets the displayname for player both online and offline
+	 * @param uuid uuid to whom the displayname will be set
+	 * @return was the save successful
+	 */
+	public boolean setDisplayName(UUID uuid, String displayname)
+	{
+		// set online player displayname
+		Player player = Bukkit.getPlayer(uuid);
+		if(player != null && player.isOnline())
+			player.setDisplayName(displayname);
+		
+		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
+		if(!db.isConnected()) return false;
+		
+		try {
+			PreparedStatement stmt = db.prepareStatement("UPDATE player SET displayname = ? WHERE UUID = ?;");
+			stmt.setString(1, displayname);
+			stmt.setString(2, uuid.toString());
+			return stmt.executeUpdate() == 1;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	
 	/**
 	 * Gets the last seen ip from player

@@ -69,39 +69,72 @@ permissions:
     description: change your own gamemode to spectator
   karanteenials.player.gamemode.spectator.other:
     description: change someones gamemode to spectator
-    
+
+  karanteenials.nick.color:
+    description: allows to use colors in nickname
+  karanteenials.nick.change.self:
+    description: allows to change own nickname
+  karanteenials.nick.change.other:
+    description: allows to change other players nickname
+  karanteenials.nick.format:
+    description: allows to use bold italics and underline in nickname
+  karanteenials.nick.scramble:
+    description: allows to use random characters in nickname
+
+  karanteenials.hat.item_type:
+    description: set the current item in your hand to your head 
+  karanteenials.inventory.workbench:
+    description: open workbench anywhere
+  karanteenials.inventory.enderchest:
+    description: open enderchest anywhere
+  karanteenials.inventory.clear:
+    description: clear inventory one player at a time
+  karanteenials.inventory.clear-multiple:
+    description: clear inventory of multiple players at a time
+  
   karanteenials.player.command.feed.self:
-    description: 
+    description: feed yourself
   karanteenials.player.command.feed.other:
-    description:
+    description: feed someone else
   karanteenials.player.command.starve.self:
-    description: 
+    description: starve yourself 
   karanteenials.player.command.starve.other:
-    description:  
+    description: starve someone else
   karanteenials.player.command.heal.self:
-    description: 
+    description: heal yourself
   karanteenials.player.command.heal.other:
-    description: 
-  karanteenials.player.command.god.self:
-    description: 
-  karanteenials.player.command.god.other:
-    description: 
+    description: heal someone else
+  karanteenials.player.command.invincible.self:
+    description: make yourself invincible
+  karanteenials.player.command.invincible.other:
+    description: make someone else invincible
   karanteenials.player.command.kill.self:
-    description: 
+    description: kill yourself
   karanteenials.player.command.kill.other:
-    description: 
+    description: kill someone else
   karanteenials.player.command.burn.self:
-    description: 
+    description: burn yourself
   karanteenials.player.command.burn.other:
-    description: 
+    description: burn someone else
   karanteenials.player.command.extinguish.self:
-    description: 
+    description: extinguish yourself
   karanteenials.player.command.extinguish.other:
-    description: 
+    description: extinguish someone else
   karanteenials.player.command.lightning.self:
-    description: 
+    description: strike lightning at yourself
   karanteenials.player.command.lightning.other:
-    description: 
+    description: strike lightning at someone else
+  
+  karanteenials.nick.self:
+    description: set your nick
+  karanteenials.nick.other:
+    description: set someones nickname
+  karanteenials.nick.colors:
+    description: use colors in your nick
+  karanteenials.nick.format:
+    description: format your nick
+  karanteenials.nick.magic:
+    description: use random characters in nick
   #unimplemented  
   karanteenials.antiblock:
     description: players with this permission cannot be blocked
@@ -186,10 +219,10 @@ permissions:
     children:
       karanteenials.player.command.heal.self: true
       karanteenials.player.command.heal.other: true
-  karanteenials.player.command.god.*: # enable god for self or others
+  karanteenials.player.command.invincible.*: # enable invincible for self or others
     children:
-      karanteenials.player.command.god.self: true
-      karanteenials.player.command.god.other: true
+      karanteenials.player.command.invincible.self: true
+      karanteenials.player.command.invincible.other: true
   karanteenials.player.command.kill.*: # kill self or others
     children:
       karanteenials.player.command.kill.self: true
@@ -211,7 +244,7 @@ permissions:
       karanteenials.player.command.feed.*: true
       karanteenials.player.command.starve.*: true
       karanteenials.player.command.heal.*: true
-      karanteenials.player.command.god.*: true
+      karanteenials.player.command.invincible.*: true
       karanteenials.player.command.kill.*: true
       karanteenials.player.command.burn.*: true
       karanteenials.player.command.extinguish.*: true

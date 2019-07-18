@@ -22,3 +22,14 @@ permissions:
     description: teleport to a warp
   teleportal.warp.send:
     description: teleport another player to this warp
+    
+  teleportal.spawn.teleport.self:
+    description: teleport to this worlds spawn location
+  teleportal.spawn.teleport.other:
+    description: teleport to this worlds spawn location
+  teleportal.spawn.set:
+    description: set the spawn location of this world
+  teleportal.spawn.delete:
+    description: delets the spawn location of this world
+  teleportal.noobspawn.set:
+    description: sets the first join spawn

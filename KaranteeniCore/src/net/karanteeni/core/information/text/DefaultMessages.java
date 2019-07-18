@@ -15,6 +15,8 @@ public class DefaultMessages implements TranslationContainer{
 	private static final String playerNotFound = "player-not-found";
 	private static final String incorrectParameters = "incorrect-command-parameters";
 	private static final String databaseError = "database-error-occurred";
+	private static final String onlyConsole = "only-console";
+	private static final String errorHappened = "error-happened";
 	
 	/**
 	 * Register this class' translations
@@ -30,39 +32,53 @@ public class DefaultMessages implements TranslationContainer{
 				incorrectParameters, "Incorrect parameters in command!");
 		KaranteeniCore.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
 				databaseError, "A database error occurred, please contact staff and try again later.");
+		KaranteeniCore.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
+				onlyConsole, "Only the console may execute this command!");
+		KaranteeniCore.getTranslator().registerTranslation(KaranteeniCore.getPlugin(KaranteeniCore.class), 
+				errorHappened, "An error has happened. Please contact staff as soon as possible.");
 	}
+	
 	
 	/**
 	 * Returns the default message for no permission
 	 * @return
 	 */
-	public String defaultNoPermission()
-	{
+	public String defaultNoPermission() {
 		return "You don't have permissions to this command!";
 	}
 	
-	public String defaultNotForConsole()
-	{
+	
+	public String defaultNotForConsole() {
 		return "Console cannot execute this command (with these arguments)!";
 	}
 	
-	public String defaultDatabaseError()
-	{
+	
+	public String defaultDatabaseError() {
 		return "A database error occurred, please contact staff and try again later.";
 	}
 	
-	public String defaultIncorrectParameters()
-	{
+	
+	public String defaultIncorrectParameters() {
 		return "Incorrect parameters in command!";
 	}
+	
+	
+	public String defaultOnlyForConsole() {
+		return "Only the console may execute this command!";
+	}
+
+	
+	public String defaultErrorHappened() {
+		return "An error has happened. Please contact staff as soon as possible.";
+	}
+	
 	
 	/**
 	 * Return the no permission message
 	 * @param player
 	 * @return
 	 */
-	public String noPermission(Locale locale)
-	{
+	public String noPermission(Locale locale) {
 		return KaranteeniCore.getTranslator().getRandomTranslation(
 				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, noPermission);
 	}
@@ -85,8 +101,7 @@ public class DefaultMessages implements TranslationContainer{
 	 * @param notFoundName
 	 * @return
 	 */
-	public String playerNotFound(Locale locale, String notFoundName)
-	{
+	public String playerNotFound(Locale locale, String notFoundName) {
 		return KaranteeniCore.getTranslator().getRandomTranslation(
 				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, playerNotFound).replace("%player%", notFoundName);
 	}
@@ -96,8 +111,7 @@ public class DefaultMessages implements TranslationContainer{
 	 * @param sender Sender of the command
 	 * @return
 	 */
-	public String noPermission(CommandSender sender)
-	{
+	public String noPermission(CommandSender sender) {
 		if(sender instanceof Player)
 			return KaranteeniCore.getTranslator().getRandomTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, noPermission);
@@ -113,8 +127,7 @@ public class DefaultMessages implements TranslationContainer{
 	 * @param notFoundName
 	 * @return
 	 */
-	public String playerNotFound(CommandSender sender, String notFoundName)
-	{
+	public String playerNotFound(CommandSender sender, String notFoundName) {
 		if(sender instanceof Player)
 			return KaranteeniCore.getTranslator().getRandomTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, playerNotFound).replace("%player%", notFoundName);
@@ -129,8 +142,7 @@ public class DefaultMessages implements TranslationContainer{
 	 * @param sender
 	 * @return
 	 */
-	public String incorrectParameters(CommandSender sender)
-	{
+	public String incorrectParameters(CommandSender sender) {
 		if(sender instanceof Player)
 			return KaranteeniCore.getTranslator().getRandomTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, incorrectParameters);
@@ -140,24 +152,24 @@ public class DefaultMessages implements TranslationContainer{
 					KaranteeniPlugin.getTranslator().getDefaultLocale(), incorrectParameters);
 	}
 	
+	
 	/**
 	 * Returns the translated message for incorrect parameters in command
 	 * @param locale
 	 * @return
 	 */
-	public String incorrectParameters(Locale locale)
-	{
+	public String incorrectParameters(Locale locale) {
 		return KaranteeniCore.getTranslator().getRandomTranslation(
 				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, incorrectParameters);
 	}
+	
 	
 	/**
 	 * Returns the default message for database error events
 	 * @param sender
 	 * @return
 	 */
-	public String databaseError(CommandSender sender)
-	{
+	public String databaseError(CommandSender sender) {
 		if(sender instanceof Player)
 			return KaranteeniCore.getTranslator().getTranslation(
 					KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, databaseError);
@@ -167,14 +179,58 @@ public class DefaultMessages implements TranslationContainer{
 					KaranteeniPlugin.getTranslator().getDefaultLocale(), databaseError);
 	}
 	
+	
 	/**
 	 * Returns the default message for database error events
 	 * @param locale
 	 * @return
 	 */
-	public String databaseError(Locale locale)
-	{
+	public String databaseError(Locale locale) {
 		return KaranteeniCore.getTranslator().getTranslation(
 				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, databaseError);
+	}
+	
+	
+	/**
+	 * Returns the default message for events where player tries to execute a console command
+	 * @param locale
+	 * @return
+	 */
+	public String onlyConsole(CommandSender sender) {
+		return KaranteeniCore.getTranslator().getTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, onlyConsole);
+	}
+
+	
+	/**
+	 * Returns the default message for events where player tries to execute a console command
+	 * @param locale
+	 * @return
+	 */
+	public String onlyConsole(Locale locale) {
+		return KaranteeniCore.getTranslator().getTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, onlyConsole);
+	}
+	
+	
+	/**
+	 * Returns the default message for error events
+	 * @param locale
+	 * @return
+	 */
+	public String errorHappened(CommandSender sender) {
+		return KaranteeniCore.getTranslator().getTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), (Player)sender, errorHappened);
+	}
+
+	
+	/**
+	 * Returns the default message for error events
+	 * @param locale
+	 * @return
+	 */
+	public String errorHappened(Locale locale) {
+		return KaranteeniCore.getTranslator().getTranslation(
+				KaranteeniCore.getPlugin(KaranteeniCore.class), locale, errorHappened);
 	}
 }
