@@ -1,9 +1,11 @@
 package net.karanteeni.karpet;
 
 import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.karpet.worldguard.WorldGuardManager;
 
 public class Karpet extends KaranteeniPlugin {
 	private CarpetHandler handler;
+	private WorldGuardManager wgm;
 	
 	public Karpet() {
 		super(true);
@@ -11,8 +13,28 @@ public class Karpet extends KaranteeniPlugin {
 	
 	
 	@Override
+	public void onLoad() {
+		// register worldguard flags
+		try {
+			wgm = new WorldGuardManager();
+			wgm.registerFlags();
+		} catch (NoClassDefFoundError e) {
+			// no worldguard on server
+			wgm = null;
+		}
+	}
+	
+	
+	@Override
 	public void onEnable() {
 		register();
+		
+		if(wgm != null && this.getServer().getPluginManager().getPlugin("WorldGuard") != null && 
+				this.getServer().getPluginManager().getPlugin("WorldGuard").isEnabled()) {
+			wgm.register();	
+		} else {
+			wgm = null;
+		}
 	}
 	
 	
@@ -24,7 +46,7 @@ public class Karpet extends KaranteeniPlugin {
 	
 	private void register() {
 		// register handler
-		handler = new CarpetHandler();
+		handler = new CarpetHandler(wgm);
 		Karpet.getTimerHandler().registerTimer(handler, 2);
 		
 		// register commands

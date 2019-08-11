@@ -143,8 +143,8 @@ public class SpeedCommand extends AbstractCommand implements TranslationContaine
 	}
 
 	private void changeWalkingSpeed(CommandSender sender, Player player, double speed) {
-		if (!player.hasPermission("karanteenials.player.speed.other.walk")) {
-			printNoPermissionError(player);
+		if (!sender.hasPermission("karanteenials.player.speed.other.walk")) {
+			printNoPermissionError(sender);
 			return;
 		}
 		if (!isCorrectSpeed(speed)) {
@@ -163,8 +163,8 @@ public class SpeedCommand extends AbstractCommand implements TranslationContaine
 	}
 
 	private void changeFlyingSpeed(CommandSender sender, Player player, double speed) {
-		if (!player.hasPermission("karanteenials.player.speed.other.fly")) {
-			printNoPermissionError(player);
+		if (!sender.hasPermission("karanteenials.player.speed.other.fly")) {
+			printNoPermissionError(sender);
 			return;
 		}
 		if (!isCorrectSpeed(speed)) {

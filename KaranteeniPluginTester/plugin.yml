@@ -3,5 +3,24 @@ name: KaranteeniPluginTester
 version: 1.0
 author: Nuubles
 description: The Core plugin for other Karanteeni plugins
-api-version: 1.13
+api-version: 1.14
 depend: [KaranteeniCore]
+softdepend: [WorldEdit, WorldGuard]
+
+commands:
+  trust:
+    description: "yeet"
+  avaa:
+    description: "yeet"
+  +oikeudet:
+    description: "yeet"
+  -oikeudet:
+    description: "yeet"
+  lukitse:
+    description: "yeet"
+  avaakaikille:
+    description: "yeet"
+  suojaus:
+    description: "yeet"
+  untrust:
+    description: "yeet"

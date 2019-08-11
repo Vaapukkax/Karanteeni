@@ -185,7 +185,7 @@ public class Balances {
 	 */
 	private boolean confirmAccountExistance(UUID uuid) {
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return false;
+		//if(!db.isConnected()) return false;
 		
 		//Add player to database
 		try {

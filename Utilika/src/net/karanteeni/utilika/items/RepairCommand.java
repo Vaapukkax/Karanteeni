@@ -63,6 +63,9 @@ public class RepairCommand extends BareCommand implements TranslationContainer {
 		Utilika.getSoundHandler().playSound(player, Sounds.EQUIP.get());
 		player.updateInventory();
 		
+		Utilika.getMessager().sendActionBar(sender, Sounds.EQUIP.get(), 
+				Utilika.getTranslator().getTranslation(plugin, sender, "repaired"));
+		
 		return CommandResult.SUCCESS;
 	}
 

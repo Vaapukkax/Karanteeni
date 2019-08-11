@@ -11,6 +11,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.sounds.SoundType;
@@ -223,94 +224,103 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 	
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		// check if sender has permission to this command
-		if(!hasPermission(sender)) {
-			noPermission(sender, 
-					CommandResult.NO_PERMISSION.getSound(), 
-					CommandResult.NO_PERMISSION.getDisplayFormat(), 
-					CommandResult.NO_PERMISSION.getMessage());
-			return true;
-		}
-		
-		// if the loader should be run before this and parameters have been given, run it
-		if (this.execComponent != null && this.execComponent.isBefore() && args.length > 0) {
-			CommandResult result = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
-			//args = cutArgs(args, parameterLength);
-			// if no component was found, run the excess components which run with any parameters
-			if(!CommandResult.SUCCESS.equals(result)) {
-				// clear data after cmd execution
-				data = null;
-				return true;
-			}
-		} 
-		
-		// before execution check if there is anything to chain
-		if(components != null && args.length > parameterLength) {
-			// get the stored component with parameter
-			CommandComponent component = components.get(args[0].toLowerCase());
-			// execute component if one is found
-			if(component != null) {
-				CommandResult execResult = component.exec(sender, cmd, label, cutArgs(args, parameterLength+1));
-				// execute the found component
-				if(!CommandResult.SUCCESS.equals(execResult)) {
-					// clear data after cmd execution
-					data = null;
-					return true;
+		// make runnable to prevent commands from running in main thread
+		BukkitRunnable commandRunnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				// check if sender has permission to this command
+				if(!hasPermission(sender)) {
+					noPermission(sender, 
+							CommandResult.NO_PERMISSION.getSound(), 
+							CommandResult.NO_PERMISSION.getDisplayFormat(), 
+							CommandResult.NO_PERMISSION.getMessage());
+					return;
 				}
 				
-				// if the loader has not been run, run it
-				if (this.execComponent != null && !this.execComponent.isBefore()){
-					execResult = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));  ///////////////////////////////////////////////////////////
+				// if the loader should be run before this and parameters have been given, run it
+				if (execComponent != null && execComponent.isBefore() && args.length > 0) {
+					CommandResult result = execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
+					//args = cutArgs(args, parameterLength);
 					// if no component was found, run the excess components which run with any parameters
-					if(!CommandResult.SUCCESS.equals(execResult)) {
+					if(!CommandResult.SUCCESS.equals(result)) {
+						// clear data after cmd execution
 						data = null;
-						return true;
+						return;
+					}
+				} 
+				
+				// before execution check if there is anything to chain
+				if(components != null && args.length > parameterLength) {
+					// get the stored component with parameter
+					CommandComponent component = components.get(args[0].toLowerCase());
+					// execute component if one is found
+					if(component != null) {
+						CommandResult execResult = component.exec(sender, cmd, label, cutArgs(args, parameterLength+1));
+						// execute the found component
+						if(!CommandResult.SUCCESS.equals(execResult)) {
+							// clear data after cmd execution
+							data = null;
+							return;
+						}
+						
+						// if the loader has not been run, run it
+						if (execComponent != null && !execComponent.isBefore()){
+							execResult = execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));  ///////////////////////////////////////////////////////////
+							// if no component was found, run the excess components which run with any parameters
+							if(!CommandResult.SUCCESS.equals(execResult)) {
+								data = null;
+								return;
+							}
+						}
+						
+						// clear data after cmd execution
+						data = null;
+						
+						return;
+					}
+				}
+				
+				// run possible command if no params given
+				CommandResult res = runCommand(sender, cmd, label, args);
+				
+				// if the command run returned false, run the invalid arguments method
+				if(!CommandResult.SUCCESS.equals(res)) {
+					if(CommandResult.INVALID_ARGUMENTS.equals(res)) {
+						invalidArguments(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.NO_PERMISSION.equals(res)) {
+						noPermission(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.OTHER.equals(res)) {
+						other(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.ERROR.equals(res)) {
+						error(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.NOT_FOR_CONSOLE.equals(res)) {
+						notForConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.ONLY_CONSOLE.equals(res)) {
+						onlyConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					}
+					
+					data = null;
+					return;
+				}
+				
+				// if the loader has not been run, run it if there are parameters to run
+				if (execComponent != null && !execComponent.isBefore() && args.length > 0) {
+					CommandResult result = execComponent.exec(sender, cmd, label, args);
+					// if no component was found, run the excess components which run with any parameters
+					if(!CommandResult.SUCCESS.equals(result)) {
+						// clear data after cmd execution
+						data = null;
+						return;
 					}
 				}
 				
 				// clear data after cmd execution
 				data = null;
-				
-				return true;
 			}
-		}
+		};
 		
-		// run possible command if no params given
-		CommandResult res = runCommand(sender, cmd, label, args);
-		
-		// if the command run returned false, run the invalid arguments method
-		if(!CommandResult.SUCCESS.equals(res)) {
-			if(CommandResult.INVALID_ARGUMENTS.equals(res)) {
-				invalidArguments(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.NO_PERMISSION.equals(res)) {
-				noPermission(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.OTHER.equals(res)) {
-				other(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.ERROR.equals(res)) {
-				error(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.NOT_FOR_CONSOLE.equals(res)) {
-				notForConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.ONLY_CONSOLE.equals(res)) {
-				onlyConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			}
-			
-			data = null;
-			return true;
-		}
-		
-		// if the loader has not been run, run it if there are parameters to run
-		if (this.execComponent != null && !this.execComponent.isBefore() && args.length > 0) {
-			CommandResult result = this.execComponent.exec(sender, cmd, label, args);
-			// if no component was found, run the excess components which run with any parameters
-			if(!CommandResult.SUCCESS.equals(result)) {
-				// clear data after cmd execution
-				data = null;
-				return true;
-			}
-		}
-		
-		// clear data after cmd execution
-		data = null;
+		// run the command
+		commandRunnable.run();
 		
 		// return true to prevent default "no permission" message
 		return true;

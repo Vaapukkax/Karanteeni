@@ -3,7 +3,7 @@ name: Karanteenials
 version: 1.0
 author: Nuubles
 description: Takes care of simple tasks like fly, messages, homes etc.
-api-version: 1.13
+api-version: 1.14
 depend: [KaranteeniCore, KaranteeniPerms]
 database: true
 
@@ -21,6 +21,8 @@ permissions:
     description: allows to use other player's home
   karanteenials.home.other.remove:
     description: allows to remove other player's home
+  karanteenials.home.bypass-limit:
+    description: bypass home limits
 
   karanteenials.teleport.back:
     description: allows teleport to previous location
@@ -47,6 +49,9 @@ permissions:
     description: sets the walking speed of player
   karanteenials.player.speed.other.fly:
     description: sets the flying speed of player
+    
+  karanteenials.player.death.back:
+    description: use back on death
     
   karanteenials.player.fly.self:
     description: toggles the fly state of player
@@ -124,17 +129,29 @@ permissions:
     description: strike lightning at yourself
   karanteenials.player.command.lightning.other:
     description: strike lightning at someone else
+  karanteenials.enchant.take:
+    description: remove enchantment from item
+  karanteenials.enchant.set:
+    description: set enchantment to item
   
-  karanteenials.nick.self:
-    description: set your nick
-  karanteenials.nick.other:
-    description: set someones nickname
-  karanteenials.nick.colors:
-    description: use colors in your nick
-  karanteenials.nick.format:
-    description: format your nick
-  karanteenials.nick.magic:
-    description: use random characters in nick
+  #karanteenials.nick.self:
+   # description: set your nick
+  #karanteenials.nick.other:
+    #description: set someones nickname
+  #karanteenials.nick.colors:
+   # description: use colors in your nick
+  #karanteenials.nick.format:
+   # description: format your nick
+  #karanteenials.nick.magic:
+    #description: use random characters in nick
+
+  karanteenials.rtp.use:
+    description: use random teleport
+  karanteenials.rtp.admin:
+    description: bypass time limit and send other players with rtp
+    
+  karanteenials.near:
+    description: show nearby players whose power level is equal to or less than yours
   #unimplemented  
   karanteenials.antiblock:
     description: players with this permission cannot be blocked

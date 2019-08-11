@@ -1,10 +1,12 @@
 package net.karanteeni.chatar;
 
 import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.entity.Player;
+import net.karanteeni.chatar.command.broadcast.BroadcastCommand;
 import net.karanteeni.chatar.command.message.Message;
 import net.karanteeni.chatar.command.message.Reply;
 import net.karanteeni.chatar.command.message.SocialSpy;
@@ -14,11 +16,14 @@ import net.karanteeni.chatar.component.hover.ComponentDisplayName;
 import net.karanteeni.chatar.component.hover.ComponentName;
 import net.karanteeni.chatar.component.hover.HoverTexts;
 import net.karanteeni.chatar.component.preset.PlayerComponent;
+import net.karanteeni.chatar.events.JoinQuitMessages;
 import net.karanteeni.chatar.events.custom.PlayerChatEvent;
 import net.karanteeni.chatar.events.custom.PlayerMessageEvent;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
 import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import net.md_5.bungee.api.chat.TextComponent;
 
 public class Chatar extends KaranteeniPlugin {
@@ -37,6 +42,7 @@ public class Chatar extends KaranteeniPlugin {
 	@Override
 	public void onEnable() {
 		socialSpy = new SocialSpy();
+		registerChannels();
 		registerEvents();
 		registerCommands();
 		registerTags();
@@ -55,6 +61,17 @@ public class Chatar extends KaranteeniPlugin {
 	}
 	
 	
+	/**
+	 * Registers bungeecord channels used
+	 */
+	private void registerChannels() {
+		this.getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+	}
+	
+	
+	/**
+	 * Registers default chat components
+	 */
 	private void registerComponents() {
 		this.registerComponent(new PlayerComponent("player"), "%player-dname%", "/message %player-name%");
 		this.registerComponent(new PlayerComponent("playername"), "%player-name%", "/message %player-name%");
@@ -68,6 +85,7 @@ public class Chatar extends KaranteeniPlugin {
 	private void registerEvents() {
 		PlayerChatEvent.register(this);
 		PlayerMessageEvent.register(this);
+		this.getServer().getPluginManager().registerEvents(new JoinQuitMessages(this), this);
 	}
 	
 	
@@ -79,9 +97,15 @@ public class Chatar extends KaranteeniPlugin {
 		message.setLoader(pc);
 		message.register();
 		
+		// /reply command
 		Reply reply = new Reply();
 		reply.setPermission("chatar.reply");
 		reply.register();
+		
+		// /broadcast command
+		BroadcastCommand bc = new BroadcastCommand();
+		bc.setPermission("chatar.broadcast");
+		bc.register();
 	}
 	
 	
@@ -155,6 +179,78 @@ public class Chatar extends KaranteeniPlugin {
 			Player sender, 
 			HashMap<Player, BaseComponent> recipients) {
 		// map to store the messages within
+		HashMap<Player, ComponentBuilder> components = new HashMap<Player, ComponentBuilder>();
+		
+		// add all players to the components map along with a base for string addition
+		for(Player player : recipients.keySet())
+			components.put(player, new ComponentBuilder(""));
+		
+		// generate and loop all keywords from format
+		Matcher m = TAG_PATTERN.matcher(format);
+		//boolean matchFound = false;
+		int lastMatchPos = 0;
+		while(m.find()) {
+			//matchFound = true;
+			String group = m.group();
+			// cut the % % away
+			group = group.substring(1, group.length()-1);
+			
+			// get the string in between this and previous match
+			String notMatchPart = format.substring(lastMatchPos, m.start());
+			
+			// if the group is %msg% just replace it with message and don't care more
+			HashMap<Player, BaseComponent> formattedComponents = null;
+			// get and format the components with the keyword in the config
+			ChatComponent component = getComponent(group);
+			if(component != null)
+				formattedComponents = component.asBaseComponent(sender, recipients.keySet());
+			
+			// add the results to the messages
+			for(Player player : recipients.keySet()) {
+				ComponentBuilder pc = components.get(player);
+				// add the string before the keyword to the result
+				pc.append(notMatchPart, FormatRetention.FORMATTING);
+				
+				// add the formatted chatcomponent to the message to be sent
+				if(formattedComponents != null)
+					pc.append(formattedComponents.get(player), FormatRetention.FORMATTING);
+				else {
+					// if no formatted component was found, check if this is the msg tag
+					if(!group.equals("msg")) // if not, add the tag name as it was mentioned
+						pc.append(m.group(), FormatRetention.FORMATTING);
+					else // was the message tag, set either the message
+						pc.append(recipients.get(player));
+				}
+			}
+			
+			// update the position of the latest match position
+			lastMatchPos = m.end();
+		}
+		
+		// add the results to the messages
+		if(lastMatchPos < format.length())
+		for(Player player : recipients.keySet()) {
+			ComponentBuilder pc = components.get(player);
+			// add the remaining string
+			pc.append(format.substring(lastMatchPos));
+		}
+		
+		// if no matches, just put the format there
+		/*if(!matchFound) {
+			// TODO
+		}*/
+		
+		HashMap<Player, BaseComponent> results = new HashMap<Player, BaseComponent>();
+		for(Entry<Player, ComponentBuilder> entry : components.entrySet())
+			results.put(entry.getKey(), new TextComponent(entry.getValue().create()));
+		
+		return results;
+	}
+	/*public HashMap<Player, BaseComponent> getFormattedMessage(
+			String format, 
+			Player sender, 
+			HashMap<Player, BaseComponent> recipients) {
+		// map to store the messages within
 		HashMap<Player, BaseComponent> components = new HashMap<Player, BaseComponent>();
 		
 		// add all players to the components map along with a base for string addition
@@ -163,10 +259,10 @@ public class Chatar extends KaranteeniPlugin {
 		
 		// generate and loop all keywords from format
 		Matcher m = TAG_PATTERN.matcher(format);
-		boolean matchFound = false;
+		//boolean matchFound = false;
 		int lastMatchPos = 0;
 		while(m.find()) {
-			matchFound = true;
+			//matchFound = true;
 			String group = m.group();
 			// cut the % % away
 			group = group.substring(1, group.length()-1);
@@ -203,13 +299,21 @@ public class Chatar extends KaranteeniPlugin {
 			lastMatchPos = m.end();
 		}
 		
-		// if no matches, just put the format there
-		if(!matchFound) {
-			// TODO
+		// add the results to the messages
+		if(lastMatchPos < format.length())
+		for(Player player : recipients.keySet()) {
+			BaseComponent pc = components.get(player);
+			// add the remaining string
+			pc.addExtra(new TextComponent(TextComponent.fromLegacyText(format.substring(lastMatchPos))));
 		}
 		
-		return components;
-	}
+		// if no matches, just put the format there
+		/*if(!matchFound) {
+			// TODO
+		}*/
+		
+		/*return components;
+	}*/
 
 	
 	/**

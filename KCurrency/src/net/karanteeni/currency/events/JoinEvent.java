@@ -32,7 +32,7 @@ public class JoinEvent implements Listener{
 	private void createData(final Player player)
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return;
+		//if(!db.isConnected()) return;
 		
 		//check if this player is already in the database
 		/*try {

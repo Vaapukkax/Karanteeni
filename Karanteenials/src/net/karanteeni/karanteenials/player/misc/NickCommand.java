@@ -22,6 +22,7 @@ public class NickCommand extends BareCommand {
 	private static char[] COLORS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 	private static char[] FORMATS = {'o', 'n', 'm', 'r', 'l'};
 	private static char RANDOM = 'k';
+	private static char[] ILLEGAL_CHARACTERS = {'@', ',', ':', ';', '%'};
 	private BarePlayerComponent playerComponent = new BarePlayerComponent(false);
 	
 	public NickCommand() {
@@ -52,13 +53,13 @@ public class NickCommand extends BareCommand {
 			boolean isOff = args[1].toLowerCase().equals("off");
 			
 			if(isOff) {
-				if(!sender.hasPermission("karanteenials.nick.self")) return CommandResult.NO_PERMISSION;
+				if(!sender.hasPermission("karanteenials.nick.change.self")) return CommandResult.NO_PERMISSION;
 				
 				// reset nickname
 				NickSetEvent event = new NickSetEvent(players.get(0).getUniqueId(), players.get(0).getName(), sender);
 				Bukkit.getPluginManager().callEvent(event);
 			} else {
-				if(!sender.hasPermission("karanteenials.nick.other")) return CommandResult.NO_PERMISSION;
+				if(!sender.hasPermission("karanteenials.nick.change.other")) return CommandResult.NO_PERMISSION;
 				String nick = formatNick(sender, args[1]);
 				// set a new nickname
 				NickSetEvent event = new NickSetEvent(players.get(0).getUniqueId(), nick, sender);
@@ -68,7 +69,7 @@ public class NickCommand extends BareCommand {
 			return CommandResult.SUCCESS;
 		} else if(args.length == 1) {
 			if(!(sender instanceof Player)) return CommandResult.NOT_FOR_CONSOLE;
-			if(!sender.hasPermission("karanteenials.nick.self")) return CommandResult.NO_PERMISSION;
+			if(!sender.hasPermission("karanteenials.nick.change.self")) return CommandResult.NO_PERMISSION;
 			
 			// set or reset own nick
 			if(args[0].toLowerCase().equals("off")) {
@@ -94,7 +95,7 @@ public class NickCommand extends BareCommand {
 	 * @return
 	 */
 	private String formatNick(CommandSender sender, String name) {
-		if(sender.hasPermission("karanteenials.nick.colors"))
+		if(sender.hasPermission("karanteenials.nick.color"))
 		for(char c : COLORS)
 			name = name.replace("&"+c, "§"+c);
 		if(sender.hasPermission("karanteenials.nick.format"))
@@ -102,8 +103,12 @@ public class NickCommand extends BareCommand {
 		for(char c : FORMATS)
 			name = name.replace("&"+c, "§"+c);
 		// set message random chars
-		if(sender.hasPermission("karanteenials.nick.magic"))
+		if(sender.hasPermission("karanteenials.nick.scramble"))
 		name = name.replace("&"+RANDOM, "§"+RANDOM);
+		
+		// remove illegal characters
+		for(char c : ILLEGAL_CHARACTERS)
+			name = name.replace(c+"", "");
 		return name;
 	}
 	

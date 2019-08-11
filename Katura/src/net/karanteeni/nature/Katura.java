@@ -22,12 +22,26 @@ import net.karanteeni.nature.entity.events.FeedSheep;
 import net.karanteeni.nature.entity.events.HungerPreventer;
 import net.karanteeni.nature.entity.events.OnLightning;
 import net.karanteeni.nature.entity.events.SpreadCreeperExplosion;
+import net.karanteeni.nature.worldguard.WorldGuardManager;
 
 public class Katura extends KaranteeniPlugin {
 	private static String KEY_PREFIX = "Plugin-functionality.";
+	private WorldGuardManager wgm;
 	
 	public Katura() {
 		super(true);
+	}
+	
+	
+	@Override
+	public void onLoad() {
+		try {
+			wgm = new WorldGuardManager();
+			wgm.registerFlags();
+		} catch (NoClassDefFoundError e) {
+			// no worldguard on server
+			wgm = null;
+		}
 	}
 	
 	
@@ -36,6 +50,22 @@ public class Katura extends KaranteeniPlugin {
 		registerConfig();
 		registerEvents();
 		registerCommands();
+		
+		if(wgm != null && this.getServer().getPluginManager().getPlugin("WorldGuard") != null && 
+				this.getServer().getPluginManager().getPlugin("WorldGuard").isEnabled()) {
+			wgm.register();	
+		} else {
+			wgm = null;
+		}
+	}
+	
+	
+	/**
+	 * Returns the world guard manager used by the plugin
+	 * @return world guard manager of this plugin
+	 */
+	public WorldGuardManager getWorldGuardManager() {
+		return wgm;
 	}
 	
 	

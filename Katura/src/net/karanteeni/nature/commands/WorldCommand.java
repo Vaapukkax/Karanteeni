@@ -80,8 +80,8 @@ public class WorldCommand extends AbstractCommand implements TranslationContaine
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) 
 	{
-		
-		if(args.length < 2)
+		return false;
+		/*if(args.length < 2)
 		{
 			sendIncorrectParameters(sender);
 			return true;
@@ -131,7 +131,7 @@ public class WorldCommand extends AbstractCommand implements TranslationContaine
 		player.getWorld().setTicksPerAnimalSpawns(1);
 		player.getWorld().setTicksPerMonsterSpawns(1);*/
 		
-		return true;
+		//return true;
 	}
 	
 	/**

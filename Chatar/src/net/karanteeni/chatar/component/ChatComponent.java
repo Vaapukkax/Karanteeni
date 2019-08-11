@@ -13,8 +13,10 @@ import net.karanteeni.chatar.component.click.ClickComponent;
 import net.karanteeni.chatar.component.hover.HoverComponent;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 
 public abstract class ChatComponent {
 	private String key;
@@ -212,6 +214,41 @@ public abstract class ChatComponent {
 		// create and return new map
 		return new HashMap<Player, BaseComponent>(chatText);
 	}
+	/*public HashMap<Player, BaseComponent> asBaseComponent(Player sender, Set<Player> receivers) {
+		// text to show in chat
+		HashMap<Player, TextComponent> chatText = getChatText(sender, receivers);
+		
+		// hover text to add if hoverEvent is not null
+		HashMap<Player, BaseComponent> hover = null;
+		if(hoverEvent == null)
+			hover = createHoverText(sender, receivers);
+		
+		HashMap<Player, ClickEvent> clicks = null;
+		if(clickEvent == null && clickAction != null)
+			clicks = createClickEvent(sender, receivers);
+		
+		// create a new base for each message
+		for(Entry<Player, TextComponent> entry : chatText.entrySet()) {
+			// add hover event
+			if(hoverEvent != null && entry.getValue().getHoverEvent() == null) {
+				entry.getValue().setHoverEvent(hoverEvent);
+			} else if (hoverEvent == null && entry.getValue().getHoverEvent() == null) {
+				entry.getValue().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {hover.get(entry.getKey())}));
+			}
+			
+			// add click event
+			if(clickEvent != null && entry.getValue().getClickEvent() == null) { // if event is given use it instead
+				entry.getValue().setClickEvent(clickEvent);
+			} else if (clickEvent == null && entry.getValue().getClickEvent() == null && clickAction != null) { // if no events given use config
+				ClickEvent ce = clicks.get(entry.getKey());
+				if(ce != null)
+					entry.getValue().setClickEvent(ce);
+			}
+		}
+		
+		// create and return new map
+		return new HashMap<Player, BaseComponent>(chatText);
+	}*/
 
 	
 	protected final HashMap<Player, ClickEvent> createClickEvent(Player sender, Set<Player> receivers) {
@@ -292,6 +329,77 @@ public abstract class ChatComponent {
 	 */
 	protected final HashMap<Player, BaseComponent> createHoverText(Player sender, Set<Player> receivers) {
 		// create new component for all hover texts
+		HashMap<Player, ComponentBuilder> components = new HashMap<Player, ComponentBuilder>();
+		Matcher m = TAG_PATTERN.matcher(format);
+		Chatar chatar = Chatar.getPlugin(Chatar.class);
+		
+		int lastMatchPos = 0;
+		boolean matchFound = false;
+		// loop all matches in hover
+		while(m.find()) {
+			matchFound = true;
+			String group = m.group();
+			// cut the % % away
+			group = group.substring(1, group.length()-1);
+
+			// get the string in between this and previous match
+			String notMatchPart = format.substring(lastMatchPos, m.start());
+			
+			// get the possible hover component
+			HoverComponent hover = chatar.getHoverTexts().getHover(group);
+			HashMap<Player, BaseComponent> hoverComponents = null;
+
+			// create nullCheck for hover
+			if(hover != null)
+				hoverComponents = hover.getHover(sender, receivers);
+			else {// if no component was found, add the found string
+				hoverComponents = new HashMap<Player, BaseComponent>();
+				BaseComponent component = buildComponent(m.group());
+				
+				// add the component to the message of each player
+				for(Player player : receivers)
+					hoverComponents.put(player, component);
+			}
+			
+			// add the component to each player
+			for(Player player : receivers) {
+				// create new list if one does not already exist
+				if(!components.containsKey(player)) {
+					components.put(player, new ComponentBuilder(""));
+				}
+				
+				// add hover to the components list to return
+				components.get(player).append(notMatchPart, FormatRetention.FORMATTING);
+				components.get(player).append(hoverComponents.get(player), FormatRetention.FORMATTING);
+			}
+			
+			// set the index of last match
+			lastMatchPos = m.end();
+		}
+		
+		// if no matches found, just add the bare text
+		if(!matchFound)
+		for(Player player : receivers)
+			components.put(player, new ComponentBuilder(""));
+		
+		// add the rest of the hover text
+		// add the component to each player
+		if(lastMatchPos != format.length()-1)
+		for(Player player : receivers) {
+			// add the remaining part of the string
+			components.get(player).append(format.substring(lastMatchPos), FormatRetention.FORMATTING);
+		}
+		
+		HashMap<Player, BaseComponent> results = new HashMap<Player, BaseComponent>();
+		for(Entry<Player, ComponentBuilder> entry : components.entrySet()) {
+			results.put(entry.getKey(), new TextComponent(entry.getValue().create()));
+		}
+		
+		// return the built hover component
+		return results;
+	}
+	/*protected final HashMap<Player, BaseComponent> createHoverText(Player sender, Set<Player> receivers) {
+		// create new component for all hover texts
 		HashMap<Player, BaseComponent> components = new HashMap<Player, BaseComponent>();
 		Matcher m = TAG_PATTERN.matcher(format);
 		Chatar chatar = Chatar.getPlugin(Chatar.class);
@@ -355,7 +463,7 @@ public abstract class ChatComponent {
 		
 		// return the built hover component
 		return components;
-	}
+	}*/
 	
 	
 	/**

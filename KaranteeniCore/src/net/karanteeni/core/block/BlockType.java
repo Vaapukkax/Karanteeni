@@ -22,6 +22,7 @@ public class BlockType {
 			Material.MYCELIUM, Material.COARSE_DIRT
 	);
 	
+	
 	/**
 	 * All concrete type materials
 	 */
@@ -43,6 +44,7 @@ public class BlockType {
 			Material.WHITE_CONCRETE,
 			Material.YELLOW_CONCRETE
 	);
+	
 	
 	/**
 	 * All concrete powder type materials
@@ -66,6 +68,7 @@ public class BlockType {
 			Material.YELLOW_CONCRETE_POWDER
 	);
 	
+	
 	/**
 	 * All wool type materials
 	 */
@@ -87,6 +90,7 @@ public class BlockType {
 			Material.WHITE_WOOL,
 			Material.YELLOW_WOOL
 	);
+	
 	
 	/**
 	 * All wool type materials
@@ -110,6 +114,7 @@ public class BlockType {
 			Material.YELLOW_BED
 	);
 	
+	
 	/**
 	 * All log type materials
 	 */
@@ -121,6 +126,7 @@ public class BlockType {
 			Material.OAK_LOG,
 			Material.SPRUCE_LOG
 	);
+	
 	
 	/**
 	 * All stripped log type materials
@@ -134,6 +140,7 @@ public class BlockType {
 			Material.STRIPPED_SPRUCE_LOG
 	);
 	
+	
 	/**
 	 * All planks type materials
 	 */
@@ -146,6 +153,7 @@ public class BlockType {
 			Material.SPRUCE_PLANKS
 	);
 	
+	
 	/**
 	 * All trapdoor type materials
 	 */
@@ -157,6 +165,7 @@ public class BlockType {
 			Material.OAK_TRAPDOOR,
 			Material.SPRUCE_TRAPDOOR
 	);
+	
 	
 	/**
 	 * All button type materials
@@ -183,6 +192,7 @@ public class BlockType {
 			Material.SPRUCE_DOOR
 	);
 	
+	
 	/**
 	 * All fence gate type materials
 	 */
@@ -195,6 +205,7 @@ public class BlockType {
 			Material.SPRUCE_FENCE_GATE
 	);
 	
+	
 	/**
 	 * All fence type materials
 	 */
@@ -206,6 +217,7 @@ public class BlockType {
 			Material.OAK_FENCE,
 			Material.SPRUCE_FENCE
 	);
+	
 	
 	/**
 	 * All stone type materials
@@ -221,6 +233,7 @@ public class BlockType {
 			Material.DIORITE
 	);
 
+	
 	/**
 	 * All leave type materials
 	 */
@@ -233,20 +246,44 @@ public class BlockType {
 			Material.SPRUCE_LEAVES
 	);
 	
+	
+	/**
+	 * All sign type materials
+	 */
+	public static final Set<Material> SIGNS = EnumSet.of(
+			Material.ACACIA_SIGN,
+			Material.BIRCH_SIGN,
+			Material.DARK_OAK_SIGN,
+			Material.JUNGLE_SIGN,
+			Material.OAK_SIGN,
+			Material.SPRUCE_SIGN
+	);
+	
+	
+	/**
+	 * All wall sign type materials
+	 */
+	public static final Set<Material> WALL_SIGNS = EnumSet.of(
+			Material.ACACIA_WALL_SIGN,
+			Material.BIRCH_WALL_SIGN,
+			Material.DARK_OAK_WALL_SIGN,
+			Material.JUNGLE_WALL_SIGN,
+			Material.OAK_WALL_SIGN,
+			Material.SPRUCE_WALL_SIGN
+	);
+	
+	
 	/**
 	 * Returns all chests connected to the current chest
 	 * @param block
 	 * @return
 	 */
-	public static List<Block> getConnectedChestBlock(Block block)
-	{
-		if(block.getState() instanceof Chest)
-		{
+	public static List<Block> getConnectedChestBlock(Block block) {
+		if(block.getState() instanceof Chest) {
 			Chest c = (Chest)block.getState();
 			InventoryHolder holder = c.getInventory().getHolder();
 			
-			if(holder instanceof DoubleChest)
-			{
+			if(holder instanceof DoubleChest) {
 				DoubleChest dc = (DoubleChest)holder;
 				Chest c1 = (Chest)dc.getLeftSide();
 				Chest c2 = (Chest)dc.getRightSide();

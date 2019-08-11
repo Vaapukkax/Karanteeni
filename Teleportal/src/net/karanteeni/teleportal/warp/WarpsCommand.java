@@ -7,6 +7,7 @@ import org.bukkit.command.CommandSender;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.information.sounds.Sounds;
+import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.teleportal.Teleportal;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -61,8 +62,9 @@ public class WarpsCommand extends AbstractCommand implements TranslationContaine
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		// check permission
-		if(!sender.hasPermission("teleporta.warp.use") && !sender.hasPermission("teleporta.warp.send")) {
+		if(!sender.hasPermission("teleportal.warp.use") && !sender.hasPermission("teleportal.warp.send")) {
 			Teleportal.getMessager().sendMessage(sender, Sounds.NO.get(), 
+					Prefix.NEGATIVE +
 					Teleportal.getDefaultMsgs().noPermission(sender));
 			return true;
 		}

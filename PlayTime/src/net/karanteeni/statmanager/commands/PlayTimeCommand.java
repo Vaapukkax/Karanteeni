@@ -42,7 +42,7 @@ public class PlayTimeCommand extends CommandChainer implements TranslationContai
 		// checking our own play time
 		if(uuid == null || ((sender instanceof Player) && ((Player)sender).getUniqueId().equals(uuid))) {
 			if(!(sender instanceof Player)) return CommandResult.NOT_FOR_CONSOLE;
-			if(!sender.hasPermission("playtime.check-self")) return CommandResult.NO_PERMISSION;
+			if(!sender.hasPermission("statmanager.check-self")) return CommandResult.NO_PERMISSION;
 			Time time = null;
 			if(uuid != null) time = ((StatManager)plugin).getManager().getTime(uuid);
 			else time = ((StatManager)plugin).getManager().getTime(((Player)sender).getUniqueId());
@@ -50,7 +50,7 @@ public class PlayTimeCommand extends CommandChainer implements TranslationContai
 			StatManager.getMessager().sendActionBar(sender, Sounds.EQUIP.get(), 
 					StatManager.getTranslator().getTranslation(plugin, sender, "own-time").replace("%time%", formatTime(time.asTimeData())));
 		} else {
-			if(!sender.hasPermission("playtime.check-other")) return CommandResult.NO_PERMISSION;
+			if(!sender.hasPermission("statmanager.check-other")) return CommandResult.NO_PERMISSION;
 			Time time = ((StatManager)plugin).getManager().forceLoadTime(uuid);
 			
 			StatManager.getMessager().sendMessage(sender, Sounds.EQUIP.get(), 

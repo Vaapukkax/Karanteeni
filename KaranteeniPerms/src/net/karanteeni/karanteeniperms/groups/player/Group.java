@@ -590,8 +590,9 @@ public class Group {
 	 */
 	public List<String> getPermissions() { 
 		List<String> perms = this.groupData.getPermissions();
-		for(Group group : inheritedGroups)
+		for(Group group : inheritedGroups) {
 			perms.addAll(group.getPermissions());
+		}
 		return perms;
 	}
 	
@@ -654,8 +655,7 @@ public class Group {
 		for(Player player : Bukkit.getOnlinePlayers()) { //Loop each player in this group
 			//If KPlayer is not loaded, don't try to add permissions
 			if(KPlayer.getKPlayer(player) != null) {
-				KPlayer kp = KPlayer.getKPlayer(player);
-				System.out.println(kp.getPlayer());
+				//KPlayer kp = KPlayer.getKPlayer(player);
 				if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
 					this.addPermission.accept(player.getUniqueId(), perm);
 			}

@@ -1,5 +1,6 @@
 package net.karanteeni.karanteeniperms.groups.player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GroupData {
@@ -59,5 +60,5 @@ public class GroupData {
 	{ return this.permissions.remove(permission); }
 	
 	public List<String> getPermissions()
-	{ return this.permissions; }
+	{ return new ArrayList<String>(this.permissions); }
 }

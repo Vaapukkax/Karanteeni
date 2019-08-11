@@ -3,19 +3,16 @@ package net.karanteeni.core.database;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 
 public class DatabaseConnector {
-	private Connection connection;
-	private Statement statement;
+	//private Connection connection;
+	//private Statement statement;
 	private String host, database, username, password;
 	private int port;
-	private static final String NOT_CONNECTED = "DATABASE NOT CONNECTED!";
+	//private static final String NOT_CONNECTED = "DATABASE NOT CONNECTED!";
 	
 	/**
 	 * Connects to database
@@ -25,86 +22,116 @@ public class DatabaseConnector {
 	 * @param password
 	 * @param port
 	 */
-	public DatabaseConnector(final String host, final String database, final String username, final String password, final int port)
-	{
+	public DatabaseConnector(final String host, final String database, final String username, final String password, final int port) 
+			throws SQLException {
 		this.host = host;
 		this.database = database;
 		this.username = username;
 		this.password = password;
 		this.port = port;
 		
-		try{
-			openConnection();
-			statement = connection.createStatement();
-			Bukkit.getConsoleSender().sendMessage(String.format(
-					"§aSuccessfully connected to database: %1$s, host: %2$s, username: %3$s, port: %4$s!", 
-					database, host, username, port));
-		} catch(Exception e) {
-			Bukkit.getLogger().log(Level.SEVERE, "COULD NOT CONNECT TO DATABASE! SOME OPERATIONS WILL NOT WORK!", e);
-		}
+		openConnection();
+		//Statement statement = connection.createStatement();
+		Bukkit.getConsoleSender().sendMessage(String.format(
+				"§aSuccessfully connected to database: %1$s, host: %2$s, username: %3$s, port: %4$s!", 
+				database, host, username, port));
+		
 	}
+	
 	
 	/**
 	 * Check if we're connected to the database
 	 * @return
 	 */
-	public boolean isConnected()
-	{
+	/*public boolean isConnected() {
 		try {
 			if(connection == null)
 				return false;
 			return !connection.isClosed();
+			Connection con = openConnection();
+			boolean connected = con != null && !con.isClosed();
+			if(!con.isClosed())
+				con.close();
+			
 		} catch (SQLException e) {
 		}
 		
 		return false;
-	}
+	}*/
+	
 	
 	/**
 	 * Open a connection to database
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	private void openConnection() throws SQLException, ClassNotFoundException
-	{
+	public Connection openConnection() throws SQLException {
 		//Jos yhteys on jo olemassa niin ei luoda uutta
-		if(connection != null && !connection.isClosed())
-			return;
+		/*if(connection != null && !connection.isClosed())
+			return;*/
 		
-		synchronized(this)
-		{
-			if(connection != null && !connection.isClosed())
-				return;
+		synchronized(this) {
+			/*if(connection != null && !connection.isClosed())
+				return;*/
 			
-			Class.forName("com.mysql.jdbc.Driver");
-			connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database, this.username, this.password);
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+				return DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=true", 
+						this.username, 
+						this.password);
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				
+				// try again in 50ms
+				try {
+					wait(50);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				
+				// try to connect again
+				try {
+					Class.forName("com.mysql.jdbc.Driver");
+					return DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?useSSL=true", 
+							this.username, 
+							this.password);
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+				}
+			}
+			
+			return null;
 		}
 	}
+	
 	
 	/**
 	 * Returns a new statement to connect to database
 	 * @return
 	 */
-	public Statement getStatement()
-	{
+	public Statement getStatement() {
 		try {
-			if(connection == null || connection.isClosed())
+			Connection con = openConnection();
+			if(con == null || con.isClosed())
 				return null;
-			return connection.createStatement();
+			return con.createStatement();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 	
+	
 	/**
 	 * Returns a preparedstatement with given sql
 	 * @param sql Sql used in the statement
 	 * @return Prepared statement
 	 */
-	public PreparedStatement prepareStatement(String sql)
-	{
+	public PreparedStatement prepareStatement(String sql) {
 		try {
+			/*if(connection == null || connection.isClosed())
+				return null;*/
+			Connection connection = openConnection();
 			if(connection == null || connection.isClosed())
 				return null;
 			return connection.prepareStatement(sql);
@@ -113,6 +140,7 @@ public class DatabaseConnector {
 			return null;
 		}	
 	}
+	
 	
 	/**
 	 * Gets a list of strings from database
@@ -329,6 +357,7 @@ public class DatabaseConnector {
 		return text;
 	}*/
 	
+	
 	/**
 	 * Runs any given query, returns only execution status
 	 * @param query
@@ -337,9 +366,8 @@ public class DatabaseConnector {
 	 * @throws ClassNotFoundException
 	 * @throws Exception
 	 */
-	@Deprecated
-	public int runQuery(String query) throws SQLException, ClassNotFoundException, Exception
-	{
+	/*@Deprecated
+	public int runQuery(String query) throws SQLException, ClassNotFoundException, Exception {
 		if(connection == null || connection.isClosed())
 			throw new Exception(NOT_CONNECTED);
 		
@@ -347,16 +375,16 @@ public class DatabaseConnector {
 		{
 			return statement.executeUpdate(query);
 		}
-	}
+	}*/
+	
 	
 	/**
 	 * Execute a query on a database to return a set of values
 	 * @param query
 	 * @return
 	 */
-	@Deprecated
-	public ResultSet executeQuery(String query) throws SQLException, ClassNotFoundException, Exception
-	{
+	/*@Deprecated
+	public ResultSet executeQuery(String query) throws SQLException, ClassNotFoundException, Exception {
 		synchronized(this)
 		{
 			if(connection == null || connection.isClosed())
@@ -364,7 +392,7 @@ public class DatabaseConnector {
 			
 			return statement.executeQuery(query);
 		}
-	}
+	}*/
 	
 	/*public List<Location> getLocationList(String query) throws SQLException, ClassNotFoundException, Exception
 	{
@@ -440,9 +468,8 @@ public class DatabaseConnector {
 	/**
 	 * Shuts down the connection to database
 	 */
-	public void closeConnection()
-	{
+	/*public void closeConnection() {
 		try{connection.close();}
 		catch(Exception e){}
-	}
+	}*/
 }

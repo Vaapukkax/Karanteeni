@@ -14,7 +14,9 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.timers.KaranteeniTimer;
+import net.karanteeni.karpet.worldguard.WorldGuardManager;
 
 public class CarpetHandler implements KaranteeniTimer {
 	private LinkedHashMap<Player, Carpet> carpets = new LinkedHashMap<Player, Carpet>();
@@ -23,10 +25,13 @@ public class CarpetHandler implements KaranteeniTimer {
 	private List<Material> clippableBlocks;
 	private Material[][] defaultLayout;
 	private Karpet plugin;
+	private WorldGuardManager wgm = null;
 	
-	public CarpetHandler() {
+	public CarpetHandler(WorldGuardManager wgm) {
 		super();
 		this.plugin = Karpet.getPlugin(Karpet.class);
+		
+		this.wgm = wgm;
 		
 		initializeDatabaseTable();
 		defaultLayout = loadDefaultLayout();
@@ -290,9 +295,28 @@ public class CarpetHandler implements KaranteeniTimer {
 	}
 	
 	
+	/**
+	 * Returns the world guard flag manager
+	 * @return wg flag manager
+	 */
+	public WorldGuardManager getFlagManager() {
+		return wgm;
+	}
+	
+	
 	@Override
 	public void runTimer() {
 		for(Entry<Player, Carpet> entry : carpets.entrySet()) {
+			// check if the carpet is in allowed region
+			if(wgm != null && !wgm.isCarpetAllowed(entry.getKey().getLocation())) {
+				removeCarpet(entry.getKey());
+				Karpet.getMessager().sendActionBar(
+						entry.getKey(), 
+						Sounds.EQUIP.get(), 
+						Karpet.getTranslator().getRandomTranslation(plugin, entry.getKey(), "carpet.disabled"));
+				continue;
+			}
+			
 			// draw the carpet and if the player is sneaking, lower the carpet
 			if(entry.getKey().isSneaking() && entry.getKey().isOnGround()) {
 				entry.getValue().draw(entry.getKey().getLocation().subtract(0, 2, 0));

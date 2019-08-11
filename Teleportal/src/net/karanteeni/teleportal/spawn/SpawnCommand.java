@@ -41,7 +41,7 @@ public class SpawnCommand extends CommandChainer implements TranslationContainer
 		if(!this.isSet("core.players")) { // teleport self
 			if(!(sender instanceof Player))
 				return CommandResult.NOT_FOR_CONSOLE;
-			else if(!sender.hasPermission("teleportal.spawn.teleport.self"))
+			if(!sender.hasPermission("teleportal.spawn.teleport.self"))
 				return CommandResult.NO_PERMISSION;
 			
 			SpawnManager sm = new SpawnManager((Teleportal)plugin);
@@ -92,7 +92,7 @@ public class SpawnCommand extends CommandChainer implements TranslationContainer
 				// message about the teleportation to each player
 				for(Player player : players) {
 					Teleportal.getMessager().sendActionBar(
-							sender, 
+							player, 
 							Sounds.TELEPORT.get(), 
 							Teleportal.getTranslator().getTranslation(plugin, player, "spawn.teleport-self"));
 				}

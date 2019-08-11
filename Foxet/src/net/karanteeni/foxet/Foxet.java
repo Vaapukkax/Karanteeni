@@ -1,6 +1,8 @@
 package net.karanteeni.foxet;
 
 import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
+import net.karanteeni.foxet.punishment.BanCommand;
 
 public class Foxet extends KaranteeniPlugin {
 	
@@ -36,9 +38,12 @@ public class Foxet extends KaranteeniPlugin {
 	 * Register all config values
 	 */
 	private void registerConfig() {
-		TestCommand test = new TestCommand();
-		test.register();
-		getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-		getServer().getMessenger().registerIncomingPluginChannel(this, "Return", test);
+		BanCommand ban = new BanCommand();
+		PlayerLoader loader = new PlayerLoader(true, true, false, true, true);
+		ban.setPermission("foxet.punishment.ban");
+		ban.setLoader(loader);
+		ban.register();
+		getServer().getMessenger().registerOutgoingPluginChannel(this, "foxet:ban");
+		getServer().getMessenger().registerIncomingPluginChannel(this, "foxet:ban", ban);
 	}
 }

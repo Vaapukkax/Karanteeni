@@ -3,7 +3,7 @@ name: Chatar
 version: 1.0
 author: Nuubles
 description: Manages messaging and chat in the game
-api-version: 1.13
+api-version: 1.14
 depend: [KaranteeniCore]
 database: true
 
@@ -25,4 +25,7 @@ permissions:
     description: create a chat party
   chatar.party.info:
     description: view party info
+  
+  chatar.broadcast:
+    description: broadcast a message to the whole bungeecord network
     

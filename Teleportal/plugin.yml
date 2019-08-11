@@ -3,7 +3,7 @@ name: Teleportal
 version: 1.0
 author: Nuubles
 description: Manages teleportation extensions such as portals and warps 
-api-version: 1.13
+api-version: 1.14
 depend: [KaranteeniCore]
 
 permissions:
@@ -33,3 +33,7 @@ permissions:
     description: delets the spawn location of this world
   teleportal.noobspawn.set:
     description: sets the first join spawn
+  teleportal.respawn.delete:
+    description: delete the respawn location
+  teleportal.respawn.set:
+    description: set the respawn location

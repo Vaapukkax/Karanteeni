@@ -24,6 +24,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;
@@ -59,6 +60,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;
@@ -92,6 +94,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;
@@ -127,6 +130,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;
@@ -164,6 +168,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;
@@ -199,6 +204,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;
@@ -234,6 +240,7 @@ public interface ChainerInterface {
 				break;
 			case ACTIONBAR:
 				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
 			case BOSSBAR:
 				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
 				break;

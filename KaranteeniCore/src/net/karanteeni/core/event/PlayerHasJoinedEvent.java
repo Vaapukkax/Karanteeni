@@ -37,11 +37,11 @@ public class PlayerHasJoinedEvent extends Event {
 	 * @param player player who joined the server
 	 * @param joinMessage join message of player
 	 */
-	public PlayerHasJoinedEvent(Player player, String joinMessage)
-	{
+	public PlayerHasJoinedEvent(Player player, String joinMessage) {
 		this.player = player;
 		this.joinMessage = joinMessage;
 	}
+	
 	
 	/**
 	 * Returns the joined player 

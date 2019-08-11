@@ -158,17 +158,17 @@ public class StatManager extends KaranteeniPlugin {
 		TimeComponent timeComponent = new TimeComponent(true, true);
 		
 		SetComponent setComponent = new SetComponent();
-		setComponent.setPermission("playtime.set");
+		setComponent.setPermission("statmanager.set");
 		pl.addComponent("set", setComponent);
 		setComponent.setLoader(timeComponent);
 		
 		RemoveComponent subtractComponent = new RemoveComponent();
-		subtractComponent.setPermission("playtime.remove");
+		subtractComponent.setPermission("statmanager.remove");
 		pl.addComponent("remove", subtractComponent);
 		subtractComponent.setLoader(timeComponent);
 		
 		AddComponent addComponent = new AddComponent();
-		addComponent.setPermission("playtime.add");
+		addComponent.setPermission("statmanager.add");
 		pl.addComponent("add", addComponent);
 		addComponent.setLoader(timeComponent);
 		

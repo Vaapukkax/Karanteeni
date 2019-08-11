@@ -6,6 +6,10 @@ import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
 import net.karanteeni.teleportal.noobspawn.JoinEvent;
 import net.karanteeni.teleportal.noobspawn.NoobSpawnDelete;
 import net.karanteeni.teleportal.noobspawn.NoobSpawnSet;
+import net.karanteeni.teleportal.respawn.RespawnCommand;
+import net.karanteeni.teleportal.respawn.RespawnDelete;
+import net.karanteeni.teleportal.respawn.RespawnEvent;
+import net.karanteeni.teleportal.respawn.RespawnSet;
 import net.karanteeni.teleportal.spawn.SpawnCommand;
 import net.karanteeni.teleportal.spawn.SpawnDelete;
 import net.karanteeni.teleportal.spawn.SpawnSet;
@@ -37,7 +41,7 @@ public class Teleportal extends KaranteeniPlugin {
 		registerConfig();
 		registerCommands();
 		registerEvents();
-		Bukkit.getConsoleSender().sendMessage("§Teleportal has been enabled!");
+		Bukkit.getConsoleSender().sendMessage("§eTeleportal has been enabled!");
 	}
 	
 	
@@ -99,7 +103,7 @@ public class Teleportal extends KaranteeniPlugin {
 		
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.SPAWN.toString())) {
 			SpawnCommand sp = new SpawnCommand();
-			sp.setPermission("teleportal.spawn.use");
+			sp.setPermission("teleportal.spawn.teleport.self");
 			PlayerLoader pc = new PlayerLoader(true, false, false, false);
 			sp.setLoader(pc);
 			sp.register();
@@ -122,6 +126,21 @@ public class Teleportal extends KaranteeniPlugin {
 			nss.setPermission("teleportal.noobspawn.set");
 			nss.register();
 		}
+		
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.RESPAWN.toString())) {
+			RespawnCommand rc = new RespawnCommand();
+			
+			RespawnDelete nsd = new RespawnDelete();
+			nsd.setPermission("teleportal.respawn.delete");
+			
+			RespawnSet nss = new RespawnSet();
+			nss.setPermission("teleportal.respawn.set");
+			
+			rc.addComponent("delete", nsd);
+			rc.addComponent("set", nss);
+			rc.register();
+		}
 	}
 	
 	
@@ -132,6 +151,10 @@ public class Teleportal extends KaranteeniPlugin {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.NOOBSPAWN.toString())) {
 			getServer().getPluginManager().registerEvents(new JoinEvent(), this);
 		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.RESPAWN.toString())) {
+			getServer().getPluginManager().registerEvents(new RespawnEvent(this), this);
+		}
 	}
 	
 	/**
@@ -141,6 +164,7 @@ public class Teleportal extends KaranteeniPlugin {
 	private static enum KEYS {
 		WARP, 
 		SPAWN,
-		NOOBSPAWN
+		NOOBSPAWN,
+		RESPAWN
 	}
 }

@@ -3,6 +3,7 @@ package net.karanteeni.karpet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -59,6 +60,9 @@ public class CarpetCommand extends BareCommand implements TranslationContainer {
 		Karpet.getTranslator().registerTranslation(plugin, 
 				"carpet.enabled-others", 
 				"You gave a carpet to [%players%]");
+		Karpet.getTranslator().registerTranslation(plugin, 
+				"carpet.cannot-enable-here", 
+				"Magic carpet cannot be enabled here");
 	}
 
 	
@@ -89,6 +93,18 @@ public class CarpetCommand extends BareCommand implements TranslationContainer {
 		
 		return null;
 	}
+	
+	
+	/**
+	 * Can the carpet be enabled at the given location
+	 * @param location location where the carpet should be enabled
+	 * @return true if carpet can be enabled, false otherwise
+	 */
+	private boolean canEnable(Location location) {
+		if(handler.getFlagManager() != null)
+			return handler.getFlagManager().isCarpetAllowed(location);
+		return true;
+	}
 
 	
 	@Override
@@ -98,6 +114,12 @@ public class CarpetCommand extends BareCommand implements TranslationContainer {
 			if(!(sender instanceof Player)) return CommandResult.NOT_FOR_CONSOLE;
 			if(!sender.hasPermission("karpet.use")) return CommandResult.NO_PERMISSION;
 			Player player = (Player)sender;
+			
+			// check if the carpet can be enabled at this location
+			if(!canEnable(player.getLocation())) {
+				return new CommandResult(Karpet.getTranslator().getTranslation(this.plugin, player, "carpet.cannot-enable-here"),
+						ResultType.NO_PERMISSION, Sounds.NO.get());
+			}
 			
 			// toggle carpet
 			if(handler.hasCarpet(player)) {
@@ -124,10 +146,18 @@ public class CarpetCommand extends BareCommand implements TranslationContainer {
 				// enable or disable own carpet
 				Boolean result = binary.loadData(sender, cmd, label, args[0]);
 				if(result == null) return binary.getInvalidArgumentResult(sender);
-				if(result)
+				if(result) {
+					// check if the carpet can be enabled here
+					if(!canEnable(player.getLocation())) {
+						return new CommandResult(Karpet.getTranslator().getTranslation(this.plugin, player, "carpet.cannot-enable-here"),
+								ResultType.NO_PERMISSION, Sounds.NO.get());
+					}
+					
 					handler.addCarpet(player);
-				else
+				} else {
 					handler.removeCarpet(player);
+				}
+				
 				sendCarpetMessage(player, result);
 			}
 			
@@ -174,10 +204,20 @@ public class CarpetCommand extends BareCommand implements TranslationContainer {
 				
 				// loop each player
 				for(Player player : players) {
-					if(result)
+					if(result) {
+						// check if the carpet can be enabled here
+						if(!canEnable(player.getLocation())) {
+							Karpet.getMessager().sendMessage(player, 
+									Sounds.NO.get(), 
+									Karpet.getTranslator().getTranslation(this.plugin, player, "carpet.cannot-enable-here"));
+							continue;
+						}
+						
 						handler.addCarpet(player);
-					else
+					} else {
 						handler.removeCarpet(player);
+					}
+					
 					sendCarpetMessage(player, result);
 				}
 				

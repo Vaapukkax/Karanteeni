@@ -370,7 +370,6 @@ public abstract class InventoryBase<T extends KaranteeniPlugin> implements Liste
 	 */
 	@EventHandler
 	public void menuDrag(InventoryDragEvent event)  {
-		Bukkit.broadcastMessage(this.getClass().getName());
 		if(inventory.equals(event.getInventory()) && event.getInventorySlots().size() > 1)
 			event.setCancelled(true);
 	}

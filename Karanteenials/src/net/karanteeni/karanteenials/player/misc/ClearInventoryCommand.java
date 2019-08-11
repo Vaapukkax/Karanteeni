@@ -92,7 +92,7 @@ public class ClearInventoryCommand extends CommandChainer implements Translation
 			return new CommandResult(Karanteenials.getDefaultMsgs().playerNotFound(sender, args[0]), 
 					ResultType.INVALID_ARGUMENTS, 
 					Sounds.NO.get());
-		} else if(materials != null && materials.size() == 0) { // no materials found, give error
+		} else if(materials == null || materials.size() == 0) { // no materials found, give error
 			return new CommandResult(Karanteenials.getTranslator().getTranslation(plugin, sender, "clear.material-not-found").replace("%materials%", args[1]), 
 					ResultType.INVALID_ARGUMENTS, 
 					Sounds.NO.get());

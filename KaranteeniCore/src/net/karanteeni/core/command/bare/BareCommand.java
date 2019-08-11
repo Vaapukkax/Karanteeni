@@ -9,6 +9,7 @@ import org.bukkit.SoundCategory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
@@ -39,33 +40,41 @@ public abstract class BareCommand extends AbstractCommand implements ChainerInte
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		// check if sender has permission to this command
-		if(!hasPermission(sender)) {
-			noPermission(sender, 
-					CommandResult.NO_PERMISSION.getSound(), 
-					CommandResult.NO_PERMISSION.getDisplayFormat(), 
-					CommandResult.NO_PERMISSION.getMessage());
-			return true;
-		}
-		
-		// run possible command if no params given
-		CommandResult res = runCommand(sender, cmd, label, args);
-		
-		// if the command run returned false, run the invalid arguments method
-		if(!CommandResult.SUCCESS.equals(res)) {
-			if(CommandResult.INVALID_ARGUMENTS.equals(res)) {
-				invalidArguments(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.NO_PERMISSION.equals(res)) {
-				noPermission(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.OTHER.equals(res)) {
-				other(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.ERROR.equals(res)) {
-				error(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.NOT_FOR_CONSOLE.equals(res)) {
-				notForConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
-			} else if(CommandResult.ONLY_CONSOLE.equals(res)) {
-				onlyConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+		BukkitRunnable commandRunnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				if(!hasPermission(sender)) {
+					noPermission(sender, 
+							CommandResult.NO_PERMISSION.getSound(), 
+							CommandResult.NO_PERMISSION.getDisplayFormat(), 
+							CommandResult.NO_PERMISSION.getMessage());
+					return;
+				}
+				
+				// run possible command if no params given
+				CommandResult res = runCommand(sender, cmd, label, args);
+				
+				// if the command run returned false, run the invalid arguments method
+				if(!CommandResult.SUCCESS.equals(res)) {
+					if(CommandResult.INVALID_ARGUMENTS.equals(res)) {
+						invalidArguments(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.NO_PERMISSION.equals(res)) {
+						noPermission(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.OTHER.equals(res)) {
+						other(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.ERROR.equals(res)) {
+						error(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.NOT_FOR_CONSOLE.equals(res)) {
+						notForConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					} else if(CommandResult.ONLY_CONSOLE.equals(res)) {
+						onlyConsole(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
+					}
+				}
 			}
-		}
+		};
+		
+		// run the command
+		commandRunnable.run();
 		
 		// return true to prevent default "no permission" message
 		return true;

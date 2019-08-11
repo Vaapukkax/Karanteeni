@@ -61,7 +61,7 @@ public class PlayerHandler {
 	private void createTable()
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return;
+		//if(!db.isConnected()) return;
 		
 		String query = 
 				"CREATE TABLE IF NOT EXISTS "+PlayerDataKeys.PLAYER_TABLE+" ("
@@ -95,7 +95,7 @@ public class PlayerHandler {
 	private UUID getOfflineUUID(String name)
 	{
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return null;
+		//if(!db.isConnected()) return null;
 		
 		UUID uuid = null;
 		
@@ -223,7 +223,7 @@ public class PlayerHandler {
 		/*if(Bukkit.getPlayer(uuid) != null)
 			return Bukkit.getPlayer(uuid).getName();*/
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return null;
+		//if(!db.isConnected()) return null;
 		
 		try {
 			Statement st = db.getStatement();
@@ -251,7 +251,7 @@ public class PlayerHandler {
 		/*if(Bukkit.getPlayer(uuid) != null)
 			return Bukkit.getPlayer(uuid).getDisplayName();*/
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return null;
+		//if(!db.isConnected()) return null;
 		
 		try {
 			Statement st = db.getStatement();
@@ -283,7 +283,7 @@ public class PlayerHandler {
 			player.setDisplayName(displayname);
 		
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return false;
+		//if(!db.isConnected()) return false;
 		
 		try {
 			PreparedStatement stmt = db.prepareStatement("UPDATE player SET displayname = ? WHERE UUID = ?;");

@@ -13,6 +13,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.database.DatabaseConnector;
@@ -55,19 +56,28 @@ public class KPlayerJoin implements Listener{
 		if(cacheRemovers.containsKey(event.getPlayer().getUniqueId()))
 			cacheRemovers.get(event.getPlayer().getUniqueId()).cancel();
 		
-		// check if player has changed the name
-		boolean nameSameAsBefore = nameMatches(event.getPlayer());
 		
-		//Add player to database
-		addToDatabase(event.getPlayer());
+		// database management
+		BukkitRunnable databaseThread = new BukkitRunnable() {
+			@Override
+			public void run() {
+				// check if player has changed the name
+				boolean nameSameAsBefore = nameMatches(event.getPlayer());
+				
+				//Add player to database
+				addToDatabase(event.getPlayer());
+				
+				// if player has changed name reset the displayname
+				if(!nameSameAsBefore)
+					resetDisplayName(event.getPlayer());
+					
+				// load and set player display name from database
+				event.getPlayer().setDisplayName(
+						KaranteeniCore.getPlayerHandler().getOfflineDisplayName(event.getPlayer().getUniqueId()));
+			}
+		};
 		
-		// if player has changed name reset the displayname
-		if(!nameSameAsBefore)
-			resetDisplayName(event.getPlayer());
-			
-		// load and set player display name from database
-		event.getPlayer().setDisplayName(
-				KaranteeniCore.getPlayerHandler().getOfflineDisplayName(event.getPlayer().getUniqueId()));
+		databaseThread.runTask(KaranteeniCore.getPlugin(KaranteeniCore.class));
 	}
 	
 	
@@ -118,7 +128,7 @@ public class KPlayerJoin implements Listener{
 	 */
 	private boolean nameMatches(final Player player) {
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return true;
+		//if(!db.isConnected()) return true;
 		
 		// select all names with this players uuid
 		String query = "SELECT " + PlayerHandler.PlayerDataKeys.NAME + " FROM "+
@@ -146,7 +156,7 @@ public class KPlayerJoin implements Listener{
 	 */
 	private void addToDatabase(final Player player) {
 		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		if(!db.isConnected()) return;
+		//if(!db.isConnected()) return;
 		
 		/*String query = 
 			"INSERT IGNORE INTO " + PlayerHandler.PlayerDataKeys.PLAYER_TABLE +

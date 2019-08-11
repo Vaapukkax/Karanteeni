@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.karanteeniperms.KaranteeniPerms;
 import net.karanteeni.karanteeniperms.groups.player.Group;
 
@@ -23,9 +24,17 @@ public class LocalGroupSetExecutor extends Executor<String> {
 
 	@Override
 	public void execute(Player player) {
-		if(!plugin.getPlayerModel().setLocalGroup(player, newGroup)) {
-			Bukkit.getLogger().log(Level.SEVERE, "Could not set the local group for player " + player.getUniqueId());
-		}
+		// set the group asynchronously
+		BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				if(!plugin.getPlayerModel().setLocalGroup(player, newGroup)) {
+					Bukkit.getLogger().log(Level.SEVERE, "Could not set the local group for player " + player.getUniqueId());
+				}
+			}
+		};
+		
+		runnable.runTaskAsynchronously(plugin);
 	}
 	
 	

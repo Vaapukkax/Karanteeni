@@ -3,6 +3,7 @@ package net.karanteeni.chatar.events.custom;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -187,7 +188,13 @@ public class PlayerChatEvent extends Event implements Cancellable {
 										e.getMessage(), 
 										chatFormat, 
 										e.getRecipients());
-			Bukkit.getPluginManager().callEvent(event);
+			// run task synchronously. TODO CHANGE TO ASYNC
+			Bukkit.getScheduler().runTask(plugin, new Runnable() {
+				@Override
+				public void run() {
+					Bukkit.getPluginManager().callEvent(event);
+				}
+			});
 		}
 		
 		
@@ -260,6 +267,9 @@ public class PlayerChatEvent extends Event implements Cancellable {
 			// loop each recipient and send the message
 			for(Entry<Player, BaseComponent> pb : components.entrySet())
 				pb.getKey().spigot().sendMessage(pb.getValue());
+			
+			// print the original message to the console
+			Bukkit.getLogger().log(Level.INFO, event.player.getName() + " > " + event.message);
 		}
 	}
 }

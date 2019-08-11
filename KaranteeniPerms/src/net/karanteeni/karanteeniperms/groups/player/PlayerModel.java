@@ -173,14 +173,22 @@ public class PlayerModel {
 	 * Load and sets players permissions
 	 * @param uuid
 	 */
-	protected void loadOnlinePlayerGroupPermissions(Player player, Group group)
+	synchronized protected void loadOnlinePlayerGroupPermissions(Player player, Group group)
 	{
 		PermissionAttachment attachment = player.addAttachment(plugin);
 		this.playerPermissions.put(player.getUniqueId(), attachment);
 		
 		//Get players group and load the permissions
-		for(String perm : group.getPermissions())
-			setPermissionToAttachment(attachment, new Permission(perm));
+		// run in sync
+		/*Runnable runnable = new Runnable() {
+			@Override
+			public void run() {*/
+				for(String perm : group.getPermissions())
+					setPermissionToAttachment(attachment, new Permission(perm));
+			/*}
+		};*/
+		
+		//Bukkit.getScheduler().runTask(plugin, runnable);
 	}
 	
 	/**
@@ -207,17 +215,17 @@ public class PlayerModel {
 			removePermissionFromAttachment(attch, new Permission(perm));
 	}
 	
+	
 	/**
 	 * Handles negation permission etc. and adds permissions to
 	 * PermissionAttachments accordingly
 	 * @param attch
 	 * @param perm
 	 */
-	private void setPermissionToAttachment(PermissionAttachment attch, Permission perm)
-	{
+	private void setPermissionToAttachment(PermissionAttachment attch, Permission perm) {
 		String realPerm = perm.getName();
 		boolean isNegation = realPerm.charAt(0) == '-';
-
+		
 		if(isNegation)
 			realPerm = realPerm.substring(1, realPerm.length());
 		
@@ -233,6 +241,7 @@ public class PlayerModel {
 		else if(isNegation && attch.getPermissions().get(perm.getName()))
 			attch.setPermission(perm, false);
 	}
+	
 	
 	/**
 	 * Removes a given permission from permissionattachment.
@@ -346,39 +355,41 @@ public class PlayerModel {
 		return true;
 	}
 	
+	
 	/**
 	 * Clears all permissions players have
 	 */
 	public void clearAllPlayersPermissions()
 	{ this.playerPermissions.clear(); }
 	
+	
 	/**
 	 * Return the group of an uuid
 	 * @param uuid
 	 * @return
 	 */
-	public Group getLocalGroup(UUID uuid)
-	{
+	public Group getLocalGroup(UUID uuid) {
 		Player player = Bukkit.getPlayer(uuid);
-		if(player == null) //Return the group for offline player
+		if(player == null || KPlayer.getKPlayer(player) == null) //Return the group for offline player
 			return db.getLocalGroup(plugin.getGroupModel().getLocalGroupList(), uuid);
 		
 		//Return the group for online player
 		return this.getLocalGroup(player);
 	}
 	
+	
 	/**
 	 * Return the group of a player
 	 * @param player
 	 * @return
 	 */
-	public Group getLocalGroup(Player player)
-	{
-		if(player.isOnline()) //Return the group of online player
+	public Group getLocalGroup(Player player) {
+		if(player.isOnline() && KPlayer.getKPlayer(player) != null) //Return the group of online player
 			return getLocalGroup(KPlayer.getKPlayer(player));
 		else //Return the group of offline player
 			return getLocalGroup(player.getUniqueId());
 	}
+	
 	
 	/**
 	 * Return the group of a player
@@ -388,10 +399,9 @@ public class PlayerModel {
 	public Group getLocalGroup(KPlayer kplayer)
 	{
 		//Player group is in cache, load from cache
-		if(kplayer.dataExists(plugin, GROUP_KEY))
+		if(kplayer.dataExists(plugin, GROUP_KEY)) {
 			return (Group)kplayer.getData(plugin, GROUP_KEY);
-		else
-		{
+		} else {
 			//Load the group from database
 			Group group = db.getLocalGroup(
 					plugin.getGroupModel().getLocalGroupList(), 
@@ -421,16 +431,15 @@ public class PlayerModel {
 		return true;
 	}
 	
+	
 	/**
 	 * Sets the group of given player to database
 	 * @param player player to set the new group to
 	 * @param group new group the uuid will gave
 	 * @return was the set successful
 	 */
-	public boolean setLocalGroup(Player player, Group group)
-	{
-		if(player.isOnline())
-		{
+	public boolean setLocalGroup(Player player, Group group) {
+		if(player.isOnline()) {
 			if(!db.setLocalGroup(player.getUniqueId(), group))
 				return false;
 			
@@ -440,8 +449,7 @@ public class PlayerModel {
 			loadOnlinePlayerGroupPermissions(player, group);
 			
 			//Load players private permissions
-			if(!loadOnlinePlayerPrivatePermissions(player))
-			{
+			if(!loadOnlinePlayerPrivatePermissions(player)) {
 				Bukkit.getLogger().log(Level.SEVERE, "Failed to load player "+
 						player.getUniqueId()+" permissions from database!");
 				return false;
@@ -671,8 +679,7 @@ class GroupDatabase {
 	 * @param group Group which is to be the future group of player
 	 * @return true if insert/update was successful, false if no update happened
 	 */
-	protected boolean setLocalGroup(UUID uuid, Group group)
-	{
+	protected boolean setLocalGroup(UUID uuid, Group group) {
 		String statement = 
 				"INSERT INTO groups (UUID, ID, serverID) "+
 				"VALUES (?,?,?) "+

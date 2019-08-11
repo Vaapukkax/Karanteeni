@@ -3,8 +3,9 @@ name: Katura
 version: 1.0
 author: Nuubles
 description: The nature modifiers and actions for Karanteeni
-api-version: 1.13
+api-version: 1.14
 depend: [KaranteeniCore]
+softdepend: [WorldGuard]
 
 permissions:
   katura.dropspawner.silk:

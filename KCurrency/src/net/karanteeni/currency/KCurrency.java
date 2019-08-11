@@ -55,7 +55,7 @@ public class KCurrency extends KaranteeniPlugin {
 		TABLE_NAME = String.format("balance_%s", getServerIdentificator());
 		
 		//Generate the database table and check if we're connected to the database
-		if(!generateBalanceTable() || !getDatabaseConnector().isConnected())
+		if(!generateBalanceTable()/* || !getDatabaseConnector().isConnected()*/)
 		{
 			//If not successful, disable this plugin
 			this.setEnabled(false);

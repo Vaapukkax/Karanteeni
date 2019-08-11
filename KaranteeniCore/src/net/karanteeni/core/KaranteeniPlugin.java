@@ -1,16 +1,15 @@
 package net.karanteeni.core;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-
 import net.karanteeni.core.block.BlockManager;
 import net.karanteeni.core.config.ConfigManager;
 import net.karanteeni.core.config.YamlConfig;
@@ -68,8 +67,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 	/**
 	 * Called when the core plugin is loaded
 	 */
-	protected void load()
-	{
+	protected void load() {
 		/** Loads the server ID */
 		if(this.getConfig().isSet(SERVERID))
 			serverID = this.getConfig().getString(SERVERID);
@@ -79,6 +77,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 			this.saveConfig();
 		}
 	}
+	
 	
 	/**
 	 * Called when the core plugin is enabled
@@ -90,10 +89,17 @@ public class KaranteeniPlugin extends JavaPlugin {
 		
 		//Connect to database
 		if(dbConnector == null) {
-			dbConnector = createDatabaseConnector();
-			if(dbConnector.isConnected())
+			try {
+				dbConnector = createDatabaseConnector();
 				createTables();
+			} catch (SQLException e) {
+				Bukkit.getLogger().log(Level.SEVERE, "COULD NOT CONNECT TO DATABASE! SOME OPERATIONS WILL NOT WORK!", e);
+				e.printStackTrace();
+			}
 		}
+		// after connecting to the database create language tables
+		Translator.initTable();
+		
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		
 		defaultMessages = new DefaultMessages();
@@ -107,6 +113,7 @@ public class KaranteeniPlugin extends JavaPlugin {
 		itemManager = new ItemManager();
 	}
 	
+	
 	/**
 	 * Create the server table to database
 	 */
@@ -119,6 +126,15 @@ public class KaranteeniPlugin extends JavaPlugin {
 				+ "ID VARCHAR(64) NOT NULL,"
 				+ "PRIMARY KEY (ID));");
 		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		// insert this server to the database server table
+		try {
+			PreparedStatement ps = dbConnector.prepareStatement("INSERT IGNORE INTO server (ID) VALUES (?);");
+			ps.setString(1, serverID);
+			ps.execute();
+		} catch(SQLException e) {
 			e.printStackTrace();
 		}
 		
@@ -139,11 +155,12 @@ public class KaranteeniPlugin extends JavaPlugin {
 		}
 	}
 	
+	
 	/**
 	 * Connects to mysql database according to config
 	 * @return
 	 */
-	private DatabaseConnector createDatabaseConnector() {
+	private DatabaseConnector createDatabaseConnector() throws SQLException {
 		//Load host, database, username, password and port from config
 		if(!this.getConfig().isSet("Database.host")) {
 			this.getConfig().set("Database.host", "localhost");
@@ -178,13 +195,14 @@ public class KaranteeniPlugin extends JavaPlugin {
 		return new DatabaseConnector(host, database, user, password, port);
 	}
 	
+	
 	/**
 	 * Called when the core plugin is disabled
 	 */
 	protected void disable() {
 		// close database connection
-		if(dbConnector != null && dbConnector.isConnected())
-			dbConnector.closeConnection();
+		/*if(dbConnector != null && dbConnector.isConnected())
+			dbConnector.closeConnection();*/
 		// stop all the timers
 		timerInitiater.closeTimers();
 	}

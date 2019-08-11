@@ -4,6 +4,12 @@ import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.defaultcomponent.BinaryComponent;
 import net.karanteeni.core.command.defaultcomponent.MaterialLoader;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
+import net.karanteeni.karanteenials.enchant.EnchantCommand;
+import net.karanteeni.karanteenials.enchant.EnchantmentLoader;
+import net.karanteeni.karanteenials.enchant.GiveEnchantmentComponent;
+import net.karanteeni.karanteenials.enchant.LevelLoader;
+import net.karanteeni.karanteenials.enchant.RemoveEnchantmentComponent;
+import net.karanteeni.karanteenials.events.DeathBack;
 import net.karanteeni.karanteenials.functionality.PlayerFunctionality;
 import net.karanteeni.karanteenials.player.BurnComponent;
 import net.karanteeni.karanteenials.player.ExtinguishComponent;
@@ -26,10 +32,13 @@ import net.karanteeni.karanteenials.player.home.SetHomeCommand;
 import net.karanteeni.karanteenials.player.misc.ClearInventoryCommand;
 import net.karanteeni.karanteenials.player.misc.EnderChestCommand;
 import net.karanteeni.karanteenials.player.misc.HatCommand;
+import net.karanteeni.karanteenials.player.misc.NearCommand;
 import net.karanteeni.karanteenials.player.misc.NickCommand;
+import net.karanteeni.karanteenials.player.misc.NickLimitLength;
 import net.karanteeni.karanteenials.player.misc.NickSetEvent;
 import net.karanteeni.karanteenials.player.misc.WorkbenchCommand;
 import net.karanteeni.karanteenials.teleport.Back;
+import net.karanteeni.karanteenials.teleport.RandomTeleport;
 import net.karanteeni.karanteenials.teleport.Teleport;
 import net.karanteeni.karanteenials.teleport.TeleportAccept;
 import net.karanteeni.karanteenials.teleport.TeleportDeny;
@@ -79,10 +88,18 @@ public class Karanteenials extends KaranteeniPlugin
 	private void registerEvents() {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.NICK.toString())) {
 			NickSetEvent.register(this);
+			getServer().getPluginManager().registerEvents(new NickLimitLength(this), this);
+		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.DEATH_BACK.toString())) {
+			getServer().getPluginManager().registerEvents(new DeathBack(), this);
 		}
 	}
 	
 	
+	/**
+	 * Register all Karanteenials commands
+	 */
 	private void registerCommands() {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.HOME.toString())) {
 			(new HomeCommand(this)).register();
@@ -196,8 +213,49 @@ public class Karanteenials extends KaranteeniPlugin
 			cic.register();
 		}
 		
+		// /nick command
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.NICK.toString())) {
 			NickCommand nc = new NickCommand();
+			nc.register();
+		}
+		
+		
+		// /enchant command
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.ENCHANT_COMMAND.toString())) {
+			EnchantCommand ec = new EnchantCommand();
+			
+			GiveEnchantmentComponent gec = new GiveEnchantmentComponent();
+			gec.setPermission("karanteenials.enchant.set");
+			
+			RemoveEnchantmentComponent rec = new RemoveEnchantmentComponent();
+			rec.setPermission("karanteenials.enchant.remove");
+			
+			ec.addComponent("give", gec);
+			ec.addComponent("remove", rec);
+			
+			EnchantmentLoader giveEnchLoader = new EnchantmentLoader();
+			gec.setLoader(giveEnchLoader);
+			
+			EnchantmentLoader removeEnchLoader = new EnchantmentLoader();
+			rec.setLoader(removeEnchLoader);
+			
+			LevelLoader ll = new LevelLoader();
+			giveEnchLoader.setLoader(ll);
+			
+			ec.register();
+		}
+		
+		// /rtp command
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.RANDOM_TELEPORT.toString())) {
+			RandomTeleport rtp = new RandomTeleport();
+			PlayerLoader pl = new PlayerLoader(true, false, true, false);
+			rtp.setLoader(pl);
+			rtp.register();
+		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.NEAR_COMMAND.toString())) {
+			NearCommand nc = new NearCommand();
+			nc.setPermission("karanteenials.near");
 			nc.register();
 		}
 	}
@@ -227,6 +285,10 @@ public class Karanteenials extends KaranteeniPlugin
 		PLAYER_CMD,
 		WORKBENCH_ENDERCHEST,
 		CLEAR_INVENTORY,
-		NICK
+		NICK,
+		ENCHANT_COMMAND,
+		RANDOM_TELEPORT,
+		DEATH_BACK,
+		NEAR_COMMAND
 	}
 }

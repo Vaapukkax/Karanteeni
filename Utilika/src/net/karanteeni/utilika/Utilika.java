@@ -1,6 +1,7 @@
 package net.karanteeni.utilika;
 
 import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.utilika.inventory.InventoryTweaks;
 import net.karanteeni.utilika.items.RepairCommand;
 import net.karanteeni.utilika.structure.elevator.Elevator;
 
@@ -40,6 +41,10 @@ public class Utilika extends KaranteeniPlugin {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.ELEVATOR.toString())) {
 			getServer().getPluginManager().registerEvents(new Elevator(), this);
 		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.INVENTORY_TWEAKS.toString())) {
+			getServer().getPluginManager().registerEvents(new InventoryTweaks(), this);
+		}
 	}
 	
 	
@@ -58,6 +63,7 @@ public class Utilika extends KaranteeniPlugin {
 	 */
 	private static enum KEYS {
 		REPAIR,
-		ELEVATOR
+		ELEVATOR,
+		INVENTORY_TWEAKS
 	}
 }

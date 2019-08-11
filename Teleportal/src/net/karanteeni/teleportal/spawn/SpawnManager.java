@@ -10,6 +10,7 @@ public class SpawnManager {
 	private final Teleportal plugin;
 	private static final String SPAWN = "spawn";
 	private static final String NOOBSPAWN = "noobspawn.location";
+	private static final String RESPAWN = "respawn.location";
 	
 	public SpawnManager(Teleportal teleportal) {
 		plugin = teleportal;
@@ -74,6 +75,7 @@ public class SpawnManager {
 		if(!isSpawnSet()) return false;
 		
 		plugin.getConfig().set(SPAWN, null);
+		plugin.saveConfig();
 		return true;
 	}
 	
@@ -109,6 +111,25 @@ public class SpawnManager {
 		
 		if(loc != null) return loc;
 		
+		if(failsafe)
+			return teleportToSpawn(player);
+		return null;
+	}
+	
+	
+	public Location teleportToRespawn(Player player) {
+		boolean failsafe = useRespawnFailSafe();
+		
+		if(!isRespawnSet())
+			if(failsafe)
+				return teleportToSpawn(player);
+			else
+				return null;
+			
+		Teleporter tp = new Teleporter(getRespawnLocation());
+		Location loc = tp.teleport(player, true);
+		
+		if(loc != null) return loc;
 		if(failsafe)
 			return teleportToSpawn(player);
 		return null;
@@ -158,6 +179,21 @@ public class SpawnManager {
 	
 	
 	/**
+	 * Does the plugin use failsafe when teleporting to respawn. That means
+	 * if noobspawn is not or tp fails then use normal spawn
+	 * @return true if failsafe active, false otherwise
+	 */
+	public boolean useRespawnFailSafe() {
+		if(!plugin.getConfig().isSet("respawn.failsafe")) {
+			plugin.getConfig().set("respawn.failsafe", true);
+			plugin.saveConfig();
+		}
+		
+		return plugin.getConfig().getBoolean("respawn.failsafe");
+	}
+	
+	
+	/**
 	 * Returns the current spawn location
 	 * @return the spawn location or null if spawn is not set
 	 */
@@ -165,6 +201,17 @@ public class SpawnManager {
 		if(!plugin.getConfig().isSet(NOOBSPAWN)) return null;
 		
 		return (Location)plugin.getConfig().get(NOOBSPAWN);
+	}
+	
+	
+	/**
+	 * Returns the current respawn location
+	 * @return the respawn location or null if spawn is not set
+	 */
+	public Location getRespawnLocation() {
+		if(!plugin.getConfig().isSet(RESPAWN)) return null;
+		
+		return (Location)plugin.getConfig().get(RESPAWN);
 	}
 	
 	
@@ -178,6 +225,15 @@ public class SpawnManager {
 	
 	
 	/**
+	 * Check if the spawn location has been set to the config
+	 * @return true if spawn has been set, false if not
+	 */
+	public boolean isRespawnSet() {
+		return plugin.getConfig().isSet(RESPAWN);
+	}
+	
+	
+	/**
 	 * Deletes spawn if spawn has been set
 	 * @return true if spawn has been set, false otherwise
 	 */
@@ -185,6 +241,7 @@ public class SpawnManager {
 		if(!isNoobSpawnSet()) return false;
 		
 		plugin.getConfig().set(NOOBSPAWN, null);
+		plugin.saveConfig();
 		return true;
 	}
 	
@@ -195,6 +252,29 @@ public class SpawnManager {
 	 */
 	public void setNoobSpawn(Location location) {
 		plugin.getConfig().set(NOOBSPAWN, location);
+		plugin.saveConfig();
+	}
+	
+	
+	/**
+	 * Deletes spawn if spawn has been set
+	 * @return true if spawn has been set, false otherwise
+	 */
+	public boolean deleteRespawn() {
+		if(!isRespawnSet()) return false;
+		
+		plugin.getConfig().set(RESPAWN, null);
+		plugin.saveConfig();
+		return true;
+	}
+	
+	
+	/**
+	 * Set the spawn location
+	 * @param location location for spawn
+	 */
+	public void setRespawn(Location location) {
+		plugin.getConfig().set(RESPAWN, location);
 		plugin.saveConfig();
 	}
 }

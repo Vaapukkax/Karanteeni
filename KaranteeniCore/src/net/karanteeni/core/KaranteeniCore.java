@@ -5,11 +5,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import net.karanteeni.core.command.ShortcutCommand;
+import net.karanteeni.core.commands.LanguageCommand;
+import net.karanteeni.core.commands.LanguageComponent;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.event.NoActionEvent;
 import net.karanteeni.core.event.PlayerHasJoinedEvent;
 import net.karanteeni.core.event.PlayerJumpEvent;
+import net.karanteeni.core.event.PreLoginEvent;
 import net.karanteeni.core.information.translation.CoreTranslations;
+import net.karanteeni.core.information.translation.PlayerJoinLoadTranslation;
 import net.karanteeni.core.inventory.preset.PresetActionItems;
 import net.karanteeni.core.players.KPlayerJoin;
 import net.karanteeni.core.players.events.Invincibility;
@@ -70,13 +74,21 @@ public class KaranteeniCore extends KaranteeniPlugin {
 		getLogger().log(Level.INFO, "KaranteeniCore has been disabled!");
 	}
 	
+	
 	/**
 	 * Enables coreplugin commands
 	 */
 	private void enableCommands() {
 		// initialize shortcuts
 		ShortcutCommand.initializeShortcuts(this);
+		
+		LanguageCommand lc = new LanguageCommand();
+		LanguageComponent lcomp = new LanguageComponent();
+		
+		lc.setLoader(lcomp);
+		lc.register();
 	}
+	
 	
 	/**
 	 * Gets online players and sends them each a join event
@@ -90,6 +102,7 @@ public class KaranteeniCore extends KaranteeniPlugin {
 		}
 	}
 	
+	
 	/**
 	 * Enables coreplugin events
 	 */
@@ -102,5 +115,7 @@ public class KaranteeniCore extends KaranteeniPlugin {
 		// register listenable events
 		getServer().getPluginManager().registerEvents(new KPlayerJoin(), this);
 		getServer().getPluginManager().registerEvents(new Invincibility(), this);
+		getServer().getPluginManager().registerEvents(new PlayerJoinLoadTranslation(), this);
+		getServer().getPluginManager().registerEvents(new PreLoginEvent(System.currentTimeMillis()), this);
 	}
 }

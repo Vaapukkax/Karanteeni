@@ -8,86 +8,83 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
+import net.karanteeni.bungee.configuration.YamlConfig;
 import net.md_5.bungee.api.CommandSender;
-import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class Translator {
 	//Locales used by this plugin
 	private final List<Locale> locales = new ArrayList<Locale>();
 	private final List<String> localesString = new ArrayList<String>(); 
 	private Locale defaultLocale = null;
-	private Plugin plugin = null;
+	private KaranteeniBungeeCore plugin = null;
 	private String configLocalesTag = "Locales";
 	private static String LANG_SPLITTER = "-";
+	
 	/**
 	 * Initializes the default languages which are always used
 	 */
 	public Translator() {
-		plugin = KaranteeniBungee.getInstance();
+		plugin = KaranteeniBungeeCore.getInstance();
 		initConfig();
 		loadLocales();
 	}
 	
+	
 	/**
 	 * Load the locales from config
 	 */
-	private void loadLocales()
-	{
+	private void loadLocales() {
 		List<String> lcs = plugin.getConfig().getStringList(configLocalesTag);
 		boolean first = true;
-		for(String locale : lcs)
-		{
+		
+		for(String locale : lcs) {
 			String[] l = locale.split(LANG_SPLITTER);
-			if(l.length == 2)
-			{
+			
+			if(l.length == 2) {
 				locales.add(new Locale(l[0], l[1]));
 				localesString.add(l[0]+LANG_SPLITTER+l[1]);
-				if(first)
-				{
+				
+				if(first) {
 					defaultLocale = locales.get(0);
 					first = false;
 				}
-			}
-			else //Log illegal config log
-				Bukkit.getLogger().log(
+			} else //Log illegal config log
+				KaranteeniBungeeCore.getInstance().getLogger().log(
 						Level.CONFIG, 
 						"Illegal locale variable \""+locale+"\"! Please use format x-x!");
 		}
 		
 		//Register default locale to usage if no lang is set
-		if(locales.size() == 0)
-		{
+		if(locales.size() == 0) {
 			locales.add(new Locale("en", "US"));
 			localesString.add("en"+LANG_SPLITTER+"US");
 			defaultLocale = new Locale("en","US");
 		}
 	}
 	
+	
 	/**
 	 * Creates the locales used on server to config
 	 */
-	private void initConfig()
-	{
+	private void initConfig() {
 		//Get the locales used on server
-		if(!plugin.getConfig().isSet(configLocalesTag))
-		{
+		if(!plugin.getConfig().contains(configLocalesTag)) {
 			plugin.getConfig().set(configLocalesTag, 
 					new ArrayList<String>(Arrays.asList("en"+LANG_SPLITTER+"US")));
 			plugin.saveConfig();
 		}
 	}
 	
+	
 	/**
 	 * Returns the default locale used on this server
 	 * @return
 	 */
-	public Locale getDefaultLocale()
-	{
+	public Locale getDefaultLocale() {
 		return defaultLocale;
 	}
+	
 	
 	/**
 	 * Returns the locale of player or if not able to
@@ -95,13 +92,13 @@ public class Translator {
 	 * @param player
 	 * @return
 	 */
-	public Locale getLocale(Player player)
-	{
-		String[] parts = player.getLocale().split("_");
+	public Locale getLocale(ProxiedPlayer player) {
+		String[] parts = player.getLocale().toLanguageTag().split("_");
 		if(parts.length == 2 && parts[0] != null && parts[1] != null)
 			return new Locale(parts[0], parts[1]);
 		return this.defaultLocale;
 	}
+	
 	
 	/**
 	 * Gives all the locales as stringlist used by the plugin in the format
@@ -111,31 +108,29 @@ public class Translator {
 	public List<String> getStringLocales()
 	{ return this.localesString; }
 	
+	
 	/**
 	 * Registers a new plugin translation to a key
 	 * @param plugin
 	 * @param key
 	 * @param defaultText
 	 */
-	public void registerTranslation(KaranteeniPlugin plugin, String key, String defaultText)
-	{
+	public void registerTranslation(KaranteeniBungee plugin, String key, String defaultText) {
 		try{
-			Map<Locale, FileConfiguration> configs = KaranteeniCore.getConfigManager().getPluginTranslationYMLs(plugin);
+			Map<Locale, YamlConfig> configs = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYMLs(plugin);
 			
-			for(Entry<Locale, FileConfiguration> entry : configs.entrySet())
-			{
-				if(!entry.getValue().isSet(key))
-					entry.getValue().set(key, defaultText);
+			for(Entry<Locale, YamlConfig> entry : configs.entrySet()) {
+				if(!entry.getValue().getConfig().contains(key))
+					entry.getValue().getConfig().set(key, defaultText);
 				
-				KaranteeniCore.getConfigManager().savePluginTranslationYML(plugin, entry.getKey());
+				KaranteeniBungeeCore.getConfigManager().savePluginTranslationYML(plugin, entry.getKey());
 			}
-		}
-		catch(Exception e)
-		{
-			Bukkit.getLogger().log(Level.SEVERE, "Tried to register translation before enabling plugin!");
-			Bukkit.getLogger().log(Level.SEVERE, "Error given:", e);
+		} catch(Exception e) {
+			KaranteeniBungeeCore.getInstance().getLogger().log(Level.SEVERE, "Tried to register translation before enabling plugin!");
+			KaranteeniBungeeCore.getInstance().getLogger().log(Level.SEVERE, "Error given:", e);
 		}
 	}
+	
 	
 	/**
 	 * Registers a list of translations to one key
@@ -143,22 +138,18 @@ public class Translator {
 	 * @param key
 	 * @param defaultText
 	 */
-	public void registerRandomTranslation(KaranteeniPlugin plugin, String key, String defaultText)
-	{
+	public void registerRandomTranslation(KaranteeniBungee plugin, String key, String defaultText) {
 		try{
-			Map<Locale, FileConfiguration> configs = KaranteeniCore.getConfigManager().getPluginTranslationYMLs(plugin);
+			Map<Locale, YamlConfig> configs = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYMLs(plugin);
 			
-			for(Entry<Locale, FileConfiguration> entry : configs.entrySet())
-			{
-				if(!entry.getValue().isSet(key))
-					entry.getValue().set(key, new ArrayList<String>(Arrays.asList(defaultText)));
+			for(Entry<Locale, YamlConfig> entry : configs.entrySet()) {
+				if(!entry.getValue().getConfig().contains(key))
+					entry.getValue().getConfig().set(key, new ArrayList<String>(Arrays.asList(defaultText)));
 				
-				KaranteeniCore.getConfigManager().savePluginTranslationYML(plugin, entry.getKey());
+				KaranteeniBungeeCore.getConfigManager().savePluginTranslationYML(plugin, entry.getKey());
 			}
-		}
-		catch(Exception e)
-		{
-			Bukkit.getLogger().log(Level.SEVERE, "Tried to register translation before enabling plugin!");
+		} catch(Exception e) {
+			KaranteeniBungeeCore.getInstance().getLogger().log(Level.SEVERE, "Tried to register translation before enabling plugin!");
 		}
 	}
 	
@@ -169,16 +160,16 @@ public class Translator {
 	 * @param key
 	 * @param newValue
 	 */
-	public void setTranslation(KaranteeniPlugin plugin, Locale locale, String key, String newValue)
-	{
-		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
+	public void setTranslation(KaranteeniBungee plugin, Locale locale, String key, String newValue) {
+		YamlConfig yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, locale);
 		
 		if(yml == null)
-			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+			yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
 		
-		yml.set(key, newValue);
-		KaranteeniCore.getConfigManager().savePluginTranslationYML(plugin, locale);
+		yml.getConfig().set(key, newValue);
+		KaranteeniBungeeCore.getConfigManager().savePluginTranslationYML(plugin, locale);
 	}
+	
 	
 	/**
 	 * Returns a translation for this plugin associated to the given key
@@ -187,15 +178,14 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public String getTranslation(KaranteeniPlugin plugin, Locale locale, String key)
-	{
-		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
+	public String getTranslation(KaranteeniBungee plugin, Locale locale, String key) {
+		YamlConfig yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, locale);
 		
 		//Use default locale if not recognized
 		if(yml == null)
-			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+			yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
 		
-		return yml.getString(key);
+		return yml.getConfig().getString(key);
 	}
 	
 	
@@ -206,15 +196,14 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public boolean hasTranslation(KaranteeniPlugin plugin, Locale locale, String key)
-	{
-		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
+	public boolean hasTranslation(KaranteeniBungee plugin, Locale locale, String key) {
+		YamlConfig yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, locale);
 		
 		//Use default locale if not recognized
 		if(yml == null)
-			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+			yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
 		
-		return yml.isSet(key);
+		return yml.getConfig().contains(key);
 	}
 	
 	
@@ -225,10 +214,9 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public boolean hasTranslation(KaranteeniPlugin plugin, CommandSender sender, String key)
-	{
-		if(sender instanceof Player)
-			return hasTranslation(plugin, getLocale((Player)sender), key);
+	public boolean hasTranslation(KaranteeniBungee plugin, CommandSender sender, String key) {
+		if(sender instanceof ProxiedPlayer)
+			return hasTranslation(plugin, getLocale((ProxiedPlayer)sender), key);
 		else
 			return hasTranslation(plugin, defaultLocale, key);
 	}
@@ -241,13 +229,13 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public String getTranslation(KaranteeniPlugin plugin, CommandSender sender, String key)
-	{
-		if(sender instanceof Player)
-			return getTranslation(plugin, (Player)sender, key);
+	public String getTranslation(KaranteeniBungee plugin, CommandSender sender, String key) {
+		if(sender instanceof ProxiedPlayer)
+			return getTranslation(plugin, (ProxiedPlayer)sender, key);
 		else
 			return getTranslation(plugin, defaultLocale, key);
 	}
+	
 	
 	/**
 	 * Returns a translation for this plugin associated to the given key
@@ -256,16 +244,16 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public String getTranslation(KaranteeniPlugin plugin, Player player, String key)
-	{
-		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, getLocale(player));
+	public String getTranslation(KaranteeniBungee plugin, ProxiedPlayer player, String key) {
+		YamlConfig yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, getLocale(player));
 		
 		//Use default locale if not recognized
 		if(yml == null)
-			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+			yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
 		
-		return yml.getString(key);
+		return yml.getConfig().getString(key);
 	}
+	
 	
 	/**
 	 * Returns a random translation from a list of translations
@@ -274,20 +262,20 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public String getRandomTranslation(KaranteeniPlugin plugin, Locale locale, String key)
-	{
-		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
+	public String getRandomTranslation(KaranteeniBungee plugin, Locale locale, String key) {
+		YamlConfig yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, locale);
 		
 		//Use default locale if not recognized
 		if(yml == null)
-			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+			yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
 		
-		List<String> translations = yml.getStringList(key);
+		List<String> translations = yml.getConfig().getStringList(key);
 		
 		Random r = new Random();
 		
 		return translations.get((int)r.nextInt(translations.size()));
 	}
+	
 	
 	/**
 	 * Returns a translation for this plugin associated to the given key
@@ -296,13 +284,13 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public String getRandomTranslation(KaranteeniPlugin plugin, CommandSender sender, String key)
-	{
-		if(sender instanceof Player)
-			return getRandomTranslation(plugin, (Player)sender, key);
+	public String getRandomTranslation(KaranteeniBungee plugin, CommandSender sender, String key) {
+		if(sender instanceof ProxiedPlayer)
+			return getRandomTranslation(plugin, (ProxiedPlayer)sender, key);
 		else
 			return getRandomTranslation(plugin, defaultLocale, key);
 	}
+	
 	
 	/**
 	 * Returns a random translation from a list of translations
@@ -311,27 +299,26 @@ public class Translator {
 	 * @param key
 	 * @return
 	 */
-	public String getRandomTranslation(KaranteeniPlugin plugin, Player player, String key)
-	{
-		FileConfiguration yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, getLocale(player));
+	public String getRandomTranslation(KaranteeniBungee plugin, ProxiedPlayer player, String key) {
+		YamlConfig yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, getLocale(player));
 		
 		//Use default locale if not recognized
 		if(yml == null)
-			yml = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
+			yml = KaranteeniBungeeCore.getConfigManager().getPluginTranslationYML(plugin, defaultLocale);
 		
-		List<String> translations = yml.getStringList(key);
+		List<String> translations = yml.getConfig().getStringList(key);
 		
 		Random r = new Random();
 		
 		return translations.get((int)r.nextInt(translations.size()));
 	}
 	
+	
 	/**
 	 * Returns all the locales used by this plugin
 	 * @return
 	 */
-	public final List<Locale> getLocales()
-	{
+	public final List<Locale> getLocales() {
 		return locales;
 	}
 }

@@ -9,13 +9,37 @@ import net.md_5.bungee.config.YamlConfiguration;
 
 public class YamlConfig {
 	private final String fileName;
+	//private final String path;
 	private File file;
 	private Configuration configuration;
 	
 	public YamlConfig(String fileName) {
 		this.fileName = fileName + ".yml";
+		//this.path = ProxyServer.getInstance().getPluginsFolder().getPath();
 		
-		file = new File(ProxyServer.getInstance().getPluginsFolder(), "/" + this.fileName);
+		file = new File(ProxyServer.getInstance().getPluginsFolder(), File.separator + this.fileName);
+		
+		try {
+			if(!file.exists())
+				file.createNewFile();
+			configuration = ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+			ConfigurationProvider.getProvider(YamlConfiguration.class).save(configuration, file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	public YamlConfig(String path, String fileName) {
+		this.fileName = fileName + ".yml";
+		File path_ = ProxyServer.getInstance().getPluginsFolder();
+		path_ = new File(path_.getPath() + path);
+		file = new File(path_, File.separator + this.fileName);
+		//this.path = path_.getPath();
+		
+		// create the path if one has not been made yet
+		if(!path_.exists())
+			path_.mkdirs();
 		
 		try {
 			if(!file.exists())

@@ -175,7 +175,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 	 */
 	private void messageHomeTeleportation(Player player, String homename, String playername, boolean ownHome)
 	{
-		if(ownHome) 		//Message player that they were teleported own home
+		/*if(ownHome) 		//Message player that they were teleported own home
 			KaranteeniPlugin.getMessager().sendActionBar(player, Sounds.TELEPORT.get(), 
 				Prefix.NEUTRAL + 
 				KaranteeniPlugin.getTranslator().getTranslation(plugin, player, HOME_OWN_TELEPORTED)
@@ -185,17 +185,25 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 					Prefix.NEUTRAL + 
 					KaranteeniPlugin.getTranslator().getTranslation(plugin, player, HOME_OTHER_TELEPORTED)
 					.replace(HOME_TAG, homename)
-					.replace(PLAYER_TAG, playername));
+					.replace(PLAYER_TAG, playername));*/
 		
 		//Send player a bossbar showing the home they teleported to
-		KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.NONE.get(), 3, 5000, true, homename);
+		if(ownHome)
+			KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.NONE.get(), 3, 5000, true, 
+					KaranteeniPlugin.getTranslator().getTranslation(plugin, player, HOME_OWN_TELEPORTED)
+					.replace(HOME_TAG, homename));
+		else
+			KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.NONE.get(), 3, 5000, true, 
+					KaranteeniPlugin.getTranslator().getTranslation(plugin, player, HOME_OTHER_TELEPORTED)
+					.replace(HOME_TAG, homename)
+					.replace(PLAYER_TAG, playername));
 	}
+	
 	
 	/**
 	 * Creates a database table for homes into the database
 	 */
-	private void createHomeTable()
-	{
+	private void createHomeTable() {
 		try {
 			Statement st = KaranteeniPlugin.getDatabaseConnector().getStatement();
 			st.execute("CREATE TABLE IF NOT EXISTS home ( "+
@@ -206,34 +214,31 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 				"FOREIGN KEY (UUID) REFERENCES player(UUID), "+
 				"FOREIGN KEY (serverID) REFERENCES server(ID), "+
 				"PRIMARY KEY (UUID,name));");
-		}
-		catch(Exception e)
-		{
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	
 	/**
 	 * Initializes the default config values
 	 */
-	private void initConfig()
-	{
-		if(!plugin.getConfig().isSet("Home.defaultname")) 
-		{
+	private void initConfig() {
+		if(!plugin.getConfig().isSet("Home.defaultname"))  {
 			plugin.getConfig().set("Home.defaultname", DEFAULT_NAME);
 			plugin.saveConfig();
 		}
 		//What is the default name for homes
 		DEFAULT_NAME = plugin.getConfig().getString("Home.defaultname");
 		
-		if(!plugin.getConfig().isSet("Home.safe-teleport")) 
-		{
+		if(!plugin.getConfig().isSet("Home.safe-teleport"))  {
 			plugin.getConfig().set("Home.safe-teleport", true);
 			plugin.saveConfig();
 		}
 		//Is the /home teleportation safe
 		safeTeleport = plugin.getConfig().getBoolean("Home.safe-teleport");
 	}
+	
 	
 	@Override
 	public void registerTranslations() {
@@ -298,12 +303,11 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 				PLAYER_TAG+" has reached the max limit of homes!");
 	}
 	
+	
 	@Override
-	public List<String> onTabComplete(CommandSender sender, Command arg1, String arg2, String[] args)
-	{
+	public List<String> onTabComplete(CommandSender sender, Command arg1, String arg2, String[] args) {
 		Player player = (Player)sender;
-		if(args.length == 1 && sender.hasPermission("karanteenials.home.own.use"))
-		{
+		if(args.length == 1 && sender.hasPermission("karanteenials.home.own.use")) {
 			List<Home> homes = Home.getHomes(player.getUniqueId());
 			List<String> params = new LinkedList<String>();
 			
@@ -311,9 +315,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 				params.add(home.getName());
 			
 			return filterByPrefix(params, args[0]);
-		}
-		else if(args.length == 2 && sender.hasPermission("karanteenials.home.other.use"))
-		{
+		} else if(args.length == 2 && sender.hasPermission("karanteenials.home.other.use")) {
 			UUID uuid = KaranteeniPlugin.getPlayerHandler().getUUID(args[0]);
 			
 			if(uuid == null)
@@ -331,17 +333,16 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		return null;
 	}
 	
+	
 	/**
 	 * Adds the home max limit data to each group
 	 */
-	private void initGroupData()
-	{
+	private void initGroupData() {
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 		Collection<Group> groups = perms.getGroupModel().getLocalGroupList().getGroups();
 		
 		//Set 10 homes as the default home count limit
-		for(Group group : groups)
-		{
+		for(Group group : groups) {
 			group.setCustomData(plugin, "limit.home", 10);
 			group.saveGroup();
 		}
