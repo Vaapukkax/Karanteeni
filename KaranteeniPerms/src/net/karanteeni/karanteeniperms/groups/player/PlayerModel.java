@@ -1,5 +1,6 @@
 package net.karanteeni.karanteeniperms.groups.player;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,12 +12,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
-
 import net.karanteeni.core.database.QueryState;
 import net.karanteeni.core.players.KPlayer;
 import net.karanteeni.karanteeniperms.KaranteeniPerms;
@@ -488,9 +487,10 @@ class GroupDatabase {
 	 * Permplugin, allow only this plugin to access this
 	 * @param permPlugin
 	 */
-	protected GroupDatabase() throws SQLException
-	{
-		Statement stmt = KaranteeniPerms.getDatabaseConnector().getStatement();
+	protected GroupDatabase() throws SQLException {
+		Connection conn = null;
+		conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+		Statement stmt = conn.createStatement();
 		
 		//Create table for local groups
 		stmt.execute("CREATE TABLE IF NOT EXISTS groups ("
@@ -522,6 +522,9 @@ class GroupDatabase {
 				"FOREIGN KEY (UUID) REFERENCES player(UUID), "+
 				"FOREIGN KEY (serverID) REFERENCES server(ID), "+
 				"PRIMARY KEY (UUID,serverID));");
+		
+		stmt.close();
+		conn.close();
 	}
 	
 	/**
@@ -537,10 +540,12 @@ class GroupDatabase {
 				"WHERE UUID = ? " +
 				"AND serverID = ?;";
 		
-		PreparedStatement st = KaranteeniPerms.getDatabaseConnector().prepareStatement(statement);
+		Connection conn = null;
 		List<String> perms = new ArrayList<String>(); //Players loaded group
 		
 		try {
+			conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(statement);
 			//Prepare the statements
 			st.setString(1, uuid.toString());
 			st.setString(2, KaranteeniPerms.getServerIdentificator());
@@ -552,6 +557,9 @@ class GroupDatabase {
 				perms.add(set.getString(1));
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /*ignored*/ }
 		}
 		
 		//Return the group with ID from database
@@ -572,10 +580,13 @@ class GroupDatabase {
 				"WHERE UUID = ? " +
 				"AND serverID = ?;";
 		
-		PreparedStatement st = KaranteeniPerms.getDatabaseConnector().prepareStatement(statement);
+		Connection conn = null;
+		
 		Group playerGroup = null; //Players loaded group
 		
 		try {
+			conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(statement);
 			//Prepare the statements
 			st.setString(1, uuid.toString());
 			st.setString(2, KaranteeniPerms.getServerIdentificator());
@@ -595,6 +606,9 @@ class GroupDatabase {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) {}
 		}
 		
 		//Return the group with ID from database
@@ -611,9 +625,11 @@ class GroupDatabase {
 		String statement = "SELECT groupname, groupnameshort, prefix, suffix " +
 				"FROM custom_group_data "+
 				"WHERE UUID = ? AND serverID = ?;";
-		PreparedStatement st = KaranteeniPerms.getDatabaseConnector().prepareStatement(statement);
 		
+		Connection conn = null;
 		try{
+			conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(statement);
 			st.setString(1, uuid.toString());
 			st.setString(2, KaranteeniPerms.getServerIdentificator());
 			
@@ -634,10 +650,14 @@ class GroupDatabase {
 			return new GroupData(null,null,null,null,perms);
 		} catch(SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /*ignore*/ }
 		}
 		
 		return null;
 	}
+	
 	
 	/**
 	 * Sets the players groupdata to given custom groupdata values
@@ -673,6 +693,7 @@ class GroupDatabase {
 		return false;
 	}
 	
+	
 	/**
 	 * Sets the local group of player
 	 * @param uuid UUID of the player being updated
@@ -686,9 +707,11 @@ class GroupDatabase {
 				"ON DUPLICATE KEY UPDATE "+
 				"ID = ?;";
 		
-		PreparedStatement st = KaranteeniPerms.getDatabaseConnector().prepareStatement(statement);
+		Connection conn = null; 
 		
 		try {
+			conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(statement);
 			//Prepare the statements
 			st.setString(1, uuid.toString());
 			st.setString(2, group.getID());
@@ -698,11 +721,15 @@ class GroupDatabase {
 			return st.executeUpdate() > 0;
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch (Exception e) { /* ignore */ }
 		}
 		
 		//Return the group with ID from database
 		return false;
 	}
+	
 	
 	/**
 	 * Inserts a given permission to players data into database
@@ -710,12 +737,13 @@ class GroupDatabase {
 	 * @param permission Permission to add to player
 	 * @return was the insertion successful
 	 */
-	protected QueryState addPlayerPermission(UUID uuid, String permission)
-	{
-		String statement = "INSERT INTO permissions (UUID,permission,serverID) VALUES (?,?,?);";
-		PreparedStatement st = KaranteeniPerms.getDatabaseConnector().prepareStatement(statement);
+	protected QueryState addPlayerPermission(UUID uuid, String permission) {
+		Connection conn = null;
 		
 		try{
+			conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+			String statement = "INSERT INTO permissions (UUID,permission,serverID) VALUES (?,?,?);";
+			PreparedStatement st = conn.prepareStatement(statement);
 			st.setString(1, uuid.toString());
 			st.setString(2, permission.toLowerCase());
 			st.setString(3, KaranteeniPerms.getServerIdentificator());
@@ -728,8 +756,12 @@ class GroupDatabase {
 		} catch(Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, "Error on insertion to database!", e);
 			return QueryState.INSERTION_FAIL_OTHER;
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch (Exception e) { /* ignore */ }
 		}
 	}
+	
 	
 	/**
 	 * Removes a permission from player from server database
@@ -739,10 +771,12 @@ class GroupDatabase {
 	 */
 	protected QueryState removePlayerPermission(UUID uuid, String permission)
 	{
-		String statement = "DELETE FROM permissions WHERE UUID = ? AND permission = ? AND serverID = ?;";
-		PreparedStatement st = KaranteeniPerms.getDatabaseConnector().prepareStatement(statement);
+		Connection conn = null;
 		
 		try{
+			conn = KaranteeniPerms.getDatabaseConnector().openConnection();
+			String statement = "DELETE FROM permissions WHERE UUID = ? AND permission = ? AND serverID = ?;";
+			PreparedStatement st = conn.prepareStatement(statement);
 			st.setString(1, uuid.toString());
 			st.setString(2, permission.toLowerCase());
 			st.setString(3, KaranteeniPerms.getServerIdentificator());
@@ -755,6 +789,9 @@ class GroupDatabase {
 		} catch(Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, "Error on deletion from database!", e);
 			return QueryState.REMOVAL_FAIL_OTHER;
-		}	
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch (Exception e) { /* ignore */ }
+		}
 	}
 }

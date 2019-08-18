@@ -1,8 +1,17 @@
 package net.karanteeni.core.information;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map.Entry;
+import org.bukkit.Chunk;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 public class Teleporter {
 	private Location destination;
@@ -39,63 +48,84 @@ public class Teleporter {
 	
 	
 	/**
-	 * Teleports an entity to this destination in the middle of the block
-	 * @param entity Entity to teleport
-	 * @return The location to which the entity was teleported
+	 * Returns a safe point in vertical axis to the given point
+	 * @param location
+	 * @param allowWater
+	 * @return
 	 */
-	public Location preciseTeleport(LivingEntity entity, boolean safe)
-	{
-		if(safe)
-			destination.setY(destination.getBlockY() + 1);
+	public Location getSafePoint(Location location, boolean allowWater, int eyeHeight) {
+		Chunk chunk = location.getChunk();
+		ChunkSnapshot chunkShot = chunk.getChunkSnapshot();
+		double x = Math.abs(location.getX() % 16);
+		double y = Math.min(Math.max(location.getY(), 0), 256);
+		double z = Math.abs(location.getZ() % 16);
+		if(location.getZ() < 0)
+			z = 16 - z;
+		if(location.getX() < 0)
+			x = 16 - x;
 		
-		Location l = destination;
-		// center the coordinates to the middle of the block
-		l.setX((double)l.getBlockX()+0.5);
-		l.setZ((double)l.getBlockZ()+0.5);
+		// check if the location in the chunk is safe
+		SAFENESS safeness = null;
 		
-		if(safe) {
-			SAFENESS safestat = isSafe(EyeLevel.Player);
-			boolean goingDown = safestat == SAFENESS.UNSAFE_FLOOR;
+		if((int)y+eyeHeight <= 255)
+			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, Math.abs((int)y-1), (int)z), 
+					chunkShot.getBlockType((int)x, (int)y, (int)z), 
+					chunkShot.getBlockType((int)x, (int)(y+eyeHeight), (int)z));
+		else if((int)y+eyeHeight > 255 && (int)y <= 255)
+			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, Math.abs((int)y-1), (int)z), 
+					chunkShot.getBlockType((int)x, (int)y, (int)z));
+		else
+			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, Math.abs((int)y-1), (int)z));
 			
-			while(safestat != SAFENESS.SAFE) {
-				if(safestat == SAFENESS.UNSAFE_FLOOR) {
-					if(!goingDown) //Prevent infinite loops 
-						break;
-					goingDown = true;
-					
-					l.subtract(0, 1, 0);
-					if(l.getBlockY() == 1) //Going under bedrock
-						break;
-					
-					safestat = isSafe(EyeLevel.Player);
-				} else if(safestat == SAFENESS.UNSAFE_CEILING) {
-					if(goingDown) //Prevent infinite loops 
-						break;
-					goingDown = false;
-					
-					l.add(0, 1, 0);
-					if(l.getBlockY() == 255){ //Going over build limit
-						safestat = SAFENESS.SAFE;
-						break;
-					}
-					
-					safestat = isSafe(EyeLevel.Player);
-				}
-			}
-			
-			if(safestat != SAFENESS.SAFE) //Unsafe and unable to adjust
-				return null;
-			
-			//if(goingDown) //Fix 1 block error
-			//l.add(0, 1, 0);
+		
+		// if safe, return the given location
+		if(safeness == SAFENESS.SAFE)
+			return location;
+		
+		// get the highest location to return if previous was unsafe
+		double highestY = chunkShot.getHighestBlockYAt((int)x, (int)z)+1;
+		// no blocks at the axis
+		if(highestY < 1) {
+			return null;
+		} else if(highestY + eyeHeight < 256) {
+			// normal location in world
+						safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, (int)highestY-1, (int)z), 
+								chunkShot.getBlockType((int)x, (int)highestY, (int)z), 
+								chunkShot.getBlockType((int)x, (int)(highestY+eyeHeight), (int)z));
+		} else if((int)highestY+eyeHeight > 255 && (int)highestY <= 255){
+			// eye height above build limit, don't check eyeheight
+			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, (int)highestY-1, (int)z), 
+					chunkShot.getBlockType((int)x, (int)highestY, (int)z));
+		} else {
+			// highest block at build limit
+			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, (int)highestY-1, (int)z));
 		}
 		
-		Location orig = entity.getLocation();
-		if(!entity.teleport(l)) //Was the teleport successful
-			return null;
-		this.origination = orig;
-		this.destination = l;
-		return l;
+		// a safe location found, return it
+		if(safeness == SAFENESS.SAFE)
+			return new Location(location.getWorld(), location.getX(), highestY, location.getZ(), 
+					location.getYaw(), location.getPitch());
+		
+		// scan all the blocks below until a safe location is found
+		while(highestY > 1) {
+			--highestY;
+			
+			Material blockBelowFeet = chunkShot.getBlockType((int)x, (int)highestY-1, (int)z);
+			Material blockAtFeet = chunkShot.getBlockType((int)x, (int)highestY, (int)z);
+			
+			if((int)(highestY + eyeHeight) <= 255) {
+				Material blockAtHead = chunkShot.getBlockType((int)x, (int)(highestY+eyeHeight), (int)z);
+				if(SAFENESS.SAFE == isSafe(allowWater, blockBelowFeet, blockAtFeet, blockAtHead))
+					return new Location(location.getWorld(), location.getX(), highestY, location.getZ(), location.getYaw(), location.getPitch());
+			} else {
+				if(SAFENESS.SAFE == isSafe(allowWater, blockBelowFeet, blockAtFeet))
+					return new Location(location.getWorld(), location.getX(), highestY, location.getZ(), location.getYaw(), location.getPitch());
+			}
+			
+		}
+		
+		// no safe location found
+		return null;
 	}
 	
 	
@@ -105,56 +135,69 @@ public class Teleporter {
 	 * @param entity Entity to teleport
 	 * @return The location to which the entity was teleported
 	 */
-	public Location teleport(LivingEntity entity, boolean safe) {
+	public Location teleport(LivingEntity entity, boolean safe, boolean centerEntity, boolean allowWater, TeleportCause tpCause) {
+		// get the safe tp location
+		Location tpLocation = destination.clone();
+		
+		if(centerEntity)
+			tpLocation = new Location(
+					tpLocation.getWorld(), 
+					tpLocation.getBlockX() + 0.5, 
+					tpLocation.getBlockY(), 
+					tpLocation.getBlockZ() + 0.5, 
+					tpLocation.getYaw(), 
+					tpLocation.getPitch());
+		
+		// if we want the tp to be safe, get the safe location
 		if(safe)
-			destination.setY(destination.getBlockY() + 1);
+			tpLocation = getSafePoint(tpLocation, allowWater, (int)entity.getEyeHeight());
 		
-		Location l = destination;
+		// if null, no safe location found, return null
+		if(tpLocation == null)
+			return null;
+		HashMap<Entity, List<Entity>> ridingEntities = new HashMap<Entity, List<Entity>>();
 		
-		if(safe) {
-			SAFENESS safestat = isSafe(EyeLevel.Player);
-			boolean goingDown = safestat == SAFENESS.UNSAFE_FLOOR;
+		// loop all the passengers
+		LinkedList<Entity> passengers = new LinkedList<Entity>();
+		passengers.add(entity);
+		
+		// add all the entities into the hashmap
+		Entity passenger_ = null;
+		while(!passengers.isEmpty()) {
+			passenger_ = passengers.pop();
+			passengers.addAll(passenger_.getPassengers());
 			
-			while(safestat != SAFENESS.SAFE) {
-				if(safestat == SAFENESS.UNSAFE_FLOOR) {
-					if(!goingDown) //Prevent infinite loops 
-						break;
-					goingDown = true;
-					
-					l.subtract(0, 1.0, 0);
-					if(l.getBlockY() == 1) //Going under bedrock
-						break;
-					
-					safestat = isSafe(EyeLevel.Player);
-				} else if(safestat == SAFENESS.UNSAFE_CEILING) {
-					if(goingDown) //Prevent infinite loops 
-						break;
-					goingDown = false;
-					
-					l.add(0, 1.0, 0);
-					if(l.getBlockY() == 255){ //Going over build limit
-						safestat = SAFENESS.SAFE;
-						break;
-					}
-					
-					safestat = isSafe(EyeLevel.Player);
-				}
-			}
-			
-			if(safestat != SAFENESS.SAFE) //Unsafe and unable to adjust
-				return null;
-			
-			//if(goingDown) //Fix 1 block error
-			//l.add(0, 1, 0);
+			ridingEntities.put(passenger_, passenger_.getPassengers());
+			// unseat the riding entites
+			entity.eject();
 		}
 		
-		Location orig = entity.getLocation();
-		if(!entity.teleport(l)) //Was the teleport successful
-			return null;
-		this.origination = orig;
-		this.destination = l;
-		return l;
+		// entities to remove from the riding thing
+		List<Entity> toRemove = new ArrayList<Entity>();
+		
+		// teleport all players to the new location
+		for(Entity entity_ : ridingEntities.keySet()) {
+			if(!entity_.teleport(tpLocation, tpCause))
+				toRemove.add(entity_);
+		}
+		
+		// remove any mounts that may have failed to teleport
+		for(Entity ent : toRemove)
+			ridingEntities.remove(ent);
+		
+		// mount the entities
+		for(Entry<Entity, List<Entity>> entry : ridingEntities.entrySet()) {
+			// seat all the passengers except those which failed to teleport
+			for(Entity ent : entry.getValue()) {
+				if(toRemove.contains(ent))
+					continue;
+				entry.getKey().addPassenger(ent);
+			}
+		}
+		
+		return tpLocation;
 	}
+	
 	
 	/**
 	 * Swaps destination and origination locations
@@ -169,23 +212,91 @@ public class Teleporter {
 		return true;
 	}
 	
+	
 	/**
 	 * Is the destination point safe for
 	 * teleport. Does not count adjustments
 	 * @return true if safe, false otherwise
 	 */
-	public SAFENESS isSafe(EyeLevel eye) {
+	public SAFENESS isSafe(boolean allowWater, Material blockBelowFeet, Material blockAtFeet, Material blockAtHead) {
+		// check below feet
+		if((!(blockBelowFeet.isSolid() || blockBelowFeet.isOccluding()) && 
+				(blockBelowFeet != Material.WATER || !allowWater)) ||
+				blockBelowFeet == Material.LAVA)
+			return SAFENESS.UNSAFE_FLOOR;
+		
+		// check block at feet
+		if((blockAtFeet.isOccluding() || 
+				(blockAtFeet == Material.WATER && !allowWater)) ||
+				blockAtFeet == Material.LAVA)
+			return SAFENESS.UNSAFE_FLOOR;
+		
+		// check at head
+		if((blockAtHead.isOccluding() ||
+				(blockAtFeet == Material.WATER && !allowWater)) || 
+				blockAtHead == Material.LAVA) //Check eye level
+			return SAFENESS.UNSAFE_CEILING;
+
+		return SAFENESS.SAFE;
+	}
+	
+	
+	/**
+	 * Is the destination point safe for
+	 * teleport. Does not count adjustments
+	 * @return true if safe, false otherwise
+	 */
+	public SAFENESS isSafe(boolean allowWater, Material blockBelowFeet, Material blockAtFeet) {
+		// check below feet
+		if((!(blockBelowFeet.isSolid() || blockBelowFeet.isOccluding()) && 
+				(blockBelowFeet != Material.WATER || !allowWater)) ||
+				blockBelowFeet == Material.LAVA)
+			return SAFENESS.UNSAFE_FLOOR;
+		
+		// check block at feet
+		if((blockAtFeet.isOccluding() || 
+				(blockAtFeet == Material.WATER && !allowWater)) || 
+				blockAtFeet == Material.LAVA)
+			return SAFENESS.UNSAFE_FLOOR;
+
+		return SAFENESS.SAFE;
+	}
+	
+	
+	/**
+	 * Is the destination point safe for
+	 * teleport. Does not count adjustments
+	 * @return true if safe, false otherwise
+	 */
+	public SAFENESS isSafe(boolean allowWater, Material blockBelowFeet) {
+		// check below feet
+		if((!(blockBelowFeet.isSolid() || blockBelowFeet.isOccluding()) && 
+				(blockBelowFeet != Material.WATER || !allowWater)) ||
+				blockBelowFeet == Material.LAVA)
+			return SAFENESS.UNSAFE_FLOOR;
+
+		return SAFENESS.SAFE;
+	}
+	
+	
+	/**
+	 * Is the destination point safe for
+	 * teleport. Does not count adjustments
+	 * @return true if safe, false otherwise
+	 */
+	@Deprecated
+	public SAFENESS isSafe(EyeLevel eye, boolean allowWater) {
 		Location atHead = destination.clone().add(0, eye.getHeight(), 0);
 		Location belowFeet = destination.clone().subtract(0, 1, 0); //Check below feet
 		
 		if(((!belowFeet.getBlock().getType().isSolid() && !belowFeet.getBlock().getType().isOccluding()) &&
-				belowFeet.getBlock().getType() != Material.WATER)/*||
+				(belowFeet.getBlock().getType() != Material.WATER || !allowWater))/*||
 			((!belowFeet.clone().add(0, 1, 0).getBlock().getType().isSolid() && !belowFeet.clone().add(0, 1, 0).getBlock().getType().isOccluding()) &&
 					belowFeet.clone().add(0, 1, 0).getBlock().getType() != Material.WATER)*/)
 			return SAFENESS.UNSAFE_FLOOR;
 		
 		
-		if((atHead.add(0, 1+eye.height, 0).getBlock().getType().isOccluding() &&
+		if((atHead.getBlock().getType().isOccluding() &&
 				atHead.getBlock().getType().isSolid()) || 
 				atHead.getBlock().getType() == Material.LAVA) //Check eye level
 			return SAFENESS.UNSAFE_CEILING;
@@ -200,6 +311,7 @@ public class Teleporter {
 		SAFE
 	}
 	
+	@Deprecated
 	public static enum EyeLevel {
 		Player(1.8),
 		Pig(0.9),

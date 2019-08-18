@@ -3,6 +3,7 @@ package net.karanteeni.teleportal.spawn;
 import java.util.Collection;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.information.Teleporter;
 import net.karanteeni.teleportal.Teleportal;
 
@@ -26,7 +27,8 @@ public class SpawnManager {
 		if(!isSpawnSet()) return null;
 				
 		Teleporter tp = new Teleporter(getSpawnLocation());
-		return tp.teleport(player, true);
+		return tp.teleport(player, true, false, true, TeleportCause.PLUGIN);
+				//tp.teleport(player, true);
 		
 	}
 	
@@ -42,7 +44,8 @@ public class SpawnManager {
 		Teleporter tp = new Teleporter(getSpawnLocation());
 		
 		for(Player player : players)
-			tp.teleport(player, true);
+			tp.teleport(player, true, false, true, TeleportCause.PLUGIN);
+			//tp.teleport(player, true);
 		return true;
 	}
 	
@@ -107,7 +110,7 @@ public class SpawnManager {
 				return null;
 				
 		Teleporter tp = new Teleporter(getNoobSpawnLocation());
-		Location loc = tp.teleport(player, true);
+		Location loc = tp.teleport(player, true, false, true, TeleportCause.PLUGIN);//tp.teleport(player, true);
 		
 		if(loc != null) return loc;
 		
@@ -127,7 +130,7 @@ public class SpawnManager {
 				return null;
 			
 		Teleporter tp = new Teleporter(getRespawnLocation());
-		Location loc = tp.teleport(player, true);
+		Location loc = tp.teleport(player, true, false, true, TeleportCause.PLUGIN);//tp.teleport(player, true);
 		
 		if(loc != null) return loc;
 		if(failsafe)
@@ -155,7 +158,7 @@ public class SpawnManager {
 		Teleporter tp = new Teleporter(getNoobSpawnLocation());
 		for(Player player : players) {
 			// teleport failed, use failsafe
-			if(tp.teleport(player, true) == null && failsafe)
+			if(tp.teleport(player, true, false, true, TeleportCause.PLUGIN)/*tp.teleport(player, true)*/ == null && failsafe)
 				teleportToSpawn(player);
 		}
 		

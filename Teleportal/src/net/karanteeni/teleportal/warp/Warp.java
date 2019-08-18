@@ -6,6 +6,7 @@ import java.util.Set;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.config.YamlConfig;
 import net.karanteeni.core.information.Teleporter;
 import net.karanteeni.karanteenials.functionality.Back;
@@ -204,7 +205,11 @@ public class Warp {
 			teleportal.saveConfig();
 		}
 		
-		Location newLoc = tp.teleport(player, teleportal.getConfig().getBoolean("warp.safe"));
+		Location newLoc = tp.teleport(player, teleportal.getConfig().getBoolean("warp.safe"), 
+				false, 
+				true, 
+				TeleportCause.PLUGIN);
+				//tp.teleport(player, teleportal.getConfig().getBoolean("warp.safe"));
 		if(newLoc == null)
 			return null;
 		

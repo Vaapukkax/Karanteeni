@@ -4,6 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.statmanager.StatManager;
 
 public class PlayerQuit implements Listener {
@@ -15,7 +16,15 @@ public class PlayerQuit implements Listener {
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	public void onQuit(PlayerQuitEvent event) {
-		// unloads and saves the players play time
-		plugin.getManager().unloadUUID(event.getPlayer().getUniqueId());
+		BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				// unloads and saves the players play time
+				plugin.getManager().unloadUUID(event.getPlayer().getUniqueId());
+			}
+		};
+		
+		
+		runnable.runTaskAsynchronously(plugin);
 	}
 }

@@ -5,6 +5,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.world.WorldSaveEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.statmanager.StatManager;
 
 public class WorldSave implements Listener {
@@ -17,11 +18,18 @@ public class WorldSave implements Listener {
 	
 	@EventHandler(priority = EventPriority.LOWEST)
 	private void onWorldSave(WorldSaveEvent event) {
-		// save the players play times when the world saves
-		if(Bukkit.getWorlds().size() == 0 || event.getWorld().equals(Bukkit.getWorlds().get(0))) {
-			plugin.getManager().performLevelCheck();
-			plugin.getManager().save();
-		}
+		BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				// save the players play times when the world saves
+				if(Bukkit.getWorlds().size() == 0 || event.getWorld().equals(Bukkit.getWorlds().get(0))) {
+					plugin.getManager().performLevelCheck();
+					plugin.getManager().save();
+				}
+			}
+		};
+		
+		runnable.runTaskAsynchronously(plugin);
 	}
 	
 }

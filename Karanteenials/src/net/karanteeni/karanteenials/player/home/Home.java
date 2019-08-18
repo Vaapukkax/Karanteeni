@@ -10,7 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.PermanentLocation;
 import net.karanteeni.core.information.Teleporter;
@@ -90,7 +90,8 @@ public class Home {
 	public Teleporter teleport(Player player)
 	{
 		Teleporter teleporter = new Teleporter(location.getLocation());
-		teleporter.teleport(player, true); //Teleport player safely
+		//teleporter.teleport(player, true); //Teleport player safely
+		teleporter.teleport(player, true, false, true, TeleportCause.PLUGIN);
 		return teleporter;
 	}
 	

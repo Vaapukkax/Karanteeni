@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitTask;
 
 import net.karanteeni.core.information.Teleporter;
@@ -107,7 +108,7 @@ public class TeleportRequest {
 					new net.karanteeni.karanteenials.functionality.Back(this.receiver.getPlayer());
 			Location oldLoc = receiver.getPlayer().getLocation();
 			
-			boolean successful = teleporter.teleport(receiver.getPlayer(), safe) != null;
+			boolean successful = teleporter.teleport(receiver.getPlayer(), safe, false, true, TeleportCause.COMMAND) != null;
 			
 			if(!successful) { //if teleport was not successful, cancel the code
 				safeFail.accept(asker.getPlayer(), receiver.getPlayer());
@@ -124,7 +125,7 @@ public class TeleportRequest {
 					new net.karanteeni.karanteenials.functionality.Back(this.receiver.getPlayer());
 			Location oldLoc = asker.getPlayer().getLocation();
 			
-			boolean successful = teleporter.teleport(asker.getPlayer(),  safe) != null;
+			boolean successful = teleporter.teleport(asker.getPlayer(), safe, false, true, TeleportCause.COMMAND) != null;
 			
 			if(!successful) {
 				safeFail.accept(asker.getPlayer(), receiver.getPlayer());

@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.statmanager.level.TimeLevel;
 
 /**
@@ -34,8 +35,15 @@ public class Manager {
 	 * Perform level check for all of the online players on this server
 	 */
 	public void performLevelCheck() {
-		for(Player player : Bukkit.getOnlinePlayers())
-			performLevelCheck(player);
+		BukkitRunnable runnable = new BukkitRunnable() {
+			@Override
+			public void run() {
+				for(Player player : Bukkit.getOnlinePlayers())
+					performLevelCheck(player);
+			}
+		};
+		
+		runnable.runTaskAsynchronously(StatManager.getPlugin(StatManager.class));
 	}
 	
 	

@@ -1,5 +1,6 @@
 package net.karanteeni.statmanager;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,9 +27,11 @@ public class Time implements DatabaseObject {
 	 * @return time loaded
 	 */
 	public static Time loadTime(UUID uuid) {
-		Statement stmt = StatManager.getDatabaseConnector().getStatement();
+		Connection conn = null;
 		
 		try {
+			conn = StatManager.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet set = stmt.executeQuery("SELECT time FROM global_playtime WHERE player = '" + uuid.toString() + "';");
 			// if player does not have time already create new
 			long time = 0;
@@ -37,6 +40,9 @@ public class Time implements DatabaseObject {
 			return new Time(uuid, time, System.currentTimeMillis());
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /* ignored */ }
 		}
 		
 		return null;
@@ -111,12 +117,18 @@ public class Time implements DatabaseObject {
 
 	@Override
 	public boolean delete() {
-		Statement stmt = StatManager.getDatabaseConnector().getStatement();
+		Connection conn = null;
+
 		try {
+			conn = StatManager.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			int rows = stmt.executeUpdate("DELETE FROM global_playtime WHERE uuid = '" + uuid.toString() + "';");
 			return rows == 1;
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /* ignored */ }
 		}
 		
 		return false;
@@ -149,9 +161,12 @@ public class Time implements DatabaseObject {
 	 * @return true if initialization was a success, false otherwise
 	 */
 	public static boolean initialize() {
-		Statement stmt = StatManager.getDatabaseConnector().getStatement();
+		Connection conn = null;
 		
 		try {
+			conn = StatManager.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
+			
 			stmt.execute("CREATE TABLE IF NOT EXISTS global_playtime( " +
 					"player VARCHAR(128) PRIMARY KEY, " +
 					"time BIGINT(19) UNSIGNED,"+
@@ -160,15 +175,20 @@ public class Time implements DatabaseObject {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return false;
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /* ignored */ }
 		}
 	}
 
 
 	@Override
 	public boolean save() {
-		Statement stmt = StatManager.getDatabaseConnector().getStatement();
+		Connection conn = null;
 		
 		try {
+			conn = StatManager.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			long millis = System.currentTimeMillis();
 			long time = getTime();
 			stmt.executeUpdate("INSERT INTO global_playtime (player, time) VALUES ('"+
@@ -178,6 +198,9 @@ public class Time implements DatabaseObject {
 			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try {conn.close();} catch(Exception e) { /* ignored */ }
 		}
 		
 		return false;

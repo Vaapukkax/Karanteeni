@@ -9,7 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.Teleporter;
@@ -113,9 +113,9 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 		
 		Teleporter teleporter = new Teleporter(dest.getLocation());
 		if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
-			teleporter.teleport(player, safe);
+			teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
 		else
-			teleporter.teleport(player, false);
+			teleporter.teleport(player, false, false, true, TeleportCause.COMMAND);
 		
 		Karanteenials.getMessager().sendMessage(player, Sounds.TELEPORT.get(), 
 				Prefix.NEUTRAL+
@@ -157,9 +157,9 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 		{
 			Teleporter teleporter = new Teleporter(dest.getLocation());
 			if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
-				teleporter.teleport(player, safe);
+				teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
 			else
-				teleporter.teleport(player, false);
+				teleporter.teleport(player, false, false, true, TeleportCause.COMMAND);
 			
 			Karanteenials.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
 					Prefix.NEUTRAL+
@@ -184,9 +184,9 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 		
 		Teleporter teleporter = new Teleporter(destination);
 		if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
-			teleporter.teleport(player, safe);
+			teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
 		else
-			teleporter.teleport(player, false);
+			teleporter.teleport(player, false, false, true, TeleportCause.COMMAND);
 		
 		Karanteenials.getMessager().sendMessage(player, Sounds.SETTINGS.get(), 
 				Prefix.NEUTRAL+
@@ -235,9 +235,9 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			Teleporter teleporter = new Teleporter(destination);
 			
 			if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
-				teleporter.teleport(player, safe);
+				teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
 			else
-				teleporter.teleport(player, false);
+				teleporter.teleport(player, false, false, true, TeleportCause.COMMAND);
 			
 			Karanteenials.getMessager().sendMessage(sender, Sounds.SETTINGS.get(), 
 					Prefix.NEUTRAL+

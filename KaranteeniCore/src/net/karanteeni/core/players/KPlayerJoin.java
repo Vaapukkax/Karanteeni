@@ -1,5 +1,6 @@
 package net.karanteeni.core.players;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +17,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import net.karanteeni.core.KaranteeniCore;
-import net.karanteeni.core.database.DatabaseConnector;
 
 /**
  * Manages the KPlayer data and cache to work with player joins and quits
@@ -77,7 +77,7 @@ public class KPlayerJoin implements Listener{
 			}
 		};
 		
-		databaseThread.runTask(KaranteeniCore.getPlugin(KaranteeniCore.class));
+		databaseThread.runTaskAsynchronously(KaranteeniCore.getPlugin(KaranteeniCore.class));
 	}
 	
 	
@@ -127,7 +127,7 @@ public class KPlayerJoin implements Listener{
 	 * @return true if name is the same as before or error, false otherwise
 	 */
 	private boolean nameMatches(final Player player) {
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
+		Connection conn = null;
 		//if(!db.isConnected()) return true;
 		
 		// select all names with this players uuid
@@ -136,7 +136,8 @@ public class KPlayerJoin implements Listener{
 				" WHERE " + PlayerHandler.PlayerDataKeys.UUID + " = '" + player.getUniqueId().toString() + "';";
 		
 		try {
-			Statement stmt = db.getStatement();
+			conn = KaranteeniCore.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet set = stmt.executeQuery(query);
 			String name = "";
 			if(set.next())
@@ -146,6 +147,9 @@ public class KPlayerJoin implements Listener{
 		} catch(SQLException e) {
 			e.printStackTrace();
 			return true;
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /* ignored */ }
 		}
 	}
 	
@@ -155,7 +159,7 @@ public class KPlayerJoin implements Listener{
 	 * @param player
 	 */
 	private void addToDatabase(final Player player) {
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
+		Connection conn = null;
 		//if(!db.isConnected()) return;
 		
 		/*String query = 
@@ -174,7 +178,8 @@ public class KPlayerJoin implements Listener{
 		
 		//Save the players data to the database
 		try {
-			PreparedStatement st = db.prepareStatement(query);
+			conn = KaranteeniCore.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(query);
 			st.setString(1, player.getUniqueId().toString());
 			st.setString(2, player.getDisplayName());
 			st.setString(3, player.getName());
@@ -185,6 +190,9 @@ public class KPlayerJoin implements Listener{
 			//db.runQuery(query);
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if(conn != null)
+				try { conn.close(); } catch(Exception e) { /* ignored */ }
 		}
 	}
 }

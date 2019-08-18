@@ -9,6 +9,7 @@ import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.Teleporter;
@@ -121,9 +122,9 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		back.setBackLocation(player.getLocation()); //Set the back location
 		Teleporter teleporter = new Teleporter(home.getLocation()); //Create a new teleporter
 		if(teleporter.teleport(player, 
-				safeTeleport && 
 				(player.getGameMode() == GameMode.SURVIVAL || //Check safe teleport only from survival and adventure players
-				player.getGameMode() == GameMode.ADVENTURE)) == null && safeTeleport) //Teleport player and check if teleport was successful
+				player.getGameMode() == GameMode.ADVENTURE), false, true, TeleportCause.PLUGIN) == null && 
+				safeTeleport) //Teleport player and check if teleport was successful
 		{
 			//Teleportation was too unsafe
 			if(ownHome)
@@ -189,11 +190,11 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		
 		//Send player a bossbar showing the home they teleported to
 		if(ownHome)
-			KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.NONE.get(), 3, 5000, true, 
+			KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.TELEPORT.get(), 3, 5000, true, 
 					KaranteeniPlugin.getTranslator().getTranslation(plugin, player, HOME_OWN_TELEPORTED)
 					.replace(HOME_TAG, homename));
 		else
-			KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.NONE.get(), 3, 5000, true, 
+			KaranteeniPlugin.getMessager().sendBossbar(player, Sounds.TELEPORT.get(), 3, 5000, true, 
 					KaranteeniPlugin.getTranslator().getTranslation(plugin, player, HOME_OTHER_TELEPORTED)
 					.replace(HOME_TAG, homename)
 					.replace(PLAYER_TAG, playername));

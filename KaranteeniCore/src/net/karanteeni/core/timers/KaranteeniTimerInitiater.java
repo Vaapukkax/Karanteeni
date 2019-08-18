@@ -28,6 +28,7 @@ public class KaranteeniTimerInitiater {
 			@Override
 			public void run() {
 				runTimer();
+				++tickCount;
 			}
 		};
 		
@@ -86,7 +87,7 @@ public class KaranteeniTimerInitiater {
 				}
 			
 				for (Entry<KaranteeniTimer, Integer> entry : listeners.entrySet())
-				if(tickCount % entry.getValue() == 0)			
+				if(tickCount % entry.getValue() == 0) {		
 					try {
 						// run timer synchronously
 						/*Bukkit.getScheduler().runTask(plugin, new Runnable() {
@@ -98,7 +99,7 @@ public class KaranteeniTimerInitiater {
 					catch(Exception e) { 
 						plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", e); 
 					}
-				else
+				} else {
 					try { 
 						/*Bukkit.getScheduler().runTask(plugin, new Runnable() {
 							@Override
@@ -109,6 +110,7 @@ public class KaranteeniTimerInitiater {
 					catch(Exception e) { 
 						plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e); 
 					}
+				}
 			}
 		});
 	}

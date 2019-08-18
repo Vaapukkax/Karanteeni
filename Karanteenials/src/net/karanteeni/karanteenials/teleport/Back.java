@@ -1,10 +1,11 @@
 package net.karanteeni.karanteenials.teleport;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.AbstractCommand;
 import net.karanteeni.core.information.Teleporter;
@@ -60,7 +61,8 @@ public class Back extends AbstractCommand implements TranslationContainer{
 		
 		back.setBackLocation(ploc);
 		Teleporter teleporter = new Teleporter(loc);
-		teleporter.teleport(player, safeback);
+		teleporter.teleport(player, safeback, false, true, TeleportCause.PLUGIN);
+		//teleporter.teleport(player, safeback);
 		KaranteeniPlugin.getMessager().sendActionBar(player, Sounds.TELEPORT.get(), 
 				KaranteeniPlugin.getTranslator().getTranslation(plugin, sender, 
 						"location.teleported-to-previous"));

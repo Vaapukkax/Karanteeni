@@ -165,7 +165,7 @@ public class DamageEvent implements Listener {
 	 * Don't allow carpet blocks to damage entities
 	 * @param event
 	 */
-	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onDamage(EntityDamageEvent event) {
 		if(event.getCause() == DamageCause.SUFFOCATION) {
 			// prevent entities from suffocating

@@ -2,8 +2,11 @@ package net.karanteeni.karanteenials.teleport;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import org.bukkit.Bukkit;
+import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -11,6 +14,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.core.command.CommandChainer;
 import net.karanteeni.core.command.CommandResult;
@@ -18,8 +22,6 @@ import net.karanteeni.core.command.CommandResult.DisplayFormat;
 import net.karanteeni.core.command.CommandResult.ResultType;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
 import net.karanteeni.core.information.Teleporter;
-import net.karanteeni.core.information.Teleporter.EyeLevel;
-import net.karanteeni.core.information.Teleporter.SAFENESS;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.time.TimeData;
@@ -97,7 +99,7 @@ public class RandomTeleport extends CommandChainer implements TranslationContain
 			BukkitRunnable runnable = new BukkitRunnable() {
 				@Override
 				public void run() {
-					teleportPlayer(getPlayer(PlayerLoader.PLAYER_KEY_SINGLE));
+					teleportPlayer(KPlayer.getKPlayer(getPlayer(PlayerLoader.PLAYER_KEY_SINGLE)));
 					
 					// send the player teleported message to the command sender
 					Karanteenials.getMessager().sendMessage(sender, Sounds.NO.get(), 
@@ -134,18 +136,18 @@ public class RandomTeleport extends CommandChainer implements TranslationContain
 			} else kp.removeData(plugin, "rtp");
 		}
 		
-		// set data to cache
-		kp.setCacheData(plugin, "rtp", System.currentTimeMillis());
-		
 		// send a message that random location is under search
 		Karanteenials.getMessager().sendActionBar(sender, Sounds.SETTINGS.get(), 
 				Karanteenials.getTranslator().getTranslation(plugin, sender, "random-teleport-searching"));
+		
+		// set data to cache
+		kp.setCacheData(plugin, "rtp", System.currentTimeMillis());
 		
 		// teleport self
 		BukkitRunnable runnable = new BukkitRunnable() {
 			@Override
 			public void run() {
-				teleportPlayer((Player)sender);
+				teleportPlayer(kp);
 			}
 		};
 		
@@ -158,32 +160,37 @@ public class RandomTeleport extends CommandChainer implements TranslationContain
 	 * Teleports a player to a random location
 	 * @param player player to teleport to random location
 	 */
-	private void teleportPlayer(Player player) {
+	private void teleportPlayer(KPlayer kp) {
 		World w = Bukkit.getWorlds().get(0);
 		Teleporter tp = getRTPLocation(w, -range, -range, range, range);
 
 		// no location found, player no sound
-		if(tp == null) Karanteenials.getSoundHandler().playSound(player, Sounds.NO.get());
+		if(tp == null || !kp.getPlayer().isOnline()) { 
+			Karanteenials.getSoundHandler().playSound(kp.getPlayer(), Sounds.NO.get());
+			kp.removeData(plugin, "rtp");
+			return;
+		}
 		
 		// set the back location to the given player
-		net.karanteeni.karanteenials.functionality.Back back = new net.karanteeni.karanteenials.functionality.Back(player);
-		back.setBackLocation(player.getLocation());
+		net.karanteeni.karanteenials.functionality.Back back = new net.karanteeni.karanteenials.functionality.Back(kp.getPlayer());
+		back.setBackLocation(kp.getPlayer().getLocation());
 		
 		// run in sync
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				// teleport the player
-				tp.preciseTeleport(player, true);
+				tp.teleport(kp.getPlayer(), true, true, false, TeleportCause.PLUGIN);
+				//tp.preciseTeleport(player, true);
 			}
 		};
 		
 		Bukkit.getScheduler().runTask(plugin, runnable);
 		
 		BossBar bar = Bukkit.createBossBar(
-				Karanteenials.getTranslator().getTranslation(plugin, player, "random-teleport"), 
+				Karanteenials.getTranslator().getTranslation(plugin, kp.getPlayer(), "random-teleport"), 
 				BarColor.YELLOW, BarStyle.SOLID);
-		Karanteenials.getMessager().sendBossbar(player, Sounds.TELEPORT.get(), 4f, 20, true, bar);
+		Karanteenials.getMessager().sendBossbar(kp.getPlayer(), Sounds.TELEPORT.get(), 4f, 20, true, bar);
 	}
 	
 	
@@ -199,18 +206,42 @@ public class RandomTeleport extends CommandChainer implements TranslationContain
 	 */
 	private Teleporter getRTPLocation(World world, double xRangeMin, double zRangeMin, double xRangeMax, double zRangeMax) {
 		Teleporter tp = null;
+		Random r = new Random();
+		
+		for(int i = 0; i < 10 && tp == null; ++i) {
+			int x = (int)(xRangeMin >= xRangeMax ? xRangeMin : r.nextDouble() * (xRangeMax - xRangeMin) + xRangeMin);
+	        int z = (int)(zRangeMin >= zRangeMax ? zRangeMin : r.nextDouble() * (zRangeMax - zRangeMin) + zRangeMin);
+	        ChunkSnapshot shot = world.getChunkAt(x, z).getChunkSnapshot();
+	        
+	        // check if the block at location is safe
+	        // get chunk specific coordinates
+	        int x_ = x < 0 ? 15 + (x % 16) : x % 16;
+	        int z_ = z < 0 ? 15 + (z % 16) : z % 16;
+	        int y_ = shot.getHighestBlockYAt(x_, z_);
+	        
+	        // check block safety
+	        Material material = shot.getBlockType(x_, y_, z_);
+	        if(material.isBlock()) {
+	        	// safe location
+	        	tp = new Teleporter(new Location(world, x + 0.5, y_ + 1, z + 0.5, 
+	        			Math.random()>0.5? (float)Math.random()*180 : (float)Math.random()*-180, 
+    	    			Math.random()>0.5 ? (float)Math.random()*45 : (float)Math.random()*-25));
+	        }
+		}
+		
+		return tp;
 		
 		// try 10 times to get a random safe location 
-		for(int i = 0; i < 10 && (tp == null || SAFENESS.SAFE != tp.isSafe(EyeLevel.Player)); ++i) {
+		/*for(int i = 0; i < 10 && (tp == null || null == tp.getSafePoint(tp.getDestination(), false, 1)); ++i) {
 			double x = xRangeMin >= xRangeMax ? xRangeMin : Math.random() * (xRangeMax - xRangeMin) + xRangeMin;
 	        double z = zRangeMin >= zRangeMax ? zRangeMin : Math.random() * (zRangeMax - zRangeMin) + zRangeMin;
-	        Location l = (new Location(world, x, 255, z, 
+	        Location l = (new Location(world, x, 254, z, 
 	        		Math.random()>0.5? (float)Math.random()*180 : (float)Math.random()*-180, 
 	    			Math.random()>0.5 ? (float)Math.random()*45 : (float)Math.random()*-25));
 	        tp = new Teleporter(l);
 		}
 		
-        return tp;
+        return tp;*/
     }
 	
 

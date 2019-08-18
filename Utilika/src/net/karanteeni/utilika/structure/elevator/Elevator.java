@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 import net.karanteeni.core.event.PlayerJumpEvent;
 import net.karanteeni.core.information.Teleporter;
@@ -95,10 +96,11 @@ public class Elevator implements Listener {
 		
 		// teleport player
 		Location tpLocation = null;
-		if(center)
+		tpLocation = tp.teleport(event.getPlayer(), false, center, true, TeleportCause.PLUGIN);
+		/*if(center)
 			tpLocation = tp.preciseTeleport(event.getPlayer(), false);
 		else
-			tpLocation = tp.teleport(event.getPlayer(), false);
+			tpLocation = tp.teleport(event.getPlayer(), false);*/
 		
 		// push player down
 		event.getPlayer().setVelocity(event.getPlayer().getVelocity().add(new Vector(0, -2, 0)));
@@ -134,11 +136,11 @@ public class Elevator implements Listener {
 			return;
 		
 		// teleport player
-		Location tpLocation = null;
-		if(center)
+		Location tpLocation = tp.teleport(event.getPlayer(), false, center, true, TeleportCause.PLUGIN);
+		/*if(center)
 			tpLocation = tp.preciseTeleport(event.getPlayer(), false);
 		else
-			tpLocation = tp.teleport(event.getPlayer(), false);
+			tpLocation = tp.teleport(event.getPlayer(), false);*/
 		
 		// push player down
 		event.getPlayer().setVelocity(event.getPlayer().getVelocity().add(new Vector(0, -2, 0)));
