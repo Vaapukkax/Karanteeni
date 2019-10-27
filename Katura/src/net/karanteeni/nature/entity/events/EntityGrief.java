@@ -18,7 +18,6 @@ import org.bukkit.event.block.EntityBlockFormEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.plugin.Plugin;
-
 import net.karanteeni.core.block.BlockType;
 import net.karanteeni.nature.Katura;
 
@@ -42,8 +41,10 @@ public class EntityGrief implements Listener{
 	private static String dragonGrief		= griefPrefix + "dragon";
 	private static String dragonBallGrief	= griefPrefix + "dragon-fireball";
 	private static String sheepGrief		= griefPrefix + "sheep";
-	private static String lavaMove			= griefPrefix + "water";
-	private static String waterMove			= griefPrefix + "lava";
+	private static String lavaMove			= griefPrefix + "lava";
+	private static String waterMove			= griefPrefix + "water";
+	private static String ravagerGrief		= griefPrefix + "ravager";
+	private static String tntExplosion		= griefPrefix + "tnt";
 	
 	private static String iceForm 			= formPrefix + "ice";
 	private static String snowForm 			= formPrefix + "snow";
@@ -139,6 +140,14 @@ public class EntityGrief implements Listener{
 			pl.getConfig().set(fireballGrief, true);
 			pl.saveConfig();
 		}
+		if(!pl.getConfig().isSet(ravagerGrief)) {
+			pl.getConfig().set(ravagerGrief, true);
+			pl.saveConfig();
+		}
+		if(!pl.getConfig().isSet(tntExplosion)) {
+			pl.getConfig().set(tntExplosion, true);
+			pl.saveConfig();
+		}
 		//----- FORM
 		if(!pl.getConfig().isSet(iceForm)) {
 			pl.getConfig().set(iceForm, true);
@@ -192,15 +201,14 @@ public class EntityGrief implements Listener{
 	}
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
-	private void blockIgnite(BlockIgniteEvent event)
-	{
+	private void blockIgnite(BlockIgniteEvent event) {
 		if(!pl.getConfig().getBoolean(fireForm+event.getCause().toString()))
 			{ event.setCancelled(true); return ;}
 	}
 	
+	
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void entityChangeBlock(EntityChangeBlockEvent event)
-	{
+	private void entityChangeBlock(EntityChangeBlockEvent event) {
 		if(event.getEntityType().equals(EntityType.CREEPER))
 			if(!pl.getConfig().getBoolean(creeperExplosion))
 			{ event.setCancelled(true); return ;}
@@ -229,13 +237,53 @@ public class EntityGrief implements Listener{
 		if(event.getEntityType().equals(EntityType.ENDER_DRAGON))
 			if(!pl.getConfig().getBoolean(dragonGrief))
 			{ event.setCancelled(true); return ;}
+		
+		if(event.getEntityType().equals(EntityType.RAVAGER))
+			if(!pl.getConfig().getBoolean(ravagerGrief))
+			{ event.setCancelled(true); return ;}
 	}
 	
+	
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void entityExplodeEvent(EntityExplodeEvent event)
-	{
-		if(event.getEntityType().equals(EntityType.FIREBALL))
-		{
+	private void entityExplodeEvent(EntityExplodeEvent event) {
+		switch(event.getEntityType()) {
+		case CREEPER:
+			if(!pl.getConfig().getBoolean(creeperExplosion))
+			{ event.blockList().clear(); return; }
+		case PRIMED_TNT:
+			if(!pl.getConfig().getBoolean(tntExplosion))
+			{ event.blockList().clear(); return; }
+		case FIREBALL:
+			Fireball ball = (Fireball)event.getEntity();
+			
+			if(!pl.getConfig().getBoolean(fireballGrief) && 
+					!(ball.getShooter() instanceof Ghast))
+				{ event.blockList().clear(); return ;}
+			
+			if(!pl.getConfig().getBoolean(ghastGrief) && 
+					(ball.getShooter() instanceof Ghast))
+				{ event.blockList().clear(); return ;}
+			break;
+		case DRAGON_FIREBALL:
+			if(!pl.getConfig().getBoolean(dragonBallGrief))
+				{ event.blockList().clear(); return ;}
+			break;
+		case WITHER_SKULL:
+			if(!pl.getConfig().getBoolean(witherShoot))
+				{ event.blockList().clear(); return ;}
+			break;
+		case WITHER:
+			if(!pl.getConfig().getBoolean(witherExplode))
+				{ event.blockList().clear();; return ;}
+			break;
+		case ENDER_DRAGON:
+			if(!pl.getConfig().getBoolean(dragonGrief))
+				{ event.blockList().clear(); return ;}
+			break;
+		default:
+		}
+		
+		/*if(event.getEntityType().equals(EntityType.FIREBALL)) {
 			Fireball ball = (Fireball)event.getEntity();
 			
 			if(!pl.getConfig().getBoolean(fireballGrief) && 
@@ -245,19 +293,13 @@ public class EntityGrief implements Listener{
 			if(!pl.getConfig().getBoolean(ghastGrief) && 
 					(ball.getShooter() instanceof Ghast))
 				{ event.setCancelled(true); return ;}
-		}
-		else if(event.getEntityType().equals(EntityType.DRAGON_FIREBALL))
-		{
+		} else if(event.getEntityType().equals(EntityType.DRAGON_FIREBALL)) {
 			if(!pl.getConfig().getBoolean(dragonBallGrief))
 				{ event.setCancelled(true); return ;}
-		}
-		else if(event.getEntityType().equals(EntityType.WITHER_SKULL))
-		{
+		} else if(event.getEntityType().equals(EntityType.WITHER_SKULL)) {
 			if(!pl.getConfig().getBoolean(witherShoot))
 				{ event.setCancelled(true); return ;}
-		}
-		else if(event.getEntityType().equals(EntityType.WITHER))
-		{
+		} else if(event.getEntityType().equals(EntityType.WITHER)) {
 			if(!pl.getConfig().getBoolean(witherExplode))
 				{ event.setCancelled(true); return ;}
 		}
@@ -265,8 +307,9 @@ public class EntityGrief implements Listener{
 		{
 			if(!pl.getConfig().getBoolean(dragonGrief))
 				{ event.setCancelled(true); return ;}
-		}
+		}*/
 	}
+	
 	
 	/**
 	 * Handles the block spreading
@@ -285,13 +328,13 @@ public class EntityGrief implements Listener{
 			{ event.setCancelled(true); return ;}
 	}
 	
+	
 	/**
 	 * Handles the frost walker and snowmen
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-	private void entityBlockFormEvent(EntityBlockFormEvent event)
-	{
+	private void entityBlockFormEvent(EntityBlockFormEvent event) {
 		if(event.getNewState().getType().equals(Material.SNOW))
 			if(!pl.getConfig().getBoolean(snowmanSnowForm))
 				{ event.setCancelled(true); return ;}
@@ -304,16 +347,16 @@ public class EntityGrief implements Listener{
 				{ event.setCancelled(false); return ;}
 	}
 	
+	
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void blockFormToEvent(BlockFromToEvent event)
-	{
-		if(event.getToBlock().getType().equals(Material.LAVA))
+	private void blockFormToEvent(BlockFromToEvent event) {
+		if(event.getBlock().getType().equals(Material.LAVA))
 			if(!pl.getConfig().getBoolean(lavaMove))
 			{ event.setCancelled(true); return ;}
-		if(event.getToBlock().getType().equals(Material.WATER))
+		if(event.getBlock().getType().equals(Material.WATER))
 			if(!pl.getConfig().getBoolean(waterMove))
 			{ event.setCancelled(true); return ;}
-		if(event.getToBlock().getType().equals(Material.STONE))
+		/*if(event.getToBlock().getType().equals(Material.STONE))
 			if(!pl.getConfig().getBoolean(stoneForm))
 			{ event.setCancelled(true); return ;}
 		if(event.getToBlock().getType().equals(Material.OBSIDIAN))
@@ -321,34 +364,53 @@ public class EntityGrief implements Listener{
 			{ event.setCancelled(true); return ;}
 		if(event.getToBlock().getType().equals(Material.COBBLESTONE))
 			if(!pl.getConfig().getBoolean(cobblestoneForm))
-			{ event.setCancelled(true); return ;}
+			{ event.setCancelled(true); return ;}*/
 	}
+	
 	
 	/**
 	 * Defines block form events
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void blockFormEvent(BlockFormEvent event)
-	{
-		if(event.getNewState().getBlock().getType().equals(Material.SNOW))
+	private void blockFormEvent(BlockFormEvent event) {
+		switch(event.getNewState().getType()) {
+		case SNOW:
 			if(!pl.getConfig().getBoolean(snowForm))
 			{ event.setCancelled(true); return ;}
-		if(event.getNewState().getBlock().getType().equals(Material.ICE))
+			break;
+		case ICE:
 			if(!pl.getConfig().getBoolean(iceForm))
 			{ event.setCancelled(true); return ;}
-		if(BlockType.CONCRETE_POWDER.contains(event.getNewState().getBlock().getType()))
+			break;
+		case STONE:
+			if(!pl.getConfig().getBoolean(stoneForm))
+			{ event.setCancelled(true); return ;}
+			break;
+		case OBSIDIAN:
+			if(!pl.getConfig().getBoolean(obsidianForm))
+			{ event.setCancelled(true); return ;}
+			break;
+		case COBBLESTONE:
+			if(!pl.getConfig().getBoolean(cobblestoneForm))
+			{ event.setCancelled(true); return ;}
+			break;
+		default:
+			break;
+		}
+
+		if(BlockType.CONCRETE.contains(event.getNewState().getType()))
 			if(!pl.getConfig().getBoolean(concreteForm))
 			{ event.setCancelled(true); return ;}
 	}
+	
 	
 	/**
 	 * Allow ice and snow to melt
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void blockSmeltEvent(BlockFadeEvent event)
-	{
+	private void blockSmeltEvent(BlockFadeEvent event) {
 		if(event.getBlock().getType().equals(Material.ICE))
 			if(!pl.getConfig().getBoolean(iceMelt))
 			{ event.setCancelled(true); return ;}
@@ -359,13 +421,13 @@ public class EntityGrief implements Listener{
 			{ event.setCancelled(true); return ;}
 	}
 	
+	
 	/**
 	 * Allow blocks to burn
 	 * @param event
 	 */
 	@EventHandler(priority = EventPriority.LOWEST)
-	private void blockBurnEvent(BlockBurnEvent event)
-	{
+	private void blockBurnEvent(BlockBurnEvent event) {
 		if(pl.getConfig().getBoolean(blockBurn))
 			return;
 		

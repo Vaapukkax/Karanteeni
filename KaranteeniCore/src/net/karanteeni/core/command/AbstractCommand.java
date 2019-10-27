@@ -41,21 +41,21 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
         this(plugin, command, null, null, null, null, null);
     }
     
+    
     public AbstractCommand(KaranteeniPlugin plugin, String command, String usage) {
         this(plugin, command, usage, null, null, null, null);
     }
+    
     
     public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description) {
         this(plugin, command, usage, description, null, null, null);
     }
     
+    
     public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage) {
         this(plugin, command, usage, description, permissionMessage, null, null);
     }
-    
-    /*private AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, List<String> aliases) {
-        this(plugin, command, usage, description, null, aliases);
-    }*/
+
     
     private AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage, List<String> aliases, List<String> parameters) {
         this.plugin = plugin;
@@ -70,39 +70,39 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
         this.params = parameters;
     }
     
-    /**
-     * 
-     * @param plugin
-     * @param command
-     * @param params Possible command parameters
-     */
+
     public AbstractCommand(KaranteeniPlugin plugin, String command, List<String> params) {
         this(plugin, command, null, null, null, null, params);
     }
+    
     
     public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, List<String> params) {
         this(plugin, command, usage, null, null, null, params);
     }
     
+    
     public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, List<String> params) {
         this(plugin, command, usage, description, null, null, params);
     }
+    
     
     public AbstractCommand(KaranteeniPlugin plugin, String command, String usage, String description, String permissionMessage, List<String> params) {
         this(plugin, command, usage, description, permissionMessage, null, params);
     }
     
+    
     public void register() {
     	registerAliases(); //Register aliases
         ReflectCommand cmd = new ReflectCommand(this.command);
+        cmd.setExecutor(this);
         if (this.alias != null) cmd.setAliases(this.alias);
         if (this.description != null) cmd.setDescription(this.description);
         if (this.usage != null) cmd.setUsage(this.usage);
         if (this.permMessage != null) cmd.setPermissionMessage(this.permMessage);
         //getCommandMap().register("", cmd);
         getCommandMap().register(plugin.getName().toLowerCase(), cmd);
-        cmd.setExecutor(this);
     }
+    
     
     /**
      * Filters a list of string based on their prefix
@@ -110,8 +110,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
      * @param prefix Prefix by which the strings will be filtered
      * @return List of filtered strings
      */
-    protected List<String> filterByPrefix(Collection<String> list, String prefix)
-    {
+    protected List<String> filterByPrefix(Collection<String> list, String prefix) {
     	if(prefix == null)
     		return new ArrayList<String>();
     	return list.stream().filter(param -> param.startsWith(prefix)).collect(Collectors.toList());
@@ -124,21 +123,20 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
      * @param parameter
      * @return
      */
-    protected String getRealParam(String parameter)
-    {
+    protected String getRealParam(String parameter) {
     	String param = paramMap.get(parameter.toLowerCase());
     	if(param == null)
     		param = "";
     	return param;
     }
     
+    
     /**
      * Returns the filtered playernames of online players with specific prefix
      * @param prefix prefix of player searched
      * @return list of names
      */
-    protected List<String> getPlayerNames(String prefix) 
-    {
+    protected List<String> getPlayerNames(String prefix) {
     	List<String> players = new ArrayList<String>();
 		for(Player player : Bukkit.getOnlinePlayers())
 			players.add(player.getName());
@@ -146,20 +144,18 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
 		return filterByPrefix(players, prefix);
     }
     
+    
     /**
      * Registers this commands aliases to command and parameters
      */
-    private void registerAliases()
-    {
-    	if(!plugin.getSettings().isSet("Command."+this.command+".aliases"))
-    	{
+    private void registerAliases() {
+    	if(!plugin.getSettings().isSet("Command."+this.command+".aliases")) {
             //Register the command alias list to a map
             plugin.getSettings().set("Command."+this.command+".aliases", new ArrayList<String>());
             plugin.saveSettings();
     	}
     	
-    	for(String ali : plugin.getSettings().getStringList("Command."+this.command+".aliases"))
-    	{
+    	for(String ali : plugin.getSettings().getStringList("Command."+this.command+".aliases")) {
     		if(alias != null)
     			alias.add(ali);
     		else
@@ -167,11 +163,9 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     	}
     	
     	//Create and load the parameters if set
-    	if(params != null && !params.isEmpty()) //There are parameters in this command
-    	{
+    	if(params != null && !params.isEmpty()) { //There are parameters in this command
     		//Loop all parameters
-    		for(String param : params)
-    		{
+    		for(String param : params) {
     			param = param.toLowerCase();
     			//Create placeholders for parameter types
     			if(!plugin.getSettings().isSet("Command."+this.command+".params."+param))
@@ -180,8 +174,7 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     		plugin.saveSettings();
     		
     		//Loop all parameters
-    		for(String param : params)
-    		{
+    		for(String param : params) {
     			for(String paramalias : plugin.getSettings().getStringList("Command."+this.command+".params."+param))
     				paramMap.put(paramalias.toLowerCase(), param);
     			paramMap.put(param, param); //Add the default command parameter
@@ -189,15 +182,16 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
     	}
     }
     
+    
     /**
      * returns the possible command parameters
      */
-    public List<String> getParams()
-    {
+    public List<String> getParams() {
     	return this.params;
     }
     
-    final CommandMap getCommandMap() {
+    
+    private final CommandMap getCommandMap() {
         if (cmap == null) {
             try {
                 final Field f = Bukkit.getServer().getClass().getDeclaredField("commandMap");
@@ -209,22 +203,27 @@ public abstract class AbstractCommand implements CommandExecutor, TabExecutor {
         return getCommandMap();
     }
     
+    
     private final class ReflectCommand extends Command {
         private AbstractCommand exe = null;
         protected ReflectCommand(String command) { super(command); }
+        
         public void setExecutor(AbstractCommand exe) { this.exe = exe; }
+        
         @Override public boolean execute(CommandSender sender, String commandLabel, String[] args) {
-            if (exe != null) { return exe.onCommand(sender, this, commandLabel, args); }
+        	if (exe != null) { return exe.onCommand(sender, this, commandLabel, args); }
             return false;
         }
         
-        @Override  public List<String> tabComplete(CommandSender sender, String alais, String[] args) {
-            if (exe != null) { return exe.onTabComplete(sender, this, alais, args); }
+        @Override  public List<String> tabComplete(CommandSender sender, String alias, String[] args) {
+            if (exe != null) { return exe.onTabComplete(sender, this, alias, args); }
             return null;
         }
     }
     
+    
     public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
+    
     
     public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
         return null;

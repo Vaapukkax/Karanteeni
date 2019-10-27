@@ -29,6 +29,7 @@ public class TeleportRequest {
 	
 	private BukkitTask timeout = null;
 	
+	
 	/**
 	 * Initializes a teleport request and automatically starts the countdown to remove
 	 * itself. Handles all the data and etc. itself
@@ -74,6 +75,7 @@ public class TeleportRequest {
 				}}, 1200); // 1 minute timeout to teleport request
 	}
 	
+	
 	/**
 	 * Clears the object everywhere to be taken care of the trashman
 	 */
@@ -88,14 +90,14 @@ public class TeleportRequest {
 		}
 	}
 	
+	
 	/**
 	 * Accepts this teleport request, teleports players and removed
 	 * @param safe is the teleport safe
 	 * @param safeFail function to be called if safe teleport fails or either of players is offline. 
 	 * First argument is the sender of request and latter is receiver of the teleport request
 	 */
-	public void acceptRequest(boolean safe, BiConsumer<Player, Player> safeFail)
-	{
+	public void acceptRequest(boolean safe, BiConsumer<Player, Player> safeFail) {
 		Teleporter teleporter = new Teleporter(this.getTeleportLocation());
 		
 		if(!asker.getPlayer().isOnline() || !receiver.getPlayer().isOnline()) {
@@ -122,7 +124,7 @@ public class TeleportRequest {
 			back.setBackLocation(oldLoc); //This this location to be the previous location
 		} else {
 			net.karanteeni.karanteenials.functionality.Back back = 
-					new net.karanteeni.karanteenials.functionality.Back(this.receiver.getPlayer());
+					new net.karanteeni.karanteenials.functionality.Back(this.asker.getPlayer());
 			Location oldLoc = asker.getPlayer().getLocation();
 			
 			boolean successful = teleporter.teleport(asker.getPlayer(), safe, false, true, TeleportCause.COMMAND) != null;
@@ -142,16 +144,17 @@ public class TeleportRequest {
 		clearMemory(); //Remove the pointers to this object
 	}
 	
+	
 	/**
 	 * Declines this teleport request and removes from memory
 	 */
-	public void declineRequest() 
-	{
+	public void declineRequest() {
 		if(denied != null)
 			denied.accept(asker.getPlayer(), receiver.getPlayer());
 		
 		clearMemory();
 	}
+	
 	
 	/**
 	 * The given consumer is run when an existing teleport request is overwritten from
@@ -162,6 +165,7 @@ public class TeleportRequest {
 	public void setOverwritten(Consumer<Player> consumer)
 	{ this.override = consumer; }
 	
+	
 	/**
 	 * The given consumer is run when the timer runs out.
 	 * The given parameter is the sender of this teleport request
@@ -170,12 +174,14 @@ public class TeleportRequest {
 	public void setTimeoutMethod(BiConsumer<Player,Player> consumer)
 	{ this.tptimeout = consumer; }
 	
+	
 	/**
 	 * The given consumer will be fired when the request has been accepted
 	 * @param consumer
 	 */
 	public void setAcceptedMethod(BiConsumer<Player,Player> consumer) 
 	{ this.accepted = consumer; }
+	
 	
 	/**
 	 * The given consumer will be fired when the request has been denied
@@ -184,12 +190,14 @@ public class TeleportRequest {
 	public void setDeniedMethod(BiConsumer<Player,Player> consumer) 
 	{ this.denied = consumer; }
 	
+	
 	/**
 	 * Returns the type of this teleport request
 	 * @return type of this teleport request
 	 */
 	public TeleportType getTeleportType()
 	{ return this.type; }
+	
 	
 	/**
 	 * Returns the location where this teleport request points to
@@ -205,6 +213,7 @@ public class TeleportRequest {
 		}
 		return this.location.clone();
 	}
+	
 	
 	/**
 	 * Types for the teleport

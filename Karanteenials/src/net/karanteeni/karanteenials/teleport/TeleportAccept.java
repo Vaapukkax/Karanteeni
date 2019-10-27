@@ -27,6 +27,7 @@ public class TeleportAccept extends AbstractCommand implements TranslationContai
 		safe = plugin.getConfig().getBoolean("teleport.request-safe");
 	}
 
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] arg3) {
 		if(!(sender instanceof Player)) {
@@ -37,8 +38,7 @@ public class TeleportAccept extends AbstractCommand implements TranslationContai
 		Player player = (Player)sender;
 		KPlayer kp = KPlayer.getKPlayer(player);
 		
-		if(!kp.dataExists(new NamespacedKey(plugin, "teleport-request")))
-		{
+		if(!kp.dataExists(new NamespacedKey(plugin, "teleport-request"))) {
 			Karanteenials.getMessager().sendMessage(player, Sounds.NO.get(), 
 					Prefix.NEGATIVE+
 					Karanteenials.getTranslator().getTranslation(plugin, player, "teleport-ask.no-existing-request"));
@@ -50,14 +50,14 @@ public class TeleportAccept extends AbstractCommand implements TranslationContai
 		
 		return true;
 	}
+	
 
 	/**
 	 * Run if the teleport was unsuccessful
 	 * @param asker sender of teleport request
 	 * @param rec receiver of teleport request
 	 */
-	private void teleportFailed(Player asker, Player rec)
-	{
+	private void teleportFailed(Player asker, Player rec) {
 		if(asker != null && asker.isOnline())
 			Karanteenials.getMessager().sendMessage(asker, Sounds.NO.get(), 
 					Prefix.NEGATIVE+Karanteenials.getTranslator().getTranslation(plugin, asker, "teleport-ask.asker.failed")
@@ -67,6 +67,7 @@ public class TeleportAccept extends AbstractCommand implements TranslationContai
 					Prefix.NEGATIVE+Karanteenials.getTranslator().getTranslation(plugin, rec, "teleport-ask.receiver.failed")
 					.replace("%player%", asker.getName()));
 	}
+	
 	
 	@Override
 	public void registerTranslations() {

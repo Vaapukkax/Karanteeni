@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.sounds.SoundType;
@@ -224,17 +224,23 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 	
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		//Bukkit.broadcastMessage("" + this.components);
+		//Bukkit.broadcastMessage(""+ this.execComponent);
+		System.out.println(("Beginning chainer " + label + " having " + (this.components!=null?this.components.size():"0") + " components and " + (this.execComponent!=null) + " loader with class id " + this));
+		System.out.println("Using arguments: ");
+		for(String arg : args)
+			System.out.println(arg);
 		// make runnable to prevent commands from running in main thread
-		BukkitRunnable commandRunnable = new BukkitRunnable() {
+		/*BukkitRunnable commandRunnable = new BukkitRunnable() {
 			@Override
-			public void run() {
+			public void run() {*/
 				// check if sender has permission to this command
 				if(!hasPermission(sender)) {
 					noPermission(sender, 
 							CommandResult.NO_PERMISSION.getSound(), 
 							CommandResult.NO_PERMISSION.getDisplayFormat(), 
 							CommandResult.NO_PERMISSION.getMessage());
-					return;
+					return true;
 				}
 				
 				// if the loader should be run before this and parameters have been given, run it
@@ -245,7 +251,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 					if(!CommandResult.SUCCESS.equals(result)) {
 						// clear data after cmd execution
 						data = null;
-						return;
+						return true;
 					}
 				} 
 				
@@ -260,7 +266,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 						if(!CommandResult.SUCCESS.equals(execResult)) {
 							// clear data after cmd execution
 							data = null;
-							return;
+							return true;
 						}
 						
 						// if the loader has not been run, run it
@@ -269,14 +275,14 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 							// if no component was found, run the excess components which run with any parameters
 							if(!CommandResult.SUCCESS.equals(execResult)) {
 								data = null;
-								return;
+								return true;
 							}
 						}
 						
 						// clear data after cmd execution
 						data = null;
 						
-						return;
+						return true;
 					}
 				}
 				
@@ -300,7 +306,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 					}
 					
 					data = null;
-					return;
+					return true;
 				}
 				
 				// if the loader has not been run, run it if there are parameters to run
@@ -310,17 +316,17 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 					if(!CommandResult.SUCCESS.equals(result)) {
 						// clear data after cmd execution
 						data = null;
-						return;
+						return true;
 					}
 				}
 				
 				// clear data after cmd execution
 				data = null;
-			}
+		/*	}
 		};
 		
 		// run the command
-		commandRunnable.run();
+		commandRunnable.run();*/
 		
 		// return true to prevent default "no permission" message
 		return true;

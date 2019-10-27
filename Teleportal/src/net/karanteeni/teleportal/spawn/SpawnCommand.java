@@ -13,6 +13,7 @@ import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
+import net.karanteeni.karanteenials.functionality.Back;
 import net.karanteeni.teleportal.Teleportal;
 
 public class SpawnCommand extends CommandChainer implements TranslationContainer {
@@ -45,6 +46,7 @@ public class SpawnCommand extends CommandChainer implements TranslationContainer
 				return CommandResult.NO_PERMISSION;
 			
 			SpawnManager sm = new SpawnManager((Teleportal)plugin);
+			Location prev = ((Player)sender).getLocation();
 			Location loc = sm.teleportToSpawn((Player)sender);
 			
 			if(loc == null) {
@@ -53,6 +55,9 @@ public class SpawnCommand extends CommandChainer implements TranslationContainer
 						ResultType.INVALID_ARGUMENTS,
 						Sounds.NO.get());
 			} else {
+				// create a new back location for player
+				Back back = new Back((Player)sender);
+				back.setBackLocation(prev); //Set the back location
 				Teleportal.getMessager().sendActionBar(
 						sender, 
 						Sounds.TELEPORT.get(), 
@@ -91,6 +96,8 @@ public class SpawnCommand extends CommandChainer implements TranslationContainer
 				
 				// message about the teleportation to each player
 				for(Player player : players) {
+					Back back = new Back(player);
+					back.setBackLocation(player.getLocation()); //Set the back location
 					Teleportal.getMessager().sendActionBar(
 							player, 
 							Sounds.TELEPORT.get(), 

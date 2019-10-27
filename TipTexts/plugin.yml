@@ -1,0 +1,7 @@
+main: net.karanteeni.tiptexts.TipTexts
+name: TipTexts
+version: 1.0
+author: Nuubles
+description: Displays tips with a defined interval
+api-version: 1.14
+depend: [KaranteeniCore]

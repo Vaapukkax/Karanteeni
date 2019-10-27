@@ -1,6 +1,6 @@
 package net.karanteeni.core.data;
 
-public class Pair<U,Y> {
+public class Pair<U extends Comparable<U>,Y extends Comparable<Y>> implements Comparable<Pair<U,Y>> {
 	private U key;
 	private Y value;
 	
@@ -75,5 +75,11 @@ public class Pair<U,Y> {
 	@Override
 	public int hashCode() {
 		return key.hashCode();
+	}
+
+
+	@Override
+	public int compareTo(Pair<U, Y> object) {
+		return key.compareTo(object.key);
 	}
 }

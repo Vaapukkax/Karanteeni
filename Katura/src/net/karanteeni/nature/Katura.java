@@ -15,6 +15,7 @@ import net.karanteeni.nature.commands.time.TimeAddComponent;
 import net.karanteeni.nature.commands.time.TimeRemoveComponent;
 import net.karanteeni.nature.commands.time.TimeSetComponent;
 import net.karanteeni.nature.commands.weather.Weather;
+import net.karanteeni.nature.entity.carry.EntityCarry;
 import net.karanteeni.nature.entity.events.EntityGrief;
 import net.karanteeni.nature.entity.events.EntitySpawn;
 import net.karanteeni.nature.entity.events.ExplosionEffects;
@@ -22,9 +23,11 @@ import net.karanteeni.nature.entity.events.FeedSheep;
 import net.karanteeni.nature.entity.events.HungerPreventer;
 import net.karanteeni.nature.entity.events.OnLightning;
 import net.karanteeni.nature.entity.events.SpreadCreeperExplosion;
+import net.karanteeni.nature.external_api.CoreProtectAccess;
 import net.karanteeni.nature.worldguard.WorldGuardManager;
 
 public class Katura extends KaranteeniPlugin {
+	private CoreProtectAccess coreProtect;
 	private static String KEY_PREFIX = "Plugin-functionality.";
 	private WorldGuardManager wgm;
 	
@@ -56,6 +59,11 @@ public class Katura extends KaranteeniPlugin {
 			wgm.register();	
 		} else {
 			wgm = null;
+		}
+		
+		
+		if(getServer().getPluginManager().getPlugin("CoreProtect") != null) {
+			coreProtect = new CoreProtectAccess();
 		}
 	}
 	
@@ -106,7 +114,10 @@ public class Katura extends KaranteeniPlugin {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.CREEPER_CHAINING.toString()))
 			getServer().getPluginManager().registerEvents(new SpreadCreeperExplosion(), this);
 		
+		
 		//Long config lists, create last
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.ENTITY_CARRY.toString()))
+			getServer().getPluginManager().registerEvents(new EntityCarry(this), this);
 		getServer().getPluginManager().registerEvents(new EntityGrief(), this);
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.EXPLOSION_EFFECTS.toString()))
 			getServer().getPluginManager().registerEvents(new ExplosionEffects(), this);
@@ -163,6 +174,26 @@ public class Katura extends KaranteeniPlugin {
 
 	}
 	
+	
+	/**
+	 * Access the coreprotect API handler
+	 * @return accessor to the coreprotect api
+	 */
+	public CoreProtectAccess getCoreProtectAccess() {
+		return this.coreProtect;
+	}
+	
+	
+	/**
+	 * Check if the coreprotect api is in use
+	 * @return true if coreprotect is in use, false otherwise
+	 */
+	public boolean isCoreProtectEnabled() {
+		return this.coreProtect != null;
+	}
+	
+	
+	
 	/**
 	 * Keys to access data in config. Which features of the plugin are enabled
 	 * @author Nuubles
@@ -183,7 +214,8 @@ public class Katura extends KaranteeniPlugin {
 		ENTITY_SPAWN,
 		MONSTER_SPAWN,
 		HUNGER_MODIFICATION,
-		SET_SPAWNER
+		SET_SPAWNER,
+		ENTITY_CARRY
 	}
 }
 

@@ -1,0 +1,7 @@
+main: net.karanteeni.tester.TesterMain
+name: SimpleKits
+version: 1.0
+author: Nuubles
+description: Provides simple kits to use
+api-version: 1.14
+depend: [KaranteeniCore]

@@ -49,6 +49,7 @@ public class SpawnerSpawn implements Listener,TranslationContainer {
 			}
 		pl.saveConfig();
 	}
+	
 
 	/**
 	 * Allows or disallows entity spawn from spawner
@@ -67,11 +68,12 @@ public class SpawnerSpawn implements Listener,TranslationContainer {
 		event.setCancelled(true);
 	}
 	
+	
 	/**
 	 * Handles spawner breaks
 	 * @param event
 	 */
-	@EventHandler(priority = EventPriority.HIGHEST)
+	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	private void onSpawnerBreak(BlockBreakEvent event) {
 		if(!event.getBlock().getType().equals(Material.SPAWNER))
 			return;
@@ -81,15 +83,23 @@ public class SpawnerSpawn implements Listener,TranslationContainer {
 		if(!event.getPlayer().hasPermission("katura.dropspawner.always")) //Continue if player can always pick spawner
 			if(event.getPlayer().hasPermission("katura.dropspawner.silk")) //Check if player can pick with silk
 				if(!event.getPlayer().getInventory().getItemInMainHand() //If player does not have silk return
-						.getEnchantments().values().contains(Enchantment.SILK_TOUCH))
+						.getEnchantments().containsKey(Enchantment.SILK_TOUCH))
 					return;
 			else
 				return;
 		
+		// register to coreprotect
+		/*if(pl.isCoreProtectEnabled()) {
+			pl.getCoreProtectAccess().getCoreProtect().logRemoval(
+					event.getPlayer().getName(), 
+					event.getBlock().getLocation(), 
+					event.getBlock().getType(), 
+					event.getBlock().getBlockData());
+		}*/
+		
 		//Drop the spawner etc. only with picaxe
 		if(event.getPlayer().getGameMode().equals(GameMode.SURVIVAL) || 
-				event.getPlayer().getGameMode().equals(GameMode.ADVENTURE))
-		{
+				event.getPlayer().getGameMode().equals(GameMode.ADVENTURE)) {
 			//Drop the broken spawner
 			CreatureSpawner cs = (CreatureSpawner) event.getBlock().getState();
 			ItemStack spawner = new ItemStack(event.getBlock().getType(), 1);
@@ -111,6 +121,7 @@ public class SpawnerSpawn implements Listener,TranslationContainer {
 					new SoundType(Sound.BLOCK_FIRE_EXTINGUISH, 2f, 1.8f));
 		}
 	}
+	
 	
 	/**
 	 * Sets the spawners spawn rate

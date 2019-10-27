@@ -17,6 +17,7 @@ import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.karanteenials.Karanteenials;
+import net.karanteeni.karanteenials.functionality.Back;
 
 public class Teleport extends AbstractCommand implements TranslationContainer {
 	private boolean safe;
@@ -111,6 +112,9 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			return;
 		}
 		
+		// create a new back location for player
+		Back back = new Back(player);
+		back.setBackLocation(player.getLocation()); //Set the back location
 		Teleporter teleporter = new Teleporter(dest.getLocation());
 		if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
 			teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
@@ -153,8 +157,10 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			return;
 		}
 		
-		for(Player player : players)
-		{
+		for(Player player : players) {
+			// create a new back location for player
+			Back back = new Back(player);
+			back.setBackLocation(player.getLocation()); //Set the back location
 			Teleporter teleporter = new Teleporter(dest.getLocation());
 			if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
 				teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
@@ -182,6 +188,9 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			return;
 		}
 		
+		// create a new back location for player
+		Back back = new Back(player);
+		back.setBackLocation(player.getLocation()); //Set the back location
 		Teleporter teleporter = new Teleporter(destination);
 		if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
 			teleporter.teleport(player, safe, false, true, TeleportCause.COMMAND);
@@ -224,14 +233,16 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 			return;
 		}
 		
-		for(Player player : players)
-		{
+		for(Player player : players) {
 			Location destination = formatLocation(player.getLocation(), args);
 			if(destination == null) {
 				printInvalidArgsError(sender);
 				return;
 			}
 			
+			// create a new back location for player
+			Back back = new Back(player);
+			back.setBackLocation(player.getLocation()); //Set the back location
 			Teleporter teleporter = new Teleporter(destination);
 			
 			if(player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)
@@ -259,14 +270,14 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 		}
 	}
 	
+	
 	/**
 	 * Formats the given args to location in given location.
 	 * @param loc location to be used as helper
 	 * @param args possible coordinates/yaw/pitch. Must be in "<x> <y> <z> [<yaw> <pitch>]" format
 	 * @return Location if new location found or null if not found or invalid parameters
 	 */
-	private Location formatLocation(Location location, String[] args)
-	{
+	private Location formatLocation(Location location, String[] args) {
 		char[] prefixPossibilities = {'~','^'};
 		double[] coords = new double[3];
 		char[] prefixValues = new char[5];
@@ -354,37 +365,38 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 				Float.isNaN(pitch)?location.getPitch():pitch);
 	}
 	
+	
 	/**
 	 * Prints the invalid arguments error to sender
 	 * @param sender
 	 */
-	private void printInvalidArgsError(CommandSender sender)
-	{
+	private void printInvalidArgsError(CommandSender sender) {
 		Karanteenials.getMessager().sendMessage(sender, Sounds.NO.get(),
 				Prefix.NEGATIVE+Karanteenials.getDefaultMsgs().incorrectParameters(sender));
 	}
+	
 	
 	/**
 	 * Prints the player not found error to a given commandsender
 	 * @param sender
 	 * @param playerName
 	 */
-	private void printPlayerNotFoundError(CommandSender sender, String playerName)
-	{
+	private void printPlayerNotFoundError(CommandSender sender, String playerName) {
 		Karanteenials.getMessager().sendMessage(sender, Sounds.NO.get(),
 				Prefix.NEGATIVE + 
 				Karanteenials.getDefaultMsgs().playerNotFound(sender, playerName));
 	}
 	
+	
 	/**
 	 * Prints the no permission message to sender
 	 * @param sender
 	 */
-	private void printNoPermissionError(CommandSender sender)
-	{
+	private void printNoPermissionError(CommandSender sender) {
 		Karanteenials.getMessager().sendMessage(sender, Sounds.NO.get(), 
 				Karanteenials.getDefaultMsgs().noPermission(sender));
 	}
+	
 	
 	@Override
 	public void registerTranslations() {

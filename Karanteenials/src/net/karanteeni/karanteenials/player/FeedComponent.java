@@ -40,6 +40,7 @@ public class FeedComponent extends CommandComponent implements TranslationContai
 			
 			((Player)sender).setExhaustion(0);
 			((Player)sender).setFoodLevel(20);
+			((Player)sender).setSaturation(20);
 			
 			SoundType sound = new SoundType(
 					new Sound[] { Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, Sound.ENTITY_PLAYER_BURP }, 
@@ -63,6 +64,7 @@ public class FeedComponent extends CommandComponent implements TranslationContai
 			for(Player player : players) {
 				player.setExhaustion(0);
 				player.setFoodLevel(20);
+				player.setSaturation(20);
 				
 				SoundType sound = new SoundType(
 						new Sound[] { Sound.BLOCK_BUBBLE_COLUMN_BUBBLE_POP, Sound.ENTITY_PLAYER_BURP }, 

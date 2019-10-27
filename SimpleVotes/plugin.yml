@@ -1,0 +1,7 @@
+main: net.karanteeni.simplevote.SimpleVotes
+name: SimpleVotes
+version: 1.0
+author: Nuubles
+description: Catches votes from nuvotifier
+api-version: 1.14
+depends: [KaranteeniBungee, NuVotifier]

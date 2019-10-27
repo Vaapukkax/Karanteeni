@@ -77,10 +77,11 @@ public class TextUtil {
 		msg = msg.replace("&8", "§8");
 		msg = msg.replace("&9", "§9");
 		msg = msg.replace("&a", "§a");
-		msg = msg.replace("&e", "§e");
-		msg = msg.replace("&c", "§c");
 		msg = msg.replace("&b", "§b");
-		return msg.replace("&o", "§o");
+		msg = msg.replace("&c", "§c");
+		msg = msg.replace("&d", "§d");
+		msg = msg.replace("&e", "§e");
+		return msg.replace("&f", "§f");
 	}
 	
 	/**

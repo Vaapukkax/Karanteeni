@@ -1,5 +1,6 @@
 package net.karanteeni.utilika.inventory;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -58,6 +59,7 @@ public class InventoryTweaks implements Listener {
 	public void blockPlaceEvent(BlockPlaceEvent event) {
 		// check if this is the last item to be used
 		if(event.getItemInHand().getAmount() != 1) return;
+		if(event.getPlayer().getGameMode() != GameMode.SURVIVAL) return;
 		
 		if(event.getHand().equals(EquipmentSlot.OFF_HAND)) {
 			// verify we're not modifying a block using item

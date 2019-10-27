@@ -1,0 +1,7 @@
+main: net.karanteeni.foxetbungee.Foxet
+name: FoxetBungee
+version: 1.0
+author: Nuubles
+description: Anticheat foxet bungee part
+api-version: 1.13
+depends: [KaranteeniBungee]

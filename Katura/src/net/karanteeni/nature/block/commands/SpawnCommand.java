@@ -30,11 +30,11 @@ public class SpawnCommand extends BareCommand implements TranslationContainer {
 
 	
 	@Override
-	public List<String> autofill(CommandSender arg0, Command arg1, String arg2, String[] arg3) {
+	public List<String> autofill(CommandSender sender, Command arg1, String arg2, String[] arg3) {
 		if(arg3.length != 1) return null;
 		List<String> values = new ArrayList<String>();
 		for(EntityType entity : EntityType.values())
-			if(entity.isSpawnable())
+			if(entity.isSpawnable() && sender.hasPermission("katura.setspawner."+entity.name().toLowerCase()))
 				values.add(entity.name().toLowerCase());
 		
 		return filterByPrefix(values, arg3[0], false);

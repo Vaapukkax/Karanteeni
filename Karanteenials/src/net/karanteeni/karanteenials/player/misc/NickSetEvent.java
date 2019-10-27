@@ -115,9 +115,9 @@ public class NickSetEvent extends Event implements Cancellable {
 				String name = Karanteenials.getPlayerHandler().getOfflineName(event.player);
 				String dname = Karanteenials.getPlayerHandler().getOfflineDisplayName(event.player);
 				
-				Karanteenials.getMessager().sendMessage(set, Sounds.SETTINGS.get(),
+				Karanteenials.getMessager().sendMessage(event.setter, Sounds.SETTINGS.get(),
 						Prefix.NEUTRAL +
-						Karanteenials.getTranslator().getTranslation(plugin, set, "nick.set-other")
+						Karanteenials.getTranslator().getTranslation(plugin, event.setter, "nick.set-other")
 						.replace("player", name + "")
 						.replace("%old%", dname)
 						.replace("%new%", event.nick));
