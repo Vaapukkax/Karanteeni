@@ -1,6 +1,7 @@
 package net.karanteeni.karanteenials.teleport;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -89,6 +90,33 @@ public class Teleport extends AbstractCommand implements TranslationContainer {
 		printInvalidArgsError(sender);
 		return true;
 	}
+	
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command cmd, String label, String[] args) {
+        List<String> players = new ArrayList<String>();
+		for(Player player : Bukkit.getOnlinePlayers())
+			players.add(player.getName());
+        
+		if(args.length == 1) { // tp Nuubles/~
+			players.addAll(Arrays.asList("~","~ ~","~ ~ ~"));
+        	return filterByPrefix(players, args[0]);
+        } else if(args.length == 2) { // /tp Nuubles Nuubles/~
+        	players.addAll(Arrays.asList("~","~ ~"));
+        	return filterByPrefix(players, args[1]);
+        } else if(args.length == 3) { // /tp Nuubles ~ ~   /tp ~ ~ ~
+        	return filterByPrefix(Arrays.asList("~"), args[2]);
+        } else if(args.length == 4) { // /tp Nuubles ~ ~ ~   /tp ~ ~ ~ ~
+        	return filterByPrefix(Arrays.asList("~"), args[3]);
+        } else if(args.length == 5) { // /tp Nuubles ~ ~ ~ ~ ~
+        	return filterByPrefix(Arrays.asList("~","~ ~"), args[4]);
+        } else if(args.length == 6) {
+        	return filterByPrefix(Arrays.asList("~"), args[5]);
+        }
+		
+		return null;
+    }
+	
 	
 	//tp player					-1
 	private void teleportToPlayer(Player player, String[] args) {
