@@ -1,0 +1,4 @@
+CoreProtect-2.17.7.jar
+worldedit-bukkit-7.0.0.jar
+worldguard-bukkit-7.0.0.jar
+NuVotifier.jar

@@ -2,11 +2,29 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="lib" path="F:/ECLIPSE/Spigot-1.14.4/Spigot/Spigot-API/target/spigot-api-1.14.4-R0.1-SNAPSHOT-shaded.jar"/>
-	<classpathentry kind="lib" path="F:/Purolaaksot/Karanteeni/BUNGEESERVER/Server_Hub/plugins/KaranteeniCore.jar"/>
-	<classpathentry kind="lib" path="F:/Purolaaksot/Karanteeni/BUNGEESERVER/Server_Hub/plugins/KaranteeniPerms.jar"/>
-	<classpathentry kind="lib" path="F:/ECLIPSE/Spigot-1.14.4/spigot-1.14.4.jar"/>
-	<classpathentry kind="lib" path="F:/Purolaaksot/Karanteeni/BUNGEESERVER/Server_Hub/plugins/worldguard-bukkit-7.0.0.jar"/>
-	<classpathentry kind="lib" path="F:/Purolaaksot/Karanteeni/BUNGEESERVER/Server_Hub/plugins/worldedit-bukkit-7.0.0.jar"/>
+	<classpathentry kind="lib" path="../dependencies/Spigot/spigot-api-1.14.4-R0.1-SNAPSHOT-shaded.jar"/>
+	<classpathentry kind="lib" path="../dependencies/Spigot/spigot-1.14.4-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="../dependencies/worldguard-bukkit-7.0.0.jar"/>
+	<classpathentry kind="lib" path="../dependencies/worldedit-bukkit-7.0.0.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Chatar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/DataMigrate"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Foxet"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/FoxetBungee"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/HalloweenPlugin"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Karanteenials"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/KaranteeniBungee"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/KaranteeniCore"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/KaranteeniPerms"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Karpet"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Katura"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/KCurrency"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/PlayTime"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/RegionManager"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Restarter"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SimpleKits"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SimpleVotes"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Teleportal"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/TipTexts"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/Utilika"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
