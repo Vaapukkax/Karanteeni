@@ -43,3 +43,5 @@ permissions:
     description: set weather to rain
   katura.weather.storm:
     description: set weather to storm
+  katura.sit:
+    description: makes the player sit

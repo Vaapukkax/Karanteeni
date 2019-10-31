@@ -24,6 +24,8 @@ import net.karanteeni.nature.entity.events.HungerPreventer;
 import net.karanteeni.nature.entity.events.OnLightning;
 import net.karanteeni.nature.entity.events.SpreadCreeperExplosion;
 import net.karanteeni.nature.external_api.CoreProtectAccess;
+import net.karanteeni.nature.sit.SitArmorstandManager;
+import net.karanteeni.nature.sit.SitCommand;
 import net.karanteeni.nature.worldguard.WorldGuardManager;
 
 public class Katura extends KaranteeniPlugin {
@@ -51,8 +53,8 @@ public class Katura extends KaranteeniPlugin {
 	@Override
 	public void onEnable() {
 		registerConfig();
-		registerEvents();
 		registerCommands();
+		registerEvents();
 		
 		if(wgm != null && this.getServer().getPluginManager().getPlugin("WorldGuard") != null && 
 				this.getServer().getPluginManager().getPlugin("WorldGuard").isEnabled()) {
@@ -113,6 +115,8 @@ public class Katura extends KaranteeniPlugin {
 			getServer().getPluginManager().registerEvents(new OnLightning(), this);
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.CREEPER_CHAINING.toString()))
 			getServer().getPluginManager().registerEvents(new SpreadCreeperExplosion(), this);
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.SIT.toString()))
+			getServer().getPluginManager().registerEvents(new SitArmorstandManager(), this);
 		
 		
 		//Long config lists, create last
@@ -167,6 +171,12 @@ public class Katura extends KaranteeniPlugin {
 			SpawnCommand ss = new SpawnCommand();
 			ss.register();
 		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.SIT.toString())) {
+			SitCommand ss = new SitCommand();
+			ss.setPermission("katura.sit");
+			ss.register();
+		}
 	}
 
 	@Override
@@ -215,7 +225,8 @@ public class Katura extends KaranteeniPlugin {
 		MONSTER_SPAWN,
 		HUNGER_MODIFICATION,
 		SET_SPAWNER,
-		ENTITY_CARRY
+		ENTITY_CARRY,
+		SIT
 	}
 }
 
