@@ -15,7 +15,7 @@ public class PowerLevel {
 		
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 		//Power level for groups
-		for(Group group : perms.getGroupModel().getLocalGroupList().getGroups())
+		for(Group group : perms.getGroupList().getGroups())
 			if(!group.isCustomDataSet(plugin, POWER_LEVEL)) //Add the power level to each group if not set
 				group.setCustomData(plugin, POWER_LEVEL, 0);
 	}
@@ -27,7 +27,7 @@ public class PowerLevel {
 	 */
 	public int getPowerLevel(UUID uuid) {
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		Group group = perms.getPlayerModel().getLocalGroup(uuid);
+		Group group = perms.getPermissionPlayer(uuid).getGroup();
 		if(group == null)
 			return -1;
 		return group.getCustomInt(plugin, POWER_LEVEL);
@@ -40,7 +40,7 @@ public class PowerLevel {
 	 */
 	public int getPowerLevel(Player player) {
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		Group group = perms.getPlayerModel().getLocalGroup(player);
+		Group group = perms.getPermissionPlayer(player.getUniqueId()).getGroup();
 		if(group == null)
 			return -1;
 		return group.getCustomInt(plugin, POWER_LEVEL);

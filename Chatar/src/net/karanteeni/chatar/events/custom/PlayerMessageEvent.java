@@ -66,6 +66,15 @@ public class PlayerMessageEvent extends Event implements Cancellable {
 
 	
 	/**
+	 * Gets the player sending the message
+	 * @return player who is sending the message
+	 */
+	public Player getSender() {
+		return this.player;
+	}
+	
+	
+	/**
 	 * Returns the format of the message
 	 * @return format in the form of '%rank% %player% %message%'
 	 */

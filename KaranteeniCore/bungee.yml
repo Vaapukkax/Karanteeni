@@ -1,0 +1,8 @@
+main: net.karanteeni.bungee.core.KaranteeniCore
+name: KaranteeniCore
+version: 1.0
+author: Nuubles
+description: KaranteeniCore in bungee
+api-version: 1.15
+depends: []
+database: true

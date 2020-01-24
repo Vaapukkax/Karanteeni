@@ -260,6 +260,43 @@ public interface ChainerInterface {
 		}
 	}
 	
+	
+	/**
+	 * Command sender does not have the required permission to this command
+	 * @param sender sender with missing permission
+	 */
+	default public void callBack(CommandSender sender, SoundType sound, DisplayFormat format, String message) {
+		// if no message has been set, use the default message
+		if(message == null)
+			message = KaranteeniCore.getDefaultMsgs().noPermission(sender);
+		
+		switch (format) {
+			case MESSAGE:
+				KaranteeniCore.getMessager().sendMessage(sender, sound, Prefix.NEUTRAL + message);
+				break;
+			case ACTIONBAR:
+				KaranteeniCore.getMessager().sendActionBar(sender, sound, message);
+				break;
+			case BOSSBAR:
+				KaranteeniCore.getMessager().sendBossbar(sender, sound, 1.5f, 4, true, message);
+				break;
+			case SUBTITLE:
+				KaranteeniCore.getMessager().sendTitle(0.1f, 0.1f, 1.5f, sender, "", message, sound);
+				break;
+			case TITLE:
+				KaranteeniCore.getMessager().sendTitle(0.1f, 0.1f, 1.5f, sender, message, "", sound);
+				break;
+			case NONE:
+				if(sender instanceof Player)
+					KaranteeniCore.getSoundHandler().playSound((Player)sender, sound);
+				break;	
+			default:
+				KaranteeniCore.getMessager().sendMessage(sender, sound, Prefix.NEUTRAL + message);
+				break;
+		}
+	}
+	
+	
 	/**
 	 * Checks if player has the permission to use this component
 	 * @param sender command sender

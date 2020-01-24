@@ -86,7 +86,7 @@ public abstract class CommandLoader extends CommandComponent {
 		if(this.execComponent != null && this.execComponent.isBefore()) {
 			CommandResult result = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
 			// if the command execution a success
-			if(!CommandResult.SUCCESS.equals(result)) 
+			if(!CommandResult.SUCCESS.equals(result) && !CommandResult.ASYNC_CALLBACK.equals(result)) 
 				return result; // if incorrect result, return loader result
 		}
 			
@@ -95,7 +95,7 @@ public abstract class CommandLoader extends CommandComponent {
 		
 		// if the execution is false, the given argument was invalid
 		// if errors in execution handle them
-		if(!CommandResult.SUCCESS.equals(retValue)) {
+		if(!CommandResult.SUCCESS.equals(retValue) && !CommandResult.ASYNC_CALLBACK.equals(retValue)) {
 			if(CommandResult.INVALID_ARGUMENTS.equals(retValue)) {
 				invalidArguments(sender, retValue.getSound(), retValue.getDisplayFormat(), retValue.getMessage());
 			} else if(CommandResult.NO_PERMISSION.equals(retValue)) {
@@ -121,9 +121,10 @@ public abstract class CommandLoader extends CommandComponent {
 		}
 		
 		// run the loader component after this chain and this
-		if(CommandResult.SUCCESS.equals(retValue) && this.execComponent != null && !this.execComponent.isBefore()) {
+		if((CommandResult.SUCCESS.equals(retValue) || CommandResult.ASYNC_CALLBACK.equals(retValue)) && 
+				this.execComponent != null && !this.execComponent.isBefore()) {
 			CommandResult res = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
-			if(!CommandResult.SUCCESS.equals(res)) return res;
+			if(!CommandResult.SUCCESS.equals(res) && !CommandResult.ASYNC_CALLBACK.equals(res)) return res;
 		}
 		
 		// run the code of this component

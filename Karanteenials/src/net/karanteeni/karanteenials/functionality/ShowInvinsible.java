@@ -15,7 +15,7 @@ public class ShowInvinsible {
 		
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 		//Power level for groups
-		for(Group group : perms.getGroupModel().getLocalGroupList().getGroups())
+		for(Group group : perms.getGroupList().getGroups())
 			if(!group.isCustomDataSet(plugin, SHOW_NEAR)) //Add the power level to each group if not set
 				group.setCustomData(plugin, SHOW_NEAR, true);
 	}
@@ -28,7 +28,7 @@ public class ShowInvinsible {
 	 */
 	public boolean showInNear(UUID uuid) {
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		Group group = perms.getPlayerModel().getLocalGroup(uuid);
+		Group group = perms.getPermissionPlayer(uuid).getGroup();
 		if(group == null)
 			return true;
 		return group.getCustomBoolean(plugin, SHOW_NEAR);

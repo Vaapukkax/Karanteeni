@@ -82,23 +82,19 @@ public class BlowDandelion implements Listener{
 	 * Makes the player blow a dandelion
 	 * @param p
 	 */
-	private void blowDandelion(Player p, EquipmentSlot hand)
-	{
+	private void blowDandelion(Player p, EquipmentSlot hand) {
 		KPlayer kp = KPlayer.getKPlayer(p);
 		
 		//If player is not blowing any dandelions
-		if(!kp.dataExists(Katura.getPlugin(Katura.class), KEY))
-		{
+		if(!kp.dataExists(Katura.getPlugin(Katura.class), KEY)) {
 			kp.setData(Katura.getPlugin(Katura.class), KEY, true);
 			
 			BukkitRunnable timer = (
-				new BukkitRunnable()
-				{
+				new BukkitRunnable() {
 					int counter = 0;
 					
 					@Override
-					public void run()
-					{
+					public void run() {
 						Location location = p.getEyeLocation();
 				        Vector direction = location.getDirection();
 				        
@@ -118,18 +114,16 @@ public class BlowDandelion implements Listener{
 					    
 				        List<Entity> entit = p.getNearbyEntities(20, 20, 20);
 				        
-				        //Toista puhallus��ni pelaajille
-				        if(counter%5 == 0)
-				        {
+				        // play the blow sound to players
+				        if(counter%5 == 0) {
 					        for(Entity e : entit)
 					        	if(e instanceof Player)
 					        		((Player) e).playSound(location, Sound.UI_TOAST_IN, 1, 1.3F);
 					        p.playSound(location, Sound.UI_TOAST_IN, 1, 1.3F);
 				        }
 				        
-						//Lopeta puhallus
-						if(counter == 15)
-						{
+						// stop blowing
+						if(counter == 15) {
 							this.cancel();
 							kp.removeData(Katura.getPlugin(Katura.class), KEY);
 						}
@@ -138,7 +132,7 @@ public class BlowDandelion implements Listener{
 					}
 				});
 			
-			timer.runTaskTimerAsynchronously(Katura.getPlugin(Katura.class), 1, 1);
+			timer.runTaskTimer(Katura.getPlugin(Katura.class), 1, 1);
 			
 			ItemStack dand = null;
 			if(hand.equals(EquipmentSlot.HAND))

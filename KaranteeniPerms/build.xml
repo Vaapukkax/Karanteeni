@@ -6,6 +6,7 @@
         <jar destfile="./target/${ant.project.name}.jar">
             <fileset dir="bin"></fileset>
             <fileset file="plugin.yml"></fileset>
+            <fileset file="bungee.yml"></fileset>
         </jar>
     </target>
 </project>

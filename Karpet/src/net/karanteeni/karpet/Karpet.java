@@ -22,6 +22,8 @@ public class Karpet extends KaranteeniPlugin {
 			// no worldguard on server
 			wgm = null;
 		}
+		
+		CarpetHandler.initializeDatabaseTable();
 	}
 	
 	

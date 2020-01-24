@@ -3,8 +3,9 @@ name: Chatar
 version: 1.0
 author: Nuubles
 description: Manages messaging and chat in the game
-api-version: 1.14
+api-version: 1.15
 depend: [KaranteeniCore]
+softdepend: [KaranteeniPerms]
 database: true
 
 permissions:
@@ -28,4 +29,8 @@ permissions:
   
   chatar.broadcast:
     description: broadcast a message to the whole bungeecord network
-    
+  
+  chatar.ignore.use:
+    description: ignore other players
+  chatar.ignore.immune:
+    description: players with this permission cannot be ignored

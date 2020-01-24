@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.chatar.Chatar;
+import net.karanteeni.chatar.command.ignore.IgnoreData;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -42,8 +43,11 @@ public class JoinQuitMessages implements Listener {
 				// generate components for each player
 				Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 				HashMap<Player, BaseComponent> messages = new HashMap<Player, BaseComponent>();
+				IgnoreData ignoreData = plugin.getIgnoreData();
 				
+				// collect all players and don't message the players who are ignoring
 				for(Player player : players)
+				if(!ignoreData.isIgnoredOnline(player.getUniqueId(), event.getPlayer().getUniqueId()))
 					messages.put(player, new TextComponent());
 				
 				// format the components
@@ -70,7 +74,10 @@ public class JoinQuitMessages implements Listener {
 		Collection<? extends Player> players = Bukkit.getOnlinePlayers();
 		HashMap<Player, BaseComponent> messages = new HashMap<Player, BaseComponent>();
 		
+		IgnoreData ignoreData = plugin.getIgnoreData();
+		
 		for(Player player : players)
+		if(!ignoreData.isIgnoredOnline(player.getUniqueId(), event.getPlayer().getUniqueId()))
 			messages.put(player, new TextComponent());
 		
 		// format the components

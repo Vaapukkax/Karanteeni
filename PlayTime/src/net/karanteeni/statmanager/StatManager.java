@@ -35,6 +35,11 @@ public class StatManager extends KaranteeniPlugin {
 		// create a new level manager
 		this.manager = new Manager();
 		
+		// initialize database
+		if(!Time.initialize()) {
+			Bukkit.getLogger().log(Level.SEVERE, StatManager.getDefaultMsgs().defaultDatabaseError());
+		}
+		
 		// register requirements when the plugin loads before using them
 		registerRequirements();
 		registerExecutors();
@@ -47,9 +52,6 @@ public class StatManager extends KaranteeniPlugin {
 		registerEvents();
 		registerCommands();
 		loadTimeLevels();
-		if(!Time.initialize()) {
-			Bukkit.getLogger().log(Level.SEVERE, StatManager.getDefaultMsgs().defaultDatabaseError());
-		}
 	}
 	
 	

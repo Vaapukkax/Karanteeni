@@ -1,16 +1,16 @@
 package net.karanteeni.core.timers;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import net.karanteeni.core.KaranteeniCore;
 
 public class KaranteeniTimerInitiater {
@@ -85,6 +85,7 @@ public class KaranteeniTimerInitiater {
 					
 					listeners.remove(timer);
 				}
+				unregisterable.clear();
 			
 				for (Entry<KaranteeniTimer, Integer> entry : listeners.entrySet())
 				if(tickCount % entry.getValue() == 0) {		
@@ -97,7 +98,12 @@ public class KaranteeniTimerInitiater {
 						entry.getKey().runTimer();
 					}
 					catch(Exception e) { 
-						plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", e); 
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);
+						e.printStackTrace();
+						plugin.getLogger().log(Level.WARNING, "An Error happened in timer runnable", sw.toString());
+						
 					}
 				} else {
 					try { 
@@ -108,7 +114,11 @@ public class KaranteeniTimerInitiater {
 						entry.getKey().timerWait();
 					}
 					catch(Exception e) { 
-						plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", e); 
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);
+						e.printStackTrace();
+						plugin.getLogger().log(Level.WARNING, "An Error happened in timer waiter runnable", sw.toString()); 
 					}
 				}
 			}

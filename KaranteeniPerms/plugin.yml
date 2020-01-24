@@ -3,9 +3,8 @@ name: KaranteeniPerms
 version: 1.0
 author: Nuubles
 description: This plugin handles all BASIC permissions and groups in worlds
-api-version: 1.14
+api-version: 1.15
 depend: [KaranteeniCore]
-softdepend: [Chatar]
 
 permissions:
   #all permissions
@@ -24,6 +23,8 @@ permissions:
     description: sets the short rankname of player
   karanteeniperms.player.group:
     description: sets the short rankname of player
+  karanteeniperms.player.test:
+    description: tests if the player has the given permission
   #group
   karanteeniperms.group.permission.add:
     description: add a new permission to player

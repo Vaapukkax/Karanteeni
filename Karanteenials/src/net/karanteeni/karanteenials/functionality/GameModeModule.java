@@ -15,7 +15,7 @@ import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.karanteenials.Karanteenials;
 
-public class GameModeModule extends TableContainer {
+public class GameModeModule {
 	private final String GAMEMODE = "%gamemode%";
 	private final String PLAYERS = "%players%";
 	
@@ -171,18 +171,9 @@ public class GameModeModule extends TableContainer {
 	
 	
 	/**
-	 * Initialize this module
-	 */
-	protected void initialize() {
-		registerTranslations();
-		initTable();
-	}
-	
-	
-	/**
 	 * {@inheritDoc}
 	 */
-	private void registerTranslations() {
+	public void registerTranslations() {
 		Karanteenials pl = Karanteenials.getPlugin(Karanteenials.class);
 		
 		Karanteenials.getTranslator().registerTranslation(
@@ -217,8 +208,7 @@ public class GameModeModule extends TableContainer {
 	}
 
 
-	@Override
-	protected void initTable() {
+	public static void initTable() {
 		// TODO Auto-generated method stub
 		
 	}

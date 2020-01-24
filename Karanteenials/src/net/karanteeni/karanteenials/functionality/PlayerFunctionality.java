@@ -22,10 +22,17 @@ public class PlayerFunctionality {
 		playerBlock = new PlayerBlock(plugin);
 		tptoggle = new TpToggle(plugin);
 		gmm = new GameModeModule();
-		gmm.initialize();
-		
-		playerBlock.initTable();
-		tptoggle.initTable();
+		gmm.registerTranslations();
+	}
+	
+	
+	/**
+	 * Initialize database tables
+	 */
+	public static void initDatabaseTables() {		
+		GameModeModule.initTable();
+		PlayerBlock.initTable();
+		TpToggle.initTable();
 	}
 	
 	

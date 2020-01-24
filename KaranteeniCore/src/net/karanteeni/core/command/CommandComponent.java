@@ -261,13 +261,15 @@ public abstract class CommandComponent implements ChainerInterface {
 		if(this.execComponent != null && this.execComponent.isBefore()) {
 			CommandResult result = this.execComponent.exec(sender, cmd, label, args);
 			// if the command execution a success
-			if(!CommandResult.SUCCESS.equals(result)) 
+			if(!CommandResult.SUCCESS.equals(result) && !CommandResult.ASYNC_CALLBACK.equals(result)) 
 				return result; // if incorrect result, return loader result
 		}
 			
 		// run the possible chain if there is anything to chain
-		if(args != null && args.length > parameterLength) {
-			CommandResult chainResult = chainComponents(args[parameterLength], sender, cmd, label, cutArgs(args, parameterLength+1));
+		//if(args != null && args.length > parameterLength) {
+		if(args != null && args.length >= parameterLength) {
+			//CommandResult chainResult = chainComponents(args[parameterLength], sender, cmd, label, cutArgs(args, parameterLength+1));
+			CommandResult chainResult = chainComponents(args[parameterLength-1], sender, cmd, label, cutArgs(args, parameterLength));
 			if(chainResult != null)
 				return chainResult;
 		}
@@ -276,7 +278,7 @@ public abstract class CommandComponent implements ChainerInterface {
 		CommandResult executed = runComponent(sender, cmd, label, args);
 		
 		// if errors in execution handle them
-		if(!CommandResult.SUCCESS.equals(executed)) {
+		if(!CommandResult.SUCCESS.equals(executed) && !CommandResult.ASYNC_CALLBACK.equals(executed)) {
 			if(CommandResult.INVALID_ARGUMENTS.equals(executed)) {
 				invalidArguments(sender, executed.getSound(), executed.getDisplayFormat(), executed.getMessage());
 			} else if(CommandResult.NO_PERMISSION.equals(executed)) {
@@ -311,8 +313,7 @@ public abstract class CommandComponent implements ChainerInterface {
      * @param prefix Prefix by which the strings will be filtered
      * @return List of filtered strings
      */
-    protected List<String> filterByPrefix(Collection<String> list, String prefix, boolean caseSensitive)
-    {
+    protected List<String> filterByPrefix(Collection<String> list, String prefix, boolean caseSensitive) {
     	if(prefix == null)
     		return new ArrayList<String>();
     	if(caseSensitive)

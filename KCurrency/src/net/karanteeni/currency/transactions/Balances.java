@@ -1,13 +1,11 @@
 package net.karanteeni.currency.transactions;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
-
 import org.bukkit.Bukkit;
-
-import net.karanteeni.core.KaranteeniCore;
-import net.karanteeni.core.database.DatabaseConnector;
 import net.karanteeni.currency.KCurrency;
 
 public class Balances {
@@ -18,25 +16,37 @@ public class Balances {
 	 * @return
 	 */
 	public Double getBalance(UUID uuid) {
+		Connection conn = null;
+		Double result = null;
 		try {
-			if(!confirmAccountExistance(uuid))
-				return null;
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			ResultSet rs = st.executeQuery("SELECT "+
-					KCurrency.getBalanceName()+" FROM "+
-					KCurrency.getTableName()+" WHERE "+
-					KCurrency.getUUIDName()+"='"+uuid+"'");
-			
-			if(rs.first()) {
-				double bal = rs.getDouble(1);
-				st.close();
-				return bal;
+			if(confirmAccountExistance(uuid)) {
+				conn = KCurrency.getDatabaseConnector().openConnection();
+				Statement st = conn.createStatement();
+				ResultSet rs = st.executeQuery("SELECT "+
+						KCurrency.getBalanceName()+" FROM "+
+						KCurrency.getTableName()+" WHERE "+
+						KCurrency.getUUIDName()+"='"+uuid+"'");
+				
+				if(rs.first()) {
+					double bal = rs.getDouble(1);
+					st.close();
+					result = bal;
+				} else {				
+					result = Double.NaN;
+				}				
 			}
-			return Double.NaN;
-		} catch (Exception e) {
-			return Double.NaN;
+		} catch (SQLException e) {
+			result = Double.NaN;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
 	
 	
@@ -62,18 +72,30 @@ public class Balances {
 	 * @return
 	 */
 	public boolean setBalance(UUID uuid, double amount) {
+		Connection conn = null;
+		boolean result = false;
 		try {
-			if(!confirmAccountExistance(uuid))
-				return false;
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
-					" SET " + KCurrency.getBalanceName() + " = " + amount +
-					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
-			st.close();
-			return c > 0;
-		} catch (Exception e) {
-			return false;
+			if(confirmAccountExistance(uuid)) {
+				conn = KCurrency.getDatabaseConnector().openConnection();
+				Statement st = conn.createStatement();
+				int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+						" SET " + KCurrency.getBalanceName() + " = " + amount +
+						" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+				st.close();
+				result = c > 0;				
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
 	
 	
@@ -100,23 +122,33 @@ public class Balances {
 	 * @return NaN if balance not found/error adding and null if player does not exist on global server
 	 */
 	public Double addToBalance(UUID uuid, double amount) {
+		Connection conn = null;
+		Double result = null;
+		
 		try {
-			if(!confirmAccountExistance(uuid))
-				return null;
-			
-			double balance = getBalance(uuid);
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
-					" SET " + KCurrency.getBalanceName() + " = " + (amount+balance) +
-					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
-			st.close();
-			if(c==0)
-				return null;
-			return balance+amount;
-		} catch (Exception e) {
-			return Double.NaN;
+			if(confirmAccountExistance(uuid)) {
+				double balance = getBalance(uuid);
+				conn = KCurrency.getDatabaseConnector().openConnection();
+				Statement st = conn.createStatement();
+				int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+						" SET " + KCurrency.getBalanceName() + " = " + (amount+balance) +
+						" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+				st.close();
+				if(c != 0)
+					result = balance+amount;
+			}			
+		} catch (SQLException e) {
+			result = Double.NaN;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
 	
 	
@@ -143,24 +175,34 @@ public class Balances {
 	 * @return NaN if balance not found/error adding
 	 */
 	public Double removeFromBalance(UUID uuid, double amount) {
+		Connection conn = null;
+		Double result = null;
+		
 		try {
-			if(!confirmAccountExistance(uuid))
-				return null;
+			if(confirmAccountExistance(uuid)) {
+				double balance = getBalance(uuid);
+				conn = KCurrency.getDatabaseConnector().openConnection();
+				Statement st = conn.createStatement();
+				int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
+						" SET " + KCurrency.getBalanceName() + " = " + (balance-amount) +
+						" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
+				st.close();
+				if(c != 0)
+					result = balance-amount;				
+			}
 			
-			double balance = getBalance(uuid);
-			
-			Statement st = KCurrency.getDatabaseConnector().getStatement();
-			int c = st.executeUpdate("UPDATE " + KCurrency.getTableName() +
-					" SET " + KCurrency.getBalanceName() + " = " + (balance-amount) +
-					" WHERE " + KCurrency.getUUIDName() + "='"+uuid+"'");
-			st.close();
-			if(c==0)
-				return null;
-
-			return balance-amount;
-		} catch (Exception e) {
-			return Double.NaN;
+		} catch (SQLException e) {
+			result = Double.NaN;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
 	
 	
@@ -184,25 +226,30 @@ public class Balances {
 	 * @param uuid
 	 */
 	private boolean confirmAccountExistance(UUID uuid) {
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		//if(!db.isConnected()) return false;
+		Connection conn = null;
+		boolean result = false;
 		
 		//Add player to database
 		try {
+			conn = KCurrency.getDatabaseConnector().openConnection();
 			//Insert player to database with UUID and default balance amount
-			Statement st = db.getStatement();
+			Statement st = conn.createStatement();
 			st.executeUpdate("INSERT IGNORE INTO " + KCurrency.getTableName() + " (" + 
 					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + uuid + "', " + 
 					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");
-			/*KCurrency.getDatabaseConnector().runQuery("INSERT INTO " + KCurrency.getTableName() + " (" + 
-					KCurrency.getUUIDName() + ", " + KCurrency.getBalanceName() + ") VALUES ('" + uuid + "', " + 
-					KCurrency.getPlugin(KCurrency.class).getConfigHandler().getStartBalance() + ");");*/
-			return true;
+			result = true;
 		} catch (Exception e) {
 			Bukkit.broadcastMessage("§4Failed to generate balance information to database, please contanct server staff IMMEDIATELY!");
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return false;
+		return result;
 	}
 }

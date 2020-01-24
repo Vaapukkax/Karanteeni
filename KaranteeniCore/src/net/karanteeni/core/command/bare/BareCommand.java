@@ -55,7 +55,7 @@ public abstract class BareCommand extends AbstractCommand implements ChainerInte
 				CommandResult res = runCommand(sender, cmd, label, args);
 				
 				// if the command run returned false, run the invalid arguments method
-				if(!CommandResult.SUCCESS.equals(res)) {
+				if(!CommandResult.SUCCESS.equals(res) && !CommandResult.ASYNC_CALLBACK.equals(res)) {
 					if(CommandResult.INVALID_ARGUMENTS.equals(res)) {
 						invalidArguments(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
 					} else if(CommandResult.NO_PERMISSION.equals(res)) {

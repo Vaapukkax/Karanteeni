@@ -3,8 +3,9 @@ name: Utilika
 version: 1.0
 author: Nuubles
 description: Adds custom structures and mechanics to the game such as elevators
-api-version: 1.14
+api-version: 1.15
 depend: [KaranteeniCore]
+softdepend: [WorldGuard]
 database: true
 
 permissions:

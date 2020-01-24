@@ -1,5 +1,6 @@
 package net.karanteeni.karpet;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,7 +34,6 @@ public class CarpetHandler implements KaranteeniTimer {
 		
 		this.wgm = wgm;
 		
-		initializeDatabaseTable();
 		defaultLayout = loadDefaultLayout();
 		availableBlocks = loadAvailableBlocks();
 		clippableBlocks = loadClippableBlocks();
@@ -84,9 +84,11 @@ public class CarpetHandler implements KaranteeniTimer {
 	/**
 	 * Initializes the database table to contain players carpet layouts
 	 */
-	private void initializeDatabaseTable() {
-		Statement stmt = Karpet.getDatabaseConnector().getStatement();
+	public static void initializeDatabaseTable() {
+		Connection conn = null;
 		try {
+			conn = Karpet.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			stmt.execute("CREATE TABLE IF NOT EXISTS carpet ( "
 					+ "uuid VARCHAR(64) NOT NULL, "
 					+ "layout VARCHAR(770) NOT NULL, "
@@ -95,6 +97,13 @@ public class CarpetHandler implements KaranteeniTimer {
 					+ "PRIMARY KEY (uuid));");
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -179,8 +188,11 @@ public class CarpetHandler implements KaranteeniTimer {
 	 * @return
 	 */
 	public Material[][] getLayout(UUID uuid) {
-		Statement stmt = Karpet.getDatabaseConnector().getStatement();
+		Connection conn = null;
+		Material[][] result = null;
 		try {
+			conn = Karpet.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet set = stmt.executeQuery("SELECT layout, tools FROM carpet WHERE uuid = '" + uuid.toString() + "';");
 			
 			if(set.next()) {
@@ -208,13 +220,13 @@ public class CarpetHandler implements KaranteeniTimer {
 				}
 				
 				// return layout
-				return layout;
+				result = layout;
 			} else {
 				Material[][] mat = new Material[5][5];
 				for(int i = 0; i < 5; ++i)
 				for(int l = 0; l < 5; ++l)
 					mat[i][l] = defaultLayout[i][l];
-				return mat;
+				result = mat;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -222,8 +234,17 @@ public class CarpetHandler implements KaranteeniTimer {
 			for(int i = 0; i < 5; ++i)
 			for(int l = 0; l < 5; ++l)
 				mat[i][l] = defaultLayout[i][l];
-			return mat;
+			result = mat;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
 	
 	
@@ -249,17 +270,29 @@ public class CarpetHandler implements KaranteeniTimer {
 		}
 		
 		// store the string to the database
-		Statement stmt = Karpet.getDatabaseConnector().getStatement();
+		Connection conn = null;
+		boolean result = false;
+
 		try {
+			conn = Karpet.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			stmt.executeUpdate("INSERT INTO carpet(uuid, layout) VALUES ('"
 					+ player.getUniqueId().toString() + "', '"
 					+ layoutString + "') ON DUPLICATE KEY UPDATE layout = '" + layoutString + "';");
 			
-			return true;
+			result = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return false;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
 	
 	

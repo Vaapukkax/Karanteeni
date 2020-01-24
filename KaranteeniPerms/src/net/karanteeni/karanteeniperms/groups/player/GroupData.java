@@ -1,29 +1,32 @@
 package net.karanteeni.karanteeniperms.groups.player;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class GroupData {
-	private List<String> permissions;
+	private LinkedList<ExtendedPermission> permissions;
 	private String prefix;
 	private String suffix;
 	private String groupName;
 	private String groupShortName;
 	
-	public GroupData(String prefix, String suffix, String groupName, String groupShortName, List<String> permissions)
-	{
+	public GroupData(String prefix, String suffix, String groupName, String groupShortName, List<String> permissions) {
 		this.prefix = prefix;
 		this.suffix = suffix;
 		this.groupName = groupName;
 		this.groupShortName = groupShortName;
-		this.permissions = permissions;
+		this.permissions = new LinkedList<ExtendedPermission>();
+		for(String permission : permissions) 
+			this.permissions.add(new ExtendedPermission(permission));
 	}
 	
-	public GroupData(String prefix, String suffix, List<String> permissions)
-	{
+	
+	public GroupData(String prefix, String suffix, List<String> permissions) {
 		this.prefix = prefix;
 		this.suffix = suffix;
-		this.permissions = permissions;
+		this.permissions = new LinkedList<ExtendedPermission>();
+		for(String permission : permissions)
+			this.permissions.add(new ExtendedPermission(permission));
 	}
 	
 	public String getPrefix()
@@ -51,14 +54,13 @@ public class GroupData {
 	{ this.groupShortName = groupShortName; }
 	
 	public boolean hasPermission(String permission)
-	{ return this.permissions.contains(permission); }
+	{ return this.permissions.contains(new ExtendedPermission(permission)); }
 	
 	public boolean addPermission(String permission)
-	{ return this.permissions.add(permission); }
+	{ return this.permissions.add(new ExtendedPermission(permission)); }
 
-	public boolean removePermission(String permission)
-	{ return this.permissions.remove(permission); }
+	public boolean removePermission(String permission) { return this.permissions.remove(new ExtendedPermission(permission)); }
 	
-	public List<String> getPermissions()
-	{ return new ArrayList<String>(this.permissions); }
+	public LinkedList<ExtendedPermission> getPermissions()
+	{ return new LinkedList<ExtendedPermission>(this.permissions); }
 }

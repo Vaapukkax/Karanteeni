@@ -16,7 +16,7 @@ public class LocalGroupRequirement extends Requirement<String> {
 		
 		// load the permissions
 		plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		group = plugin.getGroupModel().getLocalGroupList().getGroup(this.getString());
+		group = plugin.getGroupList().getGroup(this.getString());
 		
 		if(group == null) 
 			throw new IllegalArgumentException("No group found with group ID '" + this.getString() + "'");
@@ -26,7 +26,7 @@ public class LocalGroupRequirement extends Requirement<String> {
 	@Override
 	public boolean isRequirementMet(Player player) {
 		// check if the group is the same as required group
-		return plugin.getPlayerModel().getLocalGroup(player).equals(group);
+		return plugin.getPermissionPlayer(player.getUniqueId()).getGroup().equals(group);
 	}
 	
 	

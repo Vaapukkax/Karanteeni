@@ -1,11 +1,12 @@
 package net.karanteeni.karanteenials.player.home;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -14,6 +15,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.information.PermanentLocation;
 import net.karanteeni.core.information.Teleporter;
+import net.karanteeni.karanteenials.Karanteenials;
 
 /**
  * A saveable location holder with owner and lowercase name
@@ -31,12 +33,12 @@ public class Home {
 	 * @param name name of the home in lowercase
 	 * @param location location of the home
 	 */
-	public Home(UUID owner, String name, Location location)
-	{
+	public Home(UUID owner, String name, Location location) {
 		this.owner = owner;
 		this.name = name.toLowerCase();
 		this.location = new PermanentLocation(UUID.randomUUID(), location);
 	}
+	
 	
 	/**
 	 * Initializes a new home with existing permanent location
@@ -44,40 +46,48 @@ public class Home {
 	 * @param name Name of this home
 	 * @param location saveable location of this home
 	 */
-	public Home(UUID owner, String name, PermanentLocation location)
-	{
+	public Home(UUID owner, String name, PermanentLocation location) {
 		this.owner = owner;
 		this.name = name.toLowerCase();
 		this.location = location;
 	}
 	
+	
 	/**
 	 * Returns the owners uuid of this home
 	 * @return uuid of the owner of this home
 	 */
-	public UUID getOwner()
-	{ return this.owner; }
+	public UUID getOwner() { 
+		return this.owner; 
+	}
+	
 	
 	/**
 	 * Returns the name of this home
 	 * @return lowercase name of this home
 	 */
-	public String getName()
-	{ return this.name; }
+	public String getName() { 
+		return this.name; 
+	}
+	
 	
 	/**
 	 * Returns the location of this home
 	 * @return location of this home
 	 */
-	public Location getLocation()
-	{ return this.location.getLocation(); }
+	public Location getLocation() { 
+		return this.location.getLocation(); 
+	}
+	
 	
 	/**
 	 * Changes the location of this home
 	 * @return
 	 */
-	public void setLocation(Location location)
-	{ this.location.changeLocation(location); }
+	public void setLocation(Location location) { 
+		this.location.changeLocation(location); 
+	}
+	
 	
 	/**
 	 * Teleports an entity to this home
@@ -87,13 +97,13 @@ public class Home {
 	 * and origination is the original location of player
 	 * before teleport.
 	 */
-	public Teleporter teleport(Player player)
-	{
+	public Teleporter teleport(Player player) {
 		Teleporter teleporter = new Teleporter(location.getLocation());
 		//teleporter.teleport(player, true); //Teleport player safely
 		teleporter.teleport(player, true, false, true, TeleportCause.PLUGIN);
 		return teleporter;
 	}
+	
 	
 	/**
 	 * Deletes a players home from database
@@ -101,29 +111,41 @@ public class Home {
 	 * @param home home to delete
 	 * @return true if deletion was successful
 	 */
-	public boolean delete() 
-	{
+	public boolean delete()  {
 		if(owner == null || location == null) return false;
 		
+		boolean result = false;
+		Connection conn = null;
 		try {
+			conn = Karanteenials.getDatabaseConnector().openConnection();
 			//Delete the location of this home
 			if(!location.deleteLocation())
 				return false;
 			
-			PreparedStatement st = KaranteeniPlugin.getDatabaseConnector().prepareStatement(
+			PreparedStatement st = conn.prepareStatement(
 					"DELETE FROM home WHERE UUID = '"+owner.toString()+"' AND serverID = ? AND name = ?;");
 			
 			st.setString(1, KaranteeniPlugin.getServerIdentificator());
 			st.setString(2, name);
 			if(st.executeUpdate() == 0)
-				return false;
-			
-			return true; //Delete location of this home
+				result = false;
+			else
+				result = true; // delete location of this home
 		} catch(Exception e) {
 			e.printStackTrace();
-			return false;
+			result = false;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
+	
 	
 	/**
 	 * Saves a home for uuid
@@ -131,54 +153,64 @@ public class Home {
 	 * @param home home to save
 	 * @return true if save was successful, false otherwise
 	 */
-	public boolean save() 
-	{
+	public boolean save() {
 		if(owner == null || location == null) return false;
-		
+		Connection conn = null;
+		boolean saved = false;
 		try {
+			conn = Karanteenials.getDatabaseConnector().openConnection();
 			Home old = getHome(owner, name);
 			
-			if(old == null) //There's no old home, create new one
-			{
-				if(!location.saveLocation()) //Save the location
-					return false;
+			if(old == null) { //There's no old home, create new one
+				if(location.saveLocation()) { //Save the location
 				
-				PreparedStatement st = KaranteeniPlugin.getDatabaseConnector().prepareStatement(
-						"INSERT INTO home "
-						+ "(UUID, name, location, serverID) "
-						+ "VALUES "
-						+ "(?,?,?,?);");
-				st.setString(1, owner.toString());
-				st.setString(2, name);
-				st.setString(3, location.getID().toString());
-				st.setString(4, KaranteeniPlugin.getServerIdentificator());
-				return st.executeUpdate() != 0;
-			}
-			else
-			{
+					PreparedStatement st = conn.prepareStatement(
+							"INSERT INTO home "
+							+ "(UUID, name, location, serverID) "
+							+ "VALUES "
+							+ "(?,?,?,?);");
+					st.setString(1, owner.toString());
+					st.setString(2, name);
+					st.setString(3, location.getID().toString());
+					st.setString(4, KaranteeniPlugin.getServerIdentificator());
+					saved = st.executeUpdate() != 0;
+				}
+			} else {
 				//Update only the location as there's no need to update the home data
 				old.location.changeLocation(this.location.getLocation());
 				if(!old.location.saveLocation())
-					return false;
+					saved = false;
+				else
+					saved = true;
 			}
 			
-			return true;
 		} catch(Exception e) {
 			e.printStackTrace();
-			return false;
+			saved = false;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return saved;
 	}
+	
 	
 	/**
 	 * Returns all homes of this player on this server
 	 * @param uuid UUID of player
 	 * @return
 	 */
-	protected static List<Home> getHomes(UUID uuid)
-	{
+	protected static List<Home> getHomes(UUID uuid) {
+		Connection conn = null;
+		List<Home> result = null;
 		try {
-			PreparedStatement st = 
-				KaranteeniPlugin.getDatabaseConnector().prepareStatement(
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(
 					"SELECT name, world, x, y, z, pitch, yaw, location.id "+
 					"FROM home, location "+
 					"WHERE home.UUID = ? AND "+
@@ -191,8 +223,7 @@ public class Home {
 			
 			List<Home> homes = new ArrayList<Home>();
 			
-			while(set.next())
-			{
+			while(set.next()) {
 				String name = set.getString(1);
 				String world = set.getString(2);
 				double x = set.getDouble(3);
@@ -208,15 +239,21 @@ public class Home {
 				homes.add(new Home(uuid, name.toLowerCase(), new PermanentLocation(locID, loc)));
 			}
 			
-			return homes;
-		}
-		catch(Exception e)
-		{
+			result = homes;
+		} catch(Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return null;
+		return result;
 	}
+	
 	
 	/**
 	 * Returns a home of name from specific player
@@ -224,11 +261,12 @@ public class Home {
 	 * @param name name of home
 	 * @return home found or null if no home found
 	 */
-	protected static Home getHome(UUID uuid, String name)
-	{
+	protected static Home getHome(UUID uuid, String name) {
+		Connection conn = null;
+		Home result = null;
 		try {
-			PreparedStatement st = 
-				KaranteeniPlugin.getDatabaseConnector().prepareStatement(
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(
 					"SELECT world, x, y, z, pitch, yaw, location.id "+
 					"FROM home, location "+
 					"WHERE home.UUID = ? AND "+
@@ -241,8 +279,7 @@ public class Home {
 			st.setString(3, KaranteeniPlugin.getServerIdentificator());
 			ResultSet set = st.executeQuery();
 			
-			if(set.next())
-			{
+			if(set.next()) {
 				String world = set.getString(1);
 				double x = set.getDouble(2);
 				double y = set.getDouble(3);
@@ -252,19 +289,15 @@ public class Home {
 				UUID locID = UUID.fromString(set.getString(7));
 				
 				World w = Bukkit.getWorld(world);
-				if(w == null)
-					return null;
-				Location loc = new Location(w, x, y, z, yaw, pitch);
-				return new Home(uuid, name.toLowerCase(), new PermanentLocation(locID, loc));
+				if(w != null) {
+					Location loc = new Location(w, x, y, z, yaw, pitch);
+					result = new Home(uuid, name.toLowerCase(), new PermanentLocation(locID, loc));
+				}
 			}
-			
-			return null;
-		}
-		catch(Exception e)
-		{
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		
-		return null;
+		return result;
 	}
 }

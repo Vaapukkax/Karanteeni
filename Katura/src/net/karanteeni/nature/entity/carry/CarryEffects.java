@@ -49,8 +49,8 @@ public class CarryEffects implements KaranteeniTimer {
 			// check if player carries anything
 			if(player == null || !player.isOnline() || player.getPassengers().size() == 0) {
 				// of not, remove the effect
-				effects.remove(player);
-				carriers.remove(player.getUniqueId());
+				effects.remove(uuid);
+				carriers.remove(uuid);
 				continue;
 			}
 			

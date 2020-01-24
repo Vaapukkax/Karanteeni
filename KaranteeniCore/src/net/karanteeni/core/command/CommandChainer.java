@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.command.Command;
@@ -224,12 +223,6 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 	
 	@Override
 	public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-		//Bukkit.broadcastMessage("" + this.components);
-		//Bukkit.broadcastMessage(""+ this.execComponent);
-		System.out.println(("Beginning chainer " + label + " having " + (this.components!=null?this.components.size():"0") + " components and " + (this.execComponent!=null) + " loader with class id " + this));
-		System.out.println("Using arguments: ");
-		for(String arg : args)
-			System.out.println(arg);
 		// make runnable to prevent commands from running in main thread
 		/*BukkitRunnable commandRunnable = new BukkitRunnable() {
 			@Override
@@ -248,7 +241,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 					CommandResult result = execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
 					//args = cutArgs(args, parameterLength);
 					// if no component was found, run the excess components which run with any parameters
-					if(!CommandResult.SUCCESS.equals(result)) {
+					if(!CommandResult.SUCCESS.equals(result) && !CommandResult.ASYNC_CALLBACK.equals(result)) {
 						// clear data after cmd execution
 						data = null;
 						return true;
@@ -263,7 +256,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 					if(component != null) {
 						CommandResult execResult = component.exec(sender, cmd, label, cutArgs(args, parameterLength+1));
 						// execute the found component
-						if(!CommandResult.SUCCESS.equals(execResult)) {
+						if(!CommandResult.SUCCESS.equals(execResult) && !CommandResult.ASYNC_CALLBACK.equals(execResult)) {
 							// clear data after cmd execution
 							data = null;
 							return true;
@@ -273,7 +266,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 						if (execComponent != null && !execComponent.isBefore()){
 							execResult = execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));  ///////////////////////////////////////////////////////////
 							// if no component was found, run the excess components which run with any parameters
-							if(!CommandResult.SUCCESS.equals(execResult)) {
+							if(!CommandResult.SUCCESS.equals(execResult) && !CommandResult.ASYNC_CALLBACK.equals(execResult)) {
 								data = null;
 								return true;
 							}
@@ -290,7 +283,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 				CommandResult res = runCommand(sender, cmd, label, args);
 				
 				// if the command run returned false, run the invalid arguments method
-				if(!CommandResult.SUCCESS.equals(res)) {
+				if(!CommandResult.SUCCESS.equals(res) && !CommandResult.ASYNC_CALLBACK.equals(res)) {
 					if(CommandResult.INVALID_ARGUMENTS.equals(res)) {
 						invalidArguments(sender, res.getSound(), res.getDisplayFormat(), res.getMessage());
 					} else if(CommandResult.NO_PERMISSION.equals(res)) {
@@ -313,7 +306,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 				if (execComponent != null && !execComponent.isBefore() && args.length > 0) {
 					CommandResult result = execComponent.exec(sender, cmd, label, args);
 					// if no component was found, run the excess components which run with any parameters
-					if(!CommandResult.SUCCESS.equals(result)) {
+					if(!CommandResult.SUCCESS.equals(result) && !CommandResult.ASYNC_CALLBACK.equals(result)) {
 						// clear data after cmd execution
 						data = null;
 						return true;

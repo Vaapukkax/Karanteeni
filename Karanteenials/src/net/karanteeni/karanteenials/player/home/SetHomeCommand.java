@@ -113,13 +113,13 @@ public class SetHomeCommand extends AbstractCommand {
 	 * @return true if can create more homes
 	 */
 	private boolean canCreateMoreHomes(UUID uuid) {
-		Group group = KaranteeniPerms.getPlugin(KaranteeniPerms.class).getPlayerModel().getLocalGroup(uuid);
+		KaranteeniPerms plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+		Group group = plugin.getPermissionPlayer(uuid).getGroup();
 		if(group == null)
 			return true;
 		
 		Collection<Home> homes = Home.getHomes(uuid);
-		return (homes.size() < KaranteeniPerms.getPlugin(KaranteeniPerms.class)
-								.getPlayerModel().getLocalGroup(uuid).getCustomInt(plugin, ".limit.home"));
+		return (homes.size() < group.getCustomInt(this.plugin, "limit.home"));
 	}
 	
 	

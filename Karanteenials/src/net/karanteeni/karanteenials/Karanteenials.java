@@ -10,6 +10,7 @@ import net.karanteeni.karanteenials.enchant.GiveEnchantmentComponent;
 import net.karanteeni.karanteenials.enchant.LevelLoader;
 import net.karanteeni.karanteenials.enchant.RemoveEnchantmentComponent;
 import net.karanteeni.karanteenials.events.DeathBack;
+import net.karanteeni.karanteenials.events.JoinSound;
 import net.karanteeni.karanteenials.functionality.PlayerFunctionality;
 import net.karanteeni.karanteenials.player.BurnComponent;
 import net.karanteeni.karanteenials.player.ExtinguishComponent;
@@ -57,6 +58,18 @@ public class Karanteenials extends KaranteeniPlugin
 	
 	
 	@Override
+	public void onLoad() {
+		// initialize database tables
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.HOME.toString())) {
+			HomeCommand.createHomeTable();
+		}
+		
+		// initialize functionality tables
+		PlayerFunctionality.initDatabaseTables();
+	}
+	
+	
+	@Override
 	public void onEnable() {
 		data = new PlayerFunctionality(this);
 		
@@ -93,6 +106,10 @@ public class Karanteenials extends KaranteeniPlugin
 		
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.DEATH_BACK.toString())) {
 			getServer().getPluginManager().registerEvents(new DeathBack(), this);
+		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.JOIN_EFFECTS.toString())) {
+			getServer().getPluginManager().registerEvents(new JoinSound(this), this);
 		}
 	}
 	
@@ -289,6 +306,7 @@ public class Karanteenials extends KaranteeniPlugin
 		ENCHANT_COMMAND,
 		RANDOM_TELEPORT,
 		DEATH_BACK,
-		NEAR_COMMAND
+		NEAR_COMMAND,
+		JOIN_EFFECTS
 	}
 }

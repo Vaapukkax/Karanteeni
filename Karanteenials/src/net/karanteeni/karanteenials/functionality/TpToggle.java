@@ -1,17 +1,15 @@
 package net.karanteeni.karanteenials.functionality;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import org.bukkit.entity.Player;
-
-import net.karanteeni.core.database.DatabaseConnector;
 import net.karanteeni.core.players.KPlayer;
 import net.karanteeni.karanteenials.Karanteenials;
 
-public class TpToggle extends TableContainer{
+public class TpToggle {
 	private static final String TELEPORT_TOGGLE = "blockstp";
 	private final Karanteenials plugin;
 	
@@ -19,11 +17,12 @@ public class TpToggle extends TableContainer{
 		this.plugin = plugin;
 	}
 	
-	@Override
-	protected void initTable() {
+	
+	public static void initTable() {
+		Connection conn = null;
 		try {
-			DatabaseConnector db = Karanteenials.getDatabaseConnector();
-			Statement st = db.getStatement();
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			st.execute("CREATE TABLE IF NOT EXISTS tptoggle ("+
 					"UUID VARCHAR(128) NOT NULL,"+
 					"serverID VARCHAR(128) NOT NULL,"+
@@ -32,6 +31,13 @@ public class TpToggle extends TableContainer{
 					"PRIMARY KEY (UUID,serverID));");
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -48,23 +54,34 @@ public class TpToggle extends TableContainer{
 			return kp.getBoolean(plugin, TELEPORT_TOGGLE);
 		}
 		
+		Connection conn = null;
+		boolean result = false;
 		try {
-			DatabaseConnector db = Karanteenials.getDatabaseConnector();
-			PreparedStatement st = db.prepareStatement("SELECT * FROM tptoggle WHERE UUID = ? AND serverID = ?;");
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement("SELECT * FROM tptoggle WHERE UUID = ? AND serverID = ?;");
 			st.setString(1, player.getUniqueId().toString());
 			st.setString(2, Karanteenials.getServerIdentificator());
 			ResultSet set = st.executeQuery();
 			if(set.next()) {
 				kp.setData(plugin, TELEPORT_TOGGLE, true); //Set loaded data to cache
-				return true;
+				result = true;
+			} else {
+				kp.setData(plugin, TELEPORT_TOGGLE, false); //Set loaded data to cache
+				result = false;
 			}
-			kp.setData(plugin, TELEPORT_TOGGLE, false); //Set loaded data to cache
-			return false;
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
-		return false;
+		
+		return result;
 	}
 	
 	/**
@@ -92,38 +109,50 @@ public class TpToggle extends TableContainer{
 		return false;
 	}
 	
+	
 	/**
 	 * Modifies the tptoggle value of given player
 	 * @param player player who will receive new tptoggle value
 	 * @param blockValue value for new tptoggle
 	 */
-	public void setTpToggle(Player player, boolean blockValue) 
-	{
+	public void setTpToggle(Player player, boolean blockValue)  {
 		KPlayer kp = KPlayer.getKPlayer(player);
 		kp.setData(plugin, TELEPORT_TOGGLE, blockValue); //Set to cache
+		Connection conn = null;
 		
-		if(blockValue) 
-		{
+		if(blockValue)  {
 			try {
-				DatabaseConnector db = Karanteenials.getDatabaseConnector();
-				PreparedStatement st = db.prepareStatement("INSERT INTO tptoggle (UUID,serverID) VALUES (?,?);");
+				conn = Karanteenials.getDatabaseConnector().openConnection();
+				PreparedStatement st = conn.prepareStatement("INSERT INTO tptoggle (UUID,serverID) VALUES (?,?);");
 				st.setString(1, player.getUniqueId().toString());
 				st.setString(2, Karanteenials.getServerIdentificator());
 				st.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					if(conn != null)
+						conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
-		}
-		else
-		{
+		} else {
 			try {
-				DatabaseConnector db = Karanteenials.getDatabaseConnector();
-				PreparedStatement st = db.prepareStatement("DELETE FROM tptoggle WHERE UUID = ? AND serverID = ?;");
+				conn = Karanteenials.getDatabaseConnector().openConnection();
+				PreparedStatement st = conn.prepareStatement("DELETE FROM tptoggle WHERE UUID = ? AND serverID = ?;");
 				st.setString(1, player.getUniqueId().toString());
 				st.setString(2, Karanteenials.getServerIdentificator());
 				st.execute();
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					if(conn != null)
+						conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

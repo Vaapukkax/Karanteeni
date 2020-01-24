@@ -1,5 +1,6 @@
 package net.karanteeni.core.information.translation;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.UUID;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -339,9 +341,11 @@ public class Translator {
 	 * Initializes the database tables for language saving
 	 */
 	public static void initTable() {
-		Statement stmt = KaranteeniCore.getDatabaseConnector().getStatement();
+		Connection conn = null;
 		
 		try {
+			conn = KaranteeniCore.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			stmt.execute("CREATE TABLE IF NOT EXISTS language(\n"
 					+ "UUID VARCHAR(60) NOT NULL,\n"
 					+ "locale VARCHAR(10) NOT NULL,\n"
@@ -349,6 +353,13 @@ public class Translator {
 					+ "FOREIGN KEY (UUID) REFERENCES player(UUID));");
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -357,17 +368,17 @@ public class Translator {
 	 * Loads a players language to the memory
 	 * @param player player whose language will be loaded to memory
 	 */
-	public void loadLocale(Player player) {
+	public void loadLocale(UUID uuid) {
 		// verify that the player is online
-		if(!player.isOnline()) return;
-		KPlayer kp = KPlayer.getKPlayer(player);
+		KPlayer kp = KPlayer.getKPlayer(uuid);
 		if(kp == null) return;
 		
-		PreparedStatement stmt = KaranteeniCore.getDatabaseConnector().prepareStatement(
-				"SELECT locale FROM language WHERE UUID = ?;");
+		Connection conn = null;
 		
 		try {
-			stmt.setString(1, player.getUniqueId().toString());
+			conn = KaranteeniCore.getDatabaseConnector().openConnection();
+			PreparedStatement stmt = conn.prepareStatement("SELECT locale FROM language WHERE UUID = ?;");
+			stmt.setString(1, uuid.toString());
 			
 			ResultSet set = stmt.executeQuery();
 			
@@ -380,6 +391,13 @@ public class Translator {
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -437,34 +455,51 @@ public class Translator {
 				kp.removeData(plugin, LANGUAGE);
 		}
 		
+		Connection conn = null;
+		boolean saved = false;
+		
 		// save the locale to the database
 		if(locale != null) {
-			PreparedStatement stmt = KaranteeniCore.getDatabaseConnector().prepareStatement(
-					"INSERT INTO language (UUID, locale) VALUES (?,?) ON DUPLICATE KEY UPDATE locale = ?;");
 			try {
+				conn = KaranteeniCore.getDatabaseConnector().openConnection();
+				PreparedStatement stmt = conn.prepareStatement("INSERT INTO language (UUID, locale) VALUES (?,?) ON DUPLICATE KEY UPDATE locale = ?;");
 				stmt.setString(1, player.getUniqueId().toString());
 				stmt.setString(2, locale.toLanguageTag());
 				stmt.setString(3, locale.toLanguageTag());
 				
 				stmt.executeUpdate();
-				return true;
+				saved = true;
 			} catch (SQLException e) {
 				e.printStackTrace();
-				return false;
+			} finally {
+				try {
+					if(conn != null)
+						conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 			
 		} else { // remove the set locale from the database
-			PreparedStatement stmt = KaranteeniCore.getDatabaseConnector().prepareStatement(
-					"DELETE FROM language WHERE UUID = ?;");
 			try {
+				conn = KaranteeniCore.getDatabaseConnector().openConnection();
+				PreparedStatement stmt = conn.prepareStatement("DELETE FROM language WHERE UUID = ?;");
 				stmt.setString(1, player.getUniqueId().toString());
 				
 				stmt.executeUpdate();
-				return true;
+				saved = true;
 			} catch (SQLException e) {
 				e.printStackTrace();
-				return false;
+			} finally {
+				try {
+					if(conn != null)
+						conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		
+		return saved;
 	}
 }

@@ -1,5 +1,6 @@
 package net.karanteeni.core.players;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,14 +11,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-
 import net.karanteeni.core.KaranteeniCore;
+import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.database.DatabaseConnector;
 
 public class PlayerHandler {
@@ -73,9 +73,10 @@ public class PlayerHandler {
 				+ "UNIQUE(" + PlayerDataKeys.NAME + ")\n"
 				+ ");";
 		
-		
+		Connection conn = null;
 		try {
-			Statement st = db.getStatement();
+			conn = db.openConnection();
+			Statement st = conn.createStatement();
 			st.execute(query);
 			st.close();
 			//db.runQuery(query);
@@ -85,6 +86,13 @@ public class PlayerHandler {
 			e.printStackTrace();*/
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -92,15 +100,15 @@ public class PlayerHandler {
 	 * Gets the offline uuid of a player with this name
 	 * @param name
 	 */
-	private UUID getOfflineUUID(String name)
-	{
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
+	private UUID getOfflineUUID(String name) {
+		Connection conn = null;
 		//if(!db.isConnected()) return null;
 		
 		UUID uuid = null;
 		
 		try {
-			PreparedStatement st = db.prepareStatement(
+			conn = KaranteeniPlugin.getDatabaseConnector().openConnection();
+			PreparedStatement st = conn.prepareStatement(
 					"SELECT "+PlayerDataKeys.UUID+" FROM " + PlayerDataKeys.PLAYER_TABLE + " WHERE " + PlayerDataKeys.NAME+"=?;");
 			
 			st.setString(1, name);
@@ -110,20 +118,25 @@ public class PlayerHandler {
 			st.close();
 		}catch (SQLException e) {
 			e.printStackTrace();
-		}
-		catch (Exception e) {
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return uuid;
 	}
+	
 	
 	/**
 	 * Searches for UUID by given player name
 	 * @param name Name of player to return
 	 * @return UUID of given player or null
 	 */
-	public UUID getUUID(String name)
-	{
+	public UUID getUUID(String name) {
 		Player player = Bukkit.getPlayer(name);
 		//Is player here
 		if(player != null)
@@ -132,6 +145,7 @@ public class PlayerHandler {
 		//Player is not here, try to search database
 		return getOfflineUUID(name);
 	}
+	
 	
 	/**
 	 * Gets players from the server with arguments
@@ -222,51 +236,65 @@ public class PlayerHandler {
 	public String getOfflineName(UUID uuid) {
 		/*if(Bukkit.getPlayer(uuid) != null)
 			return Bukkit.getPlayer(uuid).getName();*/
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		//if(!db.isConnected()) return null;
+		Connection conn = null;
+		String result = null;
 		
 		try {
-			Statement st = db.getStatement();
+			conn = KaranteeniPlugin.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.NAME+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
 					" WHERE UUID='"+uuid+"';");
-			String result = null;
 			if(rs.first())
 				result =  rs.getString(1);
 			st.close();
-			return result;
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return null;
+		return result;
 	}
+	
 	
 	/**
 	 * Get the displayname of a player who is not online
 	 * @param uuid
 	 * @return
 	 */
-	public String getOfflineDisplayName(UUID uuid)
-	{
+	public String getOfflineDisplayName(UUID uuid) {
 		/*if(Bukkit.getPlayer(uuid) != null)
 			return Bukkit.getPlayer(uuid).getDisplayName();*/
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		//if(!db.isConnected()) return null;
+		Connection conn = null;
+		String result = null;
 		
 		try {
-			Statement st = db.getStatement();
+			conn = KaranteeniPlugin.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT "+PlayerDataKeys.DISPLAY_NAME+" FROM " + PlayerDataKeys.PLAYER_TABLE + 
 					" WHERE UUID='"+uuid+"';");
 			if(rs.first())
-				return rs.getString(1);
+				result = rs.getString(1);
 			st.close();
 			/*return db.getString("SELECT * FROM " + PlayerDataKeys.PLAYER_TABLE + 
 					" WHERE UUID='"+uuid+"';", PlayerDataKeys.DISPLAY_NAME.toString());*/
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
-		return null;
+		return result;
 	}
 	
 	
@@ -275,25 +303,27 @@ public class PlayerHandler {
 	 * @param uuid uuid to whom the displayname will be set
 	 * @return was the save successful
 	 */
-	public boolean setDisplayName(UUID uuid, String displayname)
-	{
+	public boolean setDisplayName(UUID uuid, String displayname) {
 		// set online player displayname
 		Player player = Bukkit.getPlayer(uuid);
 		if(player != null && player.isOnline())
 			player.setDisplayName(displayname);
 		
-		DatabaseConnector db = KaranteeniCore.getDatabaseConnector();
-		//if(!db.isConnected()) return false;
+		Connection conn = null;
+		boolean updated = false;
 		
 		try {
-			PreparedStatement stmt = db.prepareStatement("UPDATE player SET displayname = ? WHERE UUID = ?;");
+			conn = KaranteeniPlugin.getDatabaseConnector().openConnection();
+			PreparedStatement stmt = conn.prepareStatement("UPDATE player SET displayname = ? WHERE UUID = ?;");
 			stmt.setString(1, displayname);
 			stmt.setString(2, uuid.toString());
-			return stmt.executeUpdate() == 1;
+			updated = stmt.executeUpdate() == 1;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
 		}
+		
+		return updated;
 	}
 	
 	

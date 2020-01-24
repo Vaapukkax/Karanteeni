@@ -1,7 +1,6 @@
 package net.karanteeni.regionmanager;
 
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.regionmanager.structure.elevator.Elevator;
 
 public class RegionManager extends KaranteeniPlugin
 {
@@ -24,7 +23,7 @@ public class RegionManager extends KaranteeniPlugin
 	
 	
 	private void registerEvents() {
-		getServer().getPluginManager().registerEvents(new Elevator(), this);
+		
 	}
 	
 	

@@ -3,7 +3,7 @@ name: Karpet
 version: 1.0
 author: Nuubles
 description: Flying carpets
-api-version: 1.14
+api-version: 1.15
 depend: [KaranteeniCore]
 softdepend: [WorldGuard]
 database: true

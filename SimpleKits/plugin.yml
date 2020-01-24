@@ -3,5 +3,5 @@ name: SimpleKits
 version: 1.0
 author: Nuubles
 description: Provides simple kits to use
-api-version: 1.14
+api-version: 1.15
 depend: [KaranteeniCore]

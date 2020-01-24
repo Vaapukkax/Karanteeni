@@ -55,10 +55,11 @@ public class InventoryTweaks implements Listener {
 	}
 	
 	
-	@EventHandler (priority = EventPriority.HIGH, ignoreCancelled = false)
+	@EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void blockPlaceEvent(BlockPlaceEvent event) {
 		// check if this is the last item to be used
-		if(event.getItemInHand().getAmount() != 1) return;
+		if(event.isCancelled()) return;
+		if(event.getItemInHand().getAmount() > 1) return;
 		if(event.getPlayer().getGameMode() != GameMode.SURVIVAL) return;
 		
 		if(event.getHand().equals(EquipmentSlot.OFF_HAND)) {

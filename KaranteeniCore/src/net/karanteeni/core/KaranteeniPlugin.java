@@ -1,8 +1,5 @@
 package net.karanteeni.core;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import net.karanteeni.core.block.BlockManager;
+import net.karanteeni.core.block.executable.ActionBlockManager;
 import net.karanteeni.core.config.ConfigManager;
 import net.karanteeni.core.config.YamlConfig;
 import net.karanteeni.core.database.DatabaseConnector;
@@ -18,7 +16,6 @@ import net.karanteeni.core.entity.EntityManager;
 import net.karanteeni.core.information.Messager;
 import net.karanteeni.core.information.sounds.SoundHandler;
 import net.karanteeni.core.information.text.DefaultMessages;
-import net.karanteeni.core.information.text.TextUtil;
 import net.karanteeni.core.information.translation.Translator;
 import net.karanteeni.core.item.ItemManager;
 import net.karanteeni.core.players.PlayerHandler;
@@ -42,9 +39,10 @@ public class KaranteeniPlugin extends JavaPlugin {
 	protected static DefaultMessages defaultMessages;
 	protected static PlayerHandler playerHandler;
 	protected static ItemManager itemManager;
-	private static ConfigManager cfgm;
+	protected static ConfigManager cfgm;
 	protected static String serverID;
-	private static String SERVERID = "ServerID";
+	protected static ActionBlockManager actionBlockManager;
+	protected static final String SERVERID = "ServerID";
 	private final boolean usesTranslation;
 	/** Settings config in which the settings of core plugin are set */
 	private final YamlConfig settings;
@@ -64,148 +62,6 @@ public class KaranteeniPlugin extends JavaPlugin {
 		Bukkit.getLogger().log(Level.INFO, "Plugin registered to KaranteeniCore: " + this.getName());
 	}
 	
-	/**
-	 * Called when the core plugin is loaded
-	 */
-	protected void load() {
-		/** Loads the server ID */
-		if(this.getConfig().isSet(SERVERID))
-			serverID = this.getConfig().getString(SERVERID);
-		else {
-			this.getConfig().set(SERVERID, TextUtil.getRandomString(5, true));
-			serverID = this.getConfig().getString(SERVERID);
-			this.saveConfig();
-		}
-	}
-	
-	
-	/**
-	 * Called when the core plugin is enabled
-	 */
-	protected void enable() {
-		//MUST COME FIRST! DO NOT CHANGE ORDER
-		translator = new Translator();
-		cfgm = new ConfigManager();
-		
-		//Connect to database
-		if(dbConnector == null) {
-			try {
-				dbConnector = createDatabaseConnector();
-				createTables();
-			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, "COULD NOT CONNECT TO DATABASE! SOME OPERATIONS WILL NOT WORK!", e);
-				e.printStackTrace();
-			}
-		}
-		// after connecting to the database create language tables
-		Translator.initTable();
-		
-		//MUST COME FIRST! DO NOT CHANGE ORDER
-		
-		defaultMessages = new DefaultMessages();
-		defaultMessages.registerTranslations();
-		soundHandler = new SoundHandler();
-		timerInitiater = new KaranteeniTimerInitiater();
-		messager = new Messager();
-		entityManager = new EntityManager();
-		blockManager = new BlockManager();
-		playerHandler = new PlayerHandler();
-		itemManager = new ItemManager();
-	}
-	
-	
-	/**
-	 * Create the server table to database
-	 */
-	private void createTables()
-	{
-		Statement st = dbConnector.getStatement();
-		try {
-			st.execute(
-				"CREATE TABLE IF NOT EXISTS server("
-				+ "ID VARCHAR(64) NOT NULL,"
-				+ "PRIMARY KEY (ID));");
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-		// insert this server to the database server table
-		try {
-			PreparedStatement ps = dbConnector.prepareStatement("INSERT IGNORE INTO server (ID) VALUES (?);");
-			ps.setString(1, serverID);
-			ps.execute();
-		} catch(SQLException e) {
-			e.printStackTrace();
-		}
-		
-		try{
-			st.execute("CREATE TABLE IF NOT EXISTS location("+
-				"id VARCHAR(128) NOT NULL, "+
-				"serverID VARCHAR(64) NOT NULL, "+
-				"world VARCHAR(64) NOT NULL, "+
-				"x NUMERIC(20,10) NOT NULL, "+
-				"y NUMERIC(20,10) NOT NULL, "+
-				"z NUMERIC(20,10) NOT NULL, "+
-				"pitch NUMERIC(8,5) NOT NULL, "+
-				"yaw NUMERIC(8,5) NOT NULL, "+
-				"FOREIGN KEY (serverID) REFERENCES server(ID), "+
-				"PRIMARY KEY (id,serverID));");
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	/**
-	 * Connects to mysql database according to config
-	 * @return
-	 */
-	private DatabaseConnector createDatabaseConnector() throws SQLException {
-		//Load host, database, username, password and port from config
-		if(!this.getConfig().isSet("Database.host")) {
-			this.getConfig().set("Database.host", "localhost");
-			this.saveConfig();
-		}
-		String host = this.getConfig().getString("Database.host");
-		
-		if(!this.getConfig().isSet("Database.database")) {
-			this.getConfig().set("Database.database", "Karanteeni");
-			this.saveConfig();
-		}
-		String database = this.getConfig().getString("Database.database");
-		
-		if(!this.getConfig().isSet("Database.user")) {
-			this.getConfig().set("Database.user", "root");
-			this.saveConfig();
-		}
-		String user = this.getConfig().getString("Database.user");
-		
-		if(!this.getConfig().isSet("Database.password")) {
-			this.getConfig().set("Database.password", "");
-			this.saveConfig();
-		}
-		String password = this.getConfig().getString("Database.password");
-		
-		if(!this.getConfig().isSet("Database.port")) {
-			this.getConfig().set("Database.port", 3306);
-			this.saveConfig();
-		}
-		int port = this.getConfig().getInt("Database.port");
-		
-		return new DatabaseConnector(host, database, user, password, port);
-	}
-	
-	
-	/**
-	 * Called when the core plugin is disabled
-	 */
-	protected void disable() {
-		// close database connection
-		/*if(dbConnector != null && dbConnector.isConnected())
-			dbConnector.closeConnection();*/
-		// stop all the timers
-		timerInitiater.closeTimers();
-	}
 	
 	/**
 	 * Returns an object to which you can register all
@@ -336,6 +192,15 @@ public class KaranteeniPlugin extends JavaPlugin {
 	 */
 	public final static ItemManager getItemManager() {
 		return itemManager;
+	}
+	
+	
+	/**
+	 * Returns the manager responsible for executable blocks
+	 * @return
+	 */
+	public static ActionBlockManager getActionBlockManager() {
+		return actionBlockManager;
 	}
 	
 	

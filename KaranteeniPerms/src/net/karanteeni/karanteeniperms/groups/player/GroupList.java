@@ -2,10 +2,7 @@ package net.karanteeni.karanteeniperms.groups.player;
 
 import java.util.Collection;
 import java.util.TreeMap;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import net.karanteeni.karanteeniperms.KaranteeniPerms;
 
@@ -22,17 +19,15 @@ public class GroupList {
 	/**
 	 * Load the grouplist with configuration groups.
 	 */
-	protected GroupList(BiConsumer<UUID,String> addPermission, 
-			BiConsumer<UUID,String> removePermission) throws Exception
-	{
+	public GroupList(KaranteeniPerms plugin) throws Exception {
+		if(plugin.getGroupList() != null) throw new IllegalArgumentException("Grouplist has already been generated");
+			
 		Collection<Group> groups;
 		
-		groups = Group.getGroupsFromConfig(KaranteeniPerms.getPlugin(KaranteeniPerms.class),
-				addPermission, removePermission);
+		groups = Group.getGroupsFromConfig(plugin);
 		
 		//Loop each group through
-		for(Group g : groups)
-		{
+		for(Group g : groups) {
 			if(g.isDefault() && defaultGroup != null) //Default group has already been set, give a warning
 				Bukkit.getLogger().log(Level.WARNING, "Default group ("+defaultGroup.getID()+
 						") already set! Changing to "+g.getID()+". "
@@ -46,12 +41,14 @@ public class GroupList {
 		}
 	}
 	
+	
 	/**
 	 * Returns all the groups in this list
 	 * @return
 	 */
 	public Collection<Group> getGroups()
 	{ return this.groups.values(); }
+	
 	
 	/**
 	 * Adds a local group to the grouplist
@@ -60,12 +57,14 @@ public class GroupList {
 	public void addGroup(Group group)
 	{ groups.put(group.getID(), group); }
 	
+	
 	/**
 	 * Adds a defaultgroup to the list
 	 * @param group
 	 */
 	public void setDefaultGroup(Group group)
 	{ this.defaultGroup = group; }
+	
 	
 	/**
 	 * Get the default group
@@ -74,6 +73,7 @@ public class GroupList {
 	public Group getDefaultGroup()
 	{ return this.defaultGroup; }
 	
+	
 	/**
 	 * Adda a local group to the grouplist
 	 * @param group
@@ -81,11 +81,13 @@ public class GroupList {
 	public void removeGroup(String id)
 	{ groups.remove(id); }
 	
+	
 	/**
 	 * Deletes all local groups
 	 */
 	public void clearGroups()
 	{ groups.clear(); }
+	
 	
 	/**
 	 * Returns the group by name

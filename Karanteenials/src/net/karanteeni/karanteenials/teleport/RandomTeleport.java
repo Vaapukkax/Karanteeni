@@ -180,17 +180,17 @@ public class RandomTeleport extends CommandChainer implements TranslationContain
 			@Override
 			public void run() {
 				// teleport the player
-				tp.teleport(kp.getPlayer(), true, true, false, TeleportCause.PLUGIN);
+				tp.teleport(kp.getPlayer(), false, true, false, TeleportCause.PLUGIN);
 				//tp.preciseTeleport(player, true);
+				BossBar bar = Bukkit.createBossBar(
+						Karanteenials.getTranslator().getTranslation(plugin, kp.getPlayer(), "random-teleport"), 
+						BarColor.YELLOW, BarStyle.SOLID);
+				Karanteenials.getMessager().sendBossbar(kp.getPlayer(), Sounds.TELEPORT.get(), 4f, 20, true, bar);
 			}
 		};
 		
 		Bukkit.getScheduler().runTask(plugin, runnable);
 		
-		BossBar bar = Bukkit.createBossBar(
-				Karanteenials.getTranslator().getTranslation(plugin, kp.getPlayer(), "random-teleport"), 
-				BarColor.YELLOW, BarStyle.SOLID);
-		Karanteenials.getMessager().sendBossbar(kp.getPlayer(), Sounds.TELEPORT.get(), 4f, 20, true, bar);
 	}
 	
 	
@@ -211,37 +211,41 @@ public class RandomTeleport extends CommandChainer implements TranslationContain
 		for(int i = 0; i < 10 && tp == null; ++i) {
 			int x = (int)(xRangeMin >= xRangeMax ? xRangeMin : r.nextDouble() * (xRangeMax - xRangeMin) + xRangeMin);
 	        int z = (int)(zRangeMin >= zRangeMax ? zRangeMin : r.nextDouble() * (zRangeMax - zRangeMin) + zRangeMin);
-	        ChunkSnapshot shot = world.getChunkAt(x, z).getChunkSnapshot();
+	        // the odd x is to fix the get incorrect chunk
+	        ChunkSnapshot shot = world.getChunkAt(new Location(world, x < 0 ? x - 0.5 : x + 0.5, 100, z < 0 ? z - 0.5 : z + 0.5)).getChunkSnapshot();
+	        //ChunkSnapshot shot = world.getChunkAt(new Location(world, x < 0 ? (x%16==0?x+1:x) : x, 100, z)).getChunkSnapshot();
 	        
 	        // check if the block at location is safe
 	        // get chunk specific coordinates
 	        int x_ = x < 0 ? 15 + (x % 16) : x % 16;
 	        int z_ = z < 0 ? 15 + (z % 16) : z % 16;
-	        int y_ = shot.getHighestBlockYAt(x_, z_);
+	        int y_ = 256;
+	        Material type = null;
+	        
+	        do {
+	        	Material t = shot.getBlockType(x_, --y_, z_);
+        		if(t == Material.AIR || t == Material.CAVE_AIR)
+        			continue;
+        		else if(t == Material.WATER || t == Material.LAVA || t == Material.FIRE || t == Material.CAMPFIRE)
+        			break;
+        		
+	        	type = t;
+	        } while(y_ > 0 && type == null);
 	        
 	        // check block safety
-	        Material material = shot.getBlockType(x_, y_, z_);
-	        if(material.isBlock()) {
+	        if(type != null) {
 	        	// safe location
-	        	tp = new Teleporter(new Location(world, x + 0.5, y_ + 1, z + 0.5, 
+	        	Teleporter tp_ = new Teleporter(new Location(world, 
+	        				x < 0 ? x - 0.5 : x + 0.5, 
+    						type.isSolid() ? y_ + 1 : y_, // if not solid then it's grass etc. Dont care about grass 
+    						z < 0 ? z - 0.5 : z + 0.5, 
 	        			Math.random()>0.5? (float)Math.random()*180 : (float)Math.random()*-180, 
     	    			Math.random()>0.5 ? (float)Math.random()*45 : (float)Math.random()*-25));
+        		return tp_;
 	        }
 		}
 		
-		return tp;
-		
-		// try 10 times to get a random safe location 
-		/*for(int i = 0; i < 10 && (tp == null || null == tp.getSafePoint(tp.getDestination(), false, 1)); ++i) {
-			double x = xRangeMin >= xRangeMax ? xRangeMin : Math.random() * (xRangeMax - xRangeMin) + xRangeMin;
-	        double z = zRangeMin >= zRangeMax ? zRangeMin : Math.random() * (zRangeMax - zRangeMin) + zRangeMin;
-	        Location l = (new Location(world, x, 254, z, 
-	        		Math.random()>0.5? (float)Math.random()*180 : (float)Math.random()*-180, 
-	    			Math.random()>0.5 ? (float)Math.random()*45 : (float)Math.random()*-25));
-	        tp = new Teleporter(l);
-		}
-		
-        return tp;*/
+		return null;
     }
 	
 

@@ -2,12 +2,14 @@ package net.karanteeni.karanteeniperms.groups.player;
 
 import java.util.Locale;
 import java.util.UUID;
-import java.util.function.Predicate;
-
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-
+import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachment;
 import net.karanteeni.core.database.QueryState;
+import net.karanteeni.core.players.KPlayer;
 import net.karanteeni.karanteeniperms.KaranteeniPerms;
+import net.karanteeni.karanteeniperms.bungee.groups.Group;
 
 /**
  * This class is responsible for updating and giving out
@@ -15,325 +17,459 @@ import net.karanteeni.karanteeniperms.KaranteeniPerms;
  *
  */
 public class PermissionPlayer {
-	//private List<Permission> permissions = new ArrayList<Permission>();
-	private KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+	private final static String GROUP_DATA_KEY = "GROUP_DATA";
+	private final static String GROUP_KEY = "GROUP";
+	private final KaranteeniPerms plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 	private GroupData groupData;
+	private PermissionAttachment pAttachment = null;
 	private UUID uuid;
 	private Group group;
-	private Predicate<PermissionPlayer> savePrefix;
-	private Predicate<PermissionPlayer> resetPrefix;
-	private Predicate<PermissionPlayer> saveSuffix;
-	private Predicate<PermissionPlayer> resetSuffix;
-	private Predicate<PermissionPlayer> saveGroupName;
-	private Predicate<PermissionPlayer> resetGroupName;
-	private Predicate<PermissionPlayer> saveGroupShortName;
-	private Predicate<PermissionPlayer> resetGroupShortName;
+	private Group globalGroup = null;
+	private boolean changedGroup = false;
+	private boolean changedGlobalGgroup = false;
+	private boolean changedPlayerInformation = false;
 	
-	public PermissionPlayer(
-			UUID uuid,
-			Group group,
-			GroupData groupData,
-			Predicate<PermissionPlayer> savePrefix, 
-			Predicate<PermissionPlayer> resetPrefix,
-			Predicate<PermissionPlayer> saveSuffix,
-			Predicate<PermissionPlayer> resetSuffix,
-			Predicate<PermissionPlayer> saveGroupName,
-			Predicate<PermissionPlayer> resetGroupName,
-			Predicate<PermissionPlayer> saveGroupShortName,
-			Predicate<PermissionPlayer> resetGroupShortName)
-	{
+	
+	private PermissionPlayer(UUID uuid) {
 		this.uuid = uuid;
-		this.group = group;
-		this.groupData = groupData;
-		this.savePrefix = savePrefix;
-		this.resetPrefix = resetPrefix;
-		this.saveSuffix = saveSuffix;
-		this.resetSuffix = resetSuffix;
-		this.saveGroupName = saveGroupName;
-		this.resetGroupName = resetGroupName;
-		this.saveGroupShortName = saveGroupShortName;
-		this.resetGroupShortName = resetGroupShortName;
 	}
+	
+	
+	/**
+	 * Sets the player of this PermissionPlayer. Valid only after load. PermissionAttachment generated and permissions
+	 * for the player set
+	 * @return true if player was loaded, false otherwise
+	 */
+	protected boolean activatePlayer() {
+		Player player = Bukkit.getPlayer(uuid);
+		if(player == null) return false;
+		KPlayer kp = KPlayer.getKPlayer(player);
+		if(kp == null) return false;
+		
+		this.pAttachment = player.addAttachment(plugin);
+		// generate and set the permission attachment of the player
+		for(ExtendedPermission ep : this.groupData.getPermissions())
+			this.pAttachment.setPermission(ep.getPermission(), ep.isPositive());
+		
+		kp.setCacheData(plugin, GROUP_DATA_KEY, groupData);
+		
+		// register player to use this group
+		this.group.registerUser(player);
+		// store data to KPlayer
+		kp.setCacheData(plugin, GROUP_KEY, group);
+		
+		// register player to use this global group
+		// TODO
+		// store data to KPlayer
+		// TODO
+		
+		return true;
+	}
+	
+	
+	/**
+	 * Deactivates the player permissions. For example in quit event
+	 */
+	protected boolean deActivatePlayer() {
+		// unregister player from the given groups
+		Player player = Bukkit.getPlayer(getUUID());
+		if(player != null && this.group != null) 
+			return this.group.unregisterUser(player);
+		return false;
+	}
+	
+	
+	/**
+	 * Loads the private groupdata of this permissionplayer to memory
+	 * @return true if load was successful, false otherwise
+	 */
+	private boolean loadGroupData() {
+		KPlayer kp = KPlayer.getKPlayer(uuid);
+		
+		// use cache if it has been set
+		if(kp != null && kp.dataExists(plugin, GROUP_DATA_KEY)) {
+			this.groupData = (GroupData)kp.getData(plugin, GROUP_DATA_KEY);
+			return true;
+		} else {
+			// load the private group data and permissions from database
+			GroupData gd = plugin.getPlayerModel().getGroupDatabase().getPrivateGroupData(uuid, null);
+			if(gd == null) return false;
+			
+			this.groupData = gd;
+			
+			// store to cache if not null. Uses same object to allow modification from multiple places
+			if(kp != null)
+				kp.setCacheData(plugin, GROUP_DATA_KEY, gd);
+				
+			return true;
+		}
+	}
+	
+	
+	/**
+	 * Loads and sets the group of this PermissionPlayer
+	 * @return true if load was successful, false otherwise
+	 */
+	private boolean loadGroup() {
+		KPlayer kp = KPlayer.getKPlayer(uuid);
+		
+		// load from cache if available
+		if(kp != null && kp.dataExists(plugin, GROUP_KEY)) {
+			this.group = (Group)kp.getData(plugin, GROUP_KEY);
+			return true;
+		}
+		
+		Group group = plugin.getPlayerModel().getGroupDatabase().getLocalGroup(plugin.getGroupList(), uuid);
+		if(group == null) return false;
+		this.group = group;
+		return true;
+	}
+	
+	
+	/**
+	 * Loads the data of empty permissionplayer but does not generate player specific information.
+	 * To generate player information, run activatePlayer() in order to access player specific information
+	 * @param uuid uuid of the player whose permissionplayer will be loaded
+	 * @return loaded permissionplayer or null if not found
+	 */
+	protected static PermissionPlayer getPermissionPlayer(UUID uuid) {
+		PermissionPlayer pp = new PermissionPlayer(uuid);
+		// load private player data
+		if(!pp.loadGroupData()) return null;
+		// load players local group
+		if(!pp.loadGroup()) return null;
+		// load players global group 
+		//TODO
+		
+		return pp;
+	}
+	
 	
 	/**
 	 * Checks if this player has a given permission
 	 * @param permission
 	 * @return
 	 */
-	public boolean hasPermission(String permission, DATA_TYPE type)
-	{
-		permission = permission.toLowerCase();
-		
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-			return (this.group.hasPermission(permission) || 
-					this.groupData.hasPermission(permission));
-		else if(type == DATA_TYPE.GROUP) //Return group data
-			return this.group.hasPermission(permission);
-		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
-			return this.groupData.hasPermission(permission);
-		return false;
+	public boolean hasPermission(String permission) {
+		return this.groupData.hasPermission(permission) || this.group.hasPermission(permission); // TODO add globalgroup
 	}
+	
+	
+	/**
+	 * Checks if this player has the given permission
+	 * @param permission permission to have
+	 * @return true if player has this permission, false otherwise
+	 */
+	public boolean hasPrivatePermission(String permission) {
+		return this.groupData.hasPermission(permission);
+	}
+	
 	
 	/**
 	 * Returns the prefix of this player
 	 * @return
 	 */
-	public String getPrefix(CommandSender sender, DATA_TYPE type, boolean shortened)
-	{
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-		{
+	public String getPrefix(CommandSender sender, DATA_TYPE type, boolean shortened) {
+		if(type == DATA_TYPE.HIGHEST) {
+			String prefix = null;
+			// player prefix
 			if(shortened)
-			{
-				String groupName = groupData.getGroupShortName();
-				if(groupName == null)
-					groupName = group.getShortName(sender);
-				
-				if(groupData.getPrefix() == null)
-					return group.getPrefix(sender, shortened);
-				else
-					return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupName);
-			}
+				prefix = groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupShortName());
 			else
-			{
-				String groupName = groupData.getGroupName();
-				if(groupName == null)
-					groupName = group.getName(sender);
-				
-				if(groupData.getPrefix() == null)
-					return group.getPrefix(sender, shortened);
-				else
-					return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupName);
-			}
-		}
-		else if(type == DATA_TYPE.GROUP) //Return group data
-		{
+				prefix = groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupName());
+			if(prefix != null) return prefix;
+			
+			// group prefix
+			prefix = group.getPrefix(sender, shortened);
+			if(prefix != null) return prefix;
+			
+			// bungee group prefix
+			prefix = "TODO: BUNGEEGROUP prefix PermissionPlayer"; // TODO
+			if(prefix != null) return prefix;
+			
+		} else if(type == DATA_TYPE.LOCAL_GROUP) {
 			return group.getPrefix(sender, shortened);
-		}
-		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
-		{
+		} else if(type == DATA_TYPE.PLAYER) {
 			if(shortened)
 				return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupShortName());
 			else
 				return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupName());
+		} else if(type == DATA_TYPE.GLOBAL_GROUP) {
+			if(shortened) {
+				return "TODO: BUNGEEGROUP prefix PermissionPlayer";
+			} else {
+				return "TODO: BUNGEEGROUP prefix PermissionPlayer";
+			}
 		}
+		
 		return null;
 	}
+	
 	
 	/**
 	 * Returns the prefix of this player
 	 * @return
 	 */
-	public String getPrefix(Locale locale, DATA_TYPE type, boolean shortened)
-	{
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-		{
+	public String getPrefix(Locale locale, DATA_TYPE type, boolean shortened) {
+		if(type == DATA_TYPE.HIGHEST) {
+			String prefix = null;
+			// player prefix
 			if(shortened)
-			{
-				String groupName = groupData.getGroupShortName();
-				if(groupName == null)
-					groupName = group.getShortName(locale);
-				
-				if(groupData.getPrefix() == null)
-					return group.getPrefix(locale, shortened);
-				else
-					return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupName);
-			}
+				prefix = groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupShortName());
 			else
-			{
-				String groupName = groupData.getGroupName();
-				if(groupName == null)
-					groupName = group.getName(locale);
-				
-				if(groupData.getPrefix() == null)
-					return group.getPrefix(locale, shortened);
-				else
-					return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupName);
-			}
-		}
-		else if(type == DATA_TYPE.GROUP) //Return group data
-		{
+				prefix = groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupName());
+			if(prefix != null) return prefix;
+			
+			// group prefix
+			prefix = group.getPrefix(locale, shortened);
+			if(prefix != null) return prefix;
+			
+			// bungee group prefix
+			prefix = "TODO: BUNGEEGROUP prefix PermissionPlayer"; // TODO
+			if(prefix != null) return prefix;
+			
+		} else if(type == DATA_TYPE.LOCAL_GROUP) {
 			return group.getPrefix(locale, shortened);
-		}
-		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
-		{
+		} else if(type == DATA_TYPE.PLAYER) {
 			if(shortened)
 				return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupShortName());
 			else
 				return groupData.getPrefix().replace(Group.GROUP_STRING_TAG, groupData.getGroupName());
+		} else if(type == DATA_TYPE.GLOBAL_GROUP) {
+			if(shortened) {
+				return "TODO: BUNGEEGROUP prefix PermissionPlayer";
+			} else {
+				return "TODO: BUNGEEGROUP prefix PermissionPlayer";
+			}
 		}
+		
 		return null;
 	}
+	
 	
 	/**
 	 * Returns the raw prefix of this player
 	 * @return
 	 */
-	public String getRawPrefix(DATA_TYPE type)
-	{
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-		{
-			if(groupData.getGroupName() == null)
-				return group.getRawPrefix();
-			else
-				return groupData.getPrefix();
-		}
-		else if(type == DATA_TYPE.GROUP) //Return group data
+	public String getRawPrefix(DATA_TYPE type) {
+		if(type == DATA_TYPE.HIGHEST) { //Return mix
+			if(groupData.getPrefix() != null) return groupData.getPrefix();
+			if(group.getRawPrefix() != null) return group.getRawPrefix();
+			if(true) return "TODO: BUNGEEGROUP getRawPrefix PermissionPlayer"; // TODO
+		} else if(type == DATA_TYPE.LOCAL_GROUP) //Return group data
 			return group.getRawPrefix();
 		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
 			return groupData.getPrefix();
+		else if(type == DATA_TYPE.GLOBAL_GROUP)
+			return "TODO: BUNGEEGROUP getRawPrefix PermissionPlayer"; // TODO
 		return null;
 	}
+	
 	
 	/**
 	 * Returns the suffix of this player or
 	 * null if using groups suffix
 	 * @return
 	 */
-	public String getSuffix(DATA_TYPE type)
-	{
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-			if(this.groupData.getSuffix() == null)
-				return this.group.getSuffix();
-			else
-				return this.groupData.getSuffix();
-		else if(type == DATA_TYPE.GROUP) //Return group data
+	public String getSuffix(DATA_TYPE type) {
+		if(type == DATA_TYPE.HIGHEST) { //Return mix
+			if(this.groupData.getSuffix() != null) return this.groupData.getSuffix();
+			if(this.group.getSuffix() != null) return this.group.getSuffix();
+			if(true) return "TODO: BungeeGroup getSuffix"; // TODO
+		} else if(type == DATA_TYPE.LOCAL_GROUP) //Return group data
 			return this.group.getSuffix();
 		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
 			return this.groupData.getSuffix();
+		else if(type == DATA_TYPE.GLOBAL_GROUP)
+			return "TODO: BungeeGroup getSuffix"; // TODO
 		return null;
 	}
+	
 	
 	/**
 	 * Returns the players groupname, or null
 	 * if using actual groups group name
 	 * @return
 	 */
-	public String getGroupName(CommandSender sender, DATA_TYPE type, boolean shortened)
-	{
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-		{
-			if(shortened)
-			{
-				if(this.groupData.getGroupShortName() == null)
-					return this.group.getShortName(sender);
-				else
-					return this.groupData.getGroupShortName();
-			}
-			else
-			{
-				if(this.groupData.getGroupName() == null)
-					return this.group.getName(sender);
-				else
-					return this.groupData.getGroupName();
-			}
-		}
-		else if(type == DATA_TYPE.GROUP) //Return group data
-		{
-			if(shortened)
+	public String getGroupName(CommandSender sender, DATA_TYPE type, boolean shortened) {
+		if(shortened) {
+			if(type == DATA_TYPE.HIGHEST) {
+				if(this.groupData.getGroupShortName() != null) return this.groupData.getGroupShortName();
+				if(this.group.getShortName(sender) != null) return this.group.getShortName(sender);
+				if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			} else if(type == DATA_TYPE.LOCAL_GROUP) {
 				return this.group.getShortName(sender);
-			else
-				return this.group.getName(sender);
-		}
-		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
-		{
-			if(shortened)
+			} else if(type == DATA_TYPE.PLAYER) {
 				return this.groupData.getGroupShortName();
-			else
-				this.groupData.getGroupName();
+			} else if(type == DATA_TYPE.GLOBAL_GROUP) {
+				return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			}
+		} else {
+			if(type == DATA_TYPE.HIGHEST) {
+				if(this.groupData.getGroupName() != null) return this.groupData.getGroupName();
+				if(this.group.getName(sender) != null) return this.group.getName(sender);
+				if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			} else if(type == DATA_TYPE.LOCAL_GROUP) {
+				return this.group.getName(sender);				
+			} else if(type == DATA_TYPE.PLAYER) {
+				return this.groupData.getGroupName();
+			} else if(type == DATA_TYPE.GLOBAL_GROUP) {
+				return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			}
 		}
 		
 		return null;
 	}
+	
 	
 	/**
 	 * Returns the players groupname, or null
 	 * if using actual groups group name
 	 * @return
 	 */
-	public String getGroupName(Locale locale, DATA_TYPE type, boolean shortened)
-	{
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-		{
-			if(shortened)
-			{
-				if(this.groupData.getGroupShortName() == null)
-					return this.group.getShortName(locale);
-				else
-					return this.groupData.getGroupShortName();
-			}
-			else
-			{
-				if(this.groupData.getGroupName() == null)
-					return this.group.getName(locale);
-				else
-					return this.groupData.getGroupName();
-			}
-		}
-		else if(type == DATA_TYPE.GROUP) //Return group data
-		{
-			if(shortened)
+	public String getGroupName(Locale locale, DATA_TYPE type, boolean shortened) {
+		if(shortened) {
+			if(type == DATA_TYPE.HIGHEST) {
+				if(this.groupData.getGroupShortName() != null) return this.groupData.getGroupShortName();
+				if(this.group.getShortName(locale) != null) return this.group.getShortName(locale);
+				if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			} else if(type == DATA_TYPE.LOCAL_GROUP) {
 				return this.group.getShortName(locale);
-			else
-				return this.group.getName(locale);
-		}
-		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
-		{
-			if(shortened)
+			} else if(type == DATA_TYPE.PLAYER) {
 				return this.groupData.getGroupShortName();
-			else
-				this.groupData.getGroupName();
+			} else if(type == DATA_TYPE.GLOBAL_GROUP) {
+				return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			}
+		} else {
+			if(type == DATA_TYPE.HIGHEST) {
+				if(this.groupData.getGroupName() != null) return this.groupData.getGroupName();
+				if(this.group.getName(locale) != null) return this.group.getName(locale);
+				if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			} else if(type == DATA_TYPE.LOCAL_GROUP) {
+				return this.group.getName(locale);				
+			} else if(type == DATA_TYPE.PLAYER) {
+				return this.groupData.getGroupName();
+			} else if(type == DATA_TYPE.GLOBAL_GROUP) {
+				return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
+			}
 		}
 		
 		return null;
 	}
+	
+	
+	/**
+	 * Gets the global group player belongs to
+	 * @return global group player belongs to
+	 */
+	public Group getBungeeGroup() {
+		// TODO
+		return null;
+	}
+	
+	
+	/**
+	 * Sets the player global group. To keep the change, call save()
+	 * @param group the global group for player
+	 */
+	public void setBungeeGroup(Group group) {
+		this.changedGlobalGgroup = true;
+		this.globalGroup = group;
+		// TODO
+	}
+	
 	
 	/**
 	 * Returns the group of this player
 	 * @return
 	 */
-	public Group getGroup()
-	{ return this.group; }
+	public Group getGroup() { 
+		return this.group; 
+	}
+	
+	
+	/**
+	 * Sets the players group. To save the change call save()
+	 * @param group the new group for player
+	 * @return the previous group of the player
+	 */
+	public Group setGroup(Group group) {
+		// if the group is the same don't change
+		if(this.group.equals(group)) return this.group;
+		
+		Group g = this.group;
+		// if player is online remember to modify existing player data directly
+		Player player = Bukkit.getPlayer(uuid);
+		
+		if(player != null && player.isOnline())
+			this.group.unregisterUser(player);
+		this.group = group;
+		
+		if(player != null && player.isOnline())
+			this.group.registerUser(player);
+		this.changedGroup = true;
+		
+		return g;
+	}
+	
+	
+	/**
+	 * Saves the player's data
+	 * @return
+	 */
+	public boolean save() {
+		GroupDatabase gdb = new GroupDatabase();
+		boolean success = true;
+		
+		if(this.changedPlayerInformation)
+		if(!gdb.setPrivateGroupData(getUUID(), groupData))
+			success = false;
+		if(this.changedGroup)
+		if(!gdb.setLocalGroup(getUUID(), group))
+			success = false;
+		
+		
+		// TODO call to bungee to save global group change
+		return success;
+	}
+	
 	
 	/**
 	 * Sets and saves the suffix of this player
 	 * @param suffix
 	 */
-	public boolean setSuffix(String suffix)
-	{
+	public void setSuffix(String suffix) {
+		this.changedPlayerInformation = true;
 		this.groupData.setSuffix(suffix);
-		return this.saveSuffix.test(this);
 	}
+	
 	
 	/**
 	 * Returns the groupdata of this class
 	 * @return
 	 */
-	protected GroupData getGroupData()
-	{ return this.groupData; }
+	protected GroupData getGroupData() { 
+		return this.groupData; 
+	}
+	
 	
 	/**
 	 * Reset the suffix of this player
 	 * @return
 	 */
-	public boolean resetSuffix()
-	{
-		String suffix = groupData.getSuffix();
+	public void resetSuffix() {
+		this.changedPlayerInformation = true;
 		this.groupData.setSuffix(null);
-		if(this.resetSuffix.test(this))
-			return true;
-		else
-			this.groupData.setSuffix(suffix);
-		return false;
 	}
+	
 	
 	/**
 	 * Sets and saves the prefix of this player
 	 * @param prefix
 	 */
-	public boolean setPrefix(String prefix)
-	{
+	public void setPrefix(String prefix) {
+		this.changedPlayerInformation = true;
 		this.groupData.setPrefix(prefix);
-		return this.savePrefix.test(this);
 	}
 	
 	
@@ -341,17 +477,11 @@ public class PermissionPlayer {
 	 * Resets the prefix of this player
 	 * @return
 	 */
-	public boolean resetPrefix()
-	{
-		String prefix = groupData.getPrefix();
+	public void resetPrefix() {
+		this.changedPlayerInformation = true;
 		this.groupData.setPrefix(null);
-		if(this.resetPrefix.test(this))
-			return true;
-		else
-			groupData.setPrefix(prefix);
-		
-		return false;
 	}
+	
 	
 	/**
 	 * Sets and saves the groupname for given player.
@@ -359,131 +489,123 @@ public class PermissionPlayer {
 	 * If translation is needed, please modify the actual group 
 	 * @param groupName
 	 */
-	public boolean setLocalGroupName(String groupName)
-	{
+	public void setGroupName(String groupName) {
+		this.changedPlayerInformation = true;
 		this.groupData.setGroupName(groupName);
-		return this.saveGroupName.test(this);
 	}
+	
 	
 	/**
 	 * Resets the local groupname of the player
-	 * @return
 	 */
-	public boolean resetLocalGroupName()
-	{
-		String groupName = groupData.getGroupName();
+	public void resetGroupName() {
+		this.changedPlayerInformation = true;
 		groupData.setGroupName(null);
-		if(this.resetGroupName.test(this))
-			return true;
-		else
-			groupData.setGroupName(groupName);
-		return false;
 	}
+	
 	
 	/**
 	 * Reset the players group name to use players groups group name
 	 * @param groupShortName
 	 * @return
 	 */
-	public boolean setLocalGroupShortName(String groupShortName)
-	{
+	public void setGroupShortName(String groupShortName) {
+		this.changedPlayerInformation = true;
 		this.groupData.setGroupShortName(groupShortName);
-		return this.saveGroupShortName.test(this);
 	}
+	
 	
 	/**
 	 * Reset the players shortened groupname to use
 	 * the normal groups name
 	 * @return
 	 */
-	public boolean resetLocalGroupShortName()
-	{
-		String shortName = groupData.getGroupShortName();
+	public void resetGroupShortName() {
 		this.groupData.setGroupShortName(null);
-		if(this.resetGroupShortName.test(this))
-			return true;
-		else
-			groupData.setGroupShortName(shortName);
-		return false;
+		this.changedPlayerInformation = true;
 	}
+	
 	
 	/**
 	 * Checks whether this player has a custom groupname
 	 * @return
 	 */
-	public boolean hasCustomGroupName()
-	{ return this.groupData.getGroupName() != null; }
+	public boolean hasCustomGroupName() { 
+		return this.groupData.getGroupName() != null; 
+	}
+	
 	
 	/**
 	 * Checks whether this player has a custom prefix
 	 * @return
 	 */
-	public boolean hasCustomPrefix()
-	{ return this.groupData.getPrefix() != null; }
+	public boolean hasCustomPrefix() { 
+		return this.groupData.getPrefix() != null; 
+	}
+	
 	
 	/**
 	 * Checks if this player has a custom suffix
 	 * @return
 	 */
-	public boolean hasCustomSuffix()
-	{ return this.groupData.getSuffix() != null; }
+	public boolean hasCustomSuffix() { 
+		return this.groupData.getSuffix() != null; 
+	}
+	
 	
 	/**
 	 * Checks if this player has custom shortened group name
 	 * @return
 	 */
-	public boolean hasCustomShortGroupName()
-	{ return this.groupData.getGroupShortName() != null; }
+	public boolean hasCustomShortGroupName() { 
+		return this.groupData.getGroupShortName() != null; 
+	}
 	
-	/**
-	 * Checks if this player has a given permission
-	 * @param permission
-	 * @return
-	 */
-	/*public boolean hasPermission(DATA_TYPE type, String permission)
-	{ 
-		if(type == DATA_TYPE.GROUP_AND_PLAYER) //Return mix
-		{
-			if(this.groupData.hasPermission(permission))
-				return true;
-			return this.group.hasPermission(permission);
-		}
-		else if(type == DATA_TYPE.GROUP) //Return group data
-			return this.group.hasPermission(permission);
-		else if(type == DATA_TYPE.PLAYER) //Return only player specific data
-			return this.groupData.hasPermission(permission);
-		return false;
-	}*/
 	
 	/**
 	 * Adds and saves a given permission to player
 	 * @param permission
 	 * @return
 	 */
-	public QueryState addPermission(String permission)
-	{ return perms.getPlayerModel().addAndSavePlayerPermission(this.uuid, permission, true); }
+	public QueryState addPermission(String permission) { 
+		// add the permission to the player
+		if(this.pAttachment != null) {
+			ExtendedPermission ePermission = new ExtendedPermission(permission);
+			this.pAttachment.setPermission(ePermission.getPermission(), ePermission.isPositive());
+			this.groupData.addPermission(permission);
+		}
+		
+		// add and save a new permission for player
+		return (new GroupDatabase()).addPlayerPermission(getUUID(), permission);
+	}
 	
-	/**
-	 * Returns the local group of this player
-	 * @return
-	 */
-	public Group getLocalGroup()
-	{ return perms.getPlayerModel().getLocalGroup(uuid); }
 	
 	/**
 	 * Removes and saves a given permission to player
 	 * @param permission
 	 * @return
 	 */
-	public QueryState removePermission(String permission)
-	{ return perms.getPlayerModel().removePlayerPermission(uuid, permission, true); }
+	public QueryState removePermission(String permission) {
+		// remove this permission from player
+		if(this.pAttachment != null) {
+			ExtendedPermission ePermission = new ExtendedPermission(permission);
+			this.pAttachment.unsetPermission(ePermission.getPermission());
+			this.groupData.removePermission(permission);
+		}
+		
+		// save the removal
+		return (new GroupDatabase()).removePlayerPermission(getUUID(), permission);
+	}
+	
 	
 	/**
 	 * Returns the uuid of the given player
 	 * @return
 	 */
-	public UUID getUUID()
-	{ return this.uuid; }
+	public UUID getUUID() { 
+		return this.uuid; 
+	}
+	
 	
 	/**
 	 * What kind of data is being requested,
@@ -492,6 +614,6 @@ public class PermissionPlayer {
 	 *
 	 */
 	public static enum DATA_TYPE {
-		GROUP, PLAYER, GROUP_AND_PLAYER
+		LOCAL_GROUP, PLAYER, HIGHEST, GLOBAL_GROUP
 	}
 }

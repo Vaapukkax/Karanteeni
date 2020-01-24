@@ -1,18 +1,16 @@
 package net.karanteeni.karanteenials.functionality;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.core.database.DatabaseConnector;
 import net.karanteeni.core.players.KPlayer;
 import net.karanteeni.karanteenials.Karanteenials;
 
@@ -21,8 +19,7 @@ import net.karanteeni.karanteenials.Karanteenials;
  * @author Nuubles
  *
  */
-public class PlayerBlock extends TableContainer
-{
+public class PlayerBlock {
 	private final NamespacedKey blockdata;
 	
 	public PlayerBlock(KaranteeniPlugin plugin) {
@@ -30,11 +27,12 @@ public class PlayerBlock extends TableContainer
 		blockdata = new NamespacedKey(plugin,"tp-block");
 	}
 	
-	@Override
-	protected void initTable() {
+	
+	protected static void initTable() {
+		Connection conn = null;
 		try {
-			DatabaseConnector db = Karanteenials.getDatabaseConnector();
-			Statement st = db.getStatement();
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			st.execute("CREATE TABLE IF NOT EXISTS blockedplayers ("+
 					"blocked VARCHAR(128) NOT NULL,"+
 					"blocker VARCHAR(128) NOT NULL,"+
@@ -43,8 +41,16 @@ public class PlayerBlock extends TableContainer
 					"FOREIGN KEY (blocker) REFERENCES player(UUID));");
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
+	
 	
 	/**
 	 * Checks if other has blocked asker
@@ -52,8 +58,7 @@ public class PlayerBlock extends TableContainer
 	 * @param other may have blocked asker
 	 * @return true if is other has blocked asker
 	 */
-	public boolean isBlocked(UUID asker, UUID other) 
-	{
+	public boolean isBlocked(UUID asker, UUID other)  {
 		Player a = Bukkit.getPlayer(asker);
 		Player b = Bukkit.getPlayer(other);
 		if(a != null && b != null) //If online try to use cache
@@ -65,26 +70,23 @@ public class PlayerBlock extends TableContainer
 		return blockedUUIDs.contains(asker);
 	}
 	
+	
 	/**
 	 * Checks if other has blocked asker
 	 * @param asker who may have been blocked by asker
 	 * @param other player who may have blocked asker
 	 * @return true if is other has blocked asker
 	 */
-	public boolean isBlocked(Player asker, Player other) 
-	{
+	public boolean isBlocked(Player asker, Player other)  {
 		KPlayer oth = KPlayer.getKPlayer(other);
 		
-		if(oth.dataExists(blockdata)) 
-		{
+		if(oth.dataExists(blockdata)) {
 			List<?> blocked = oth.getList(blockdata);
 			if(blocked == null || blocked.isEmpty()) //If no blocked players then it is not blocked
 				return false;
 			
 			return blocked.contains(asker.getUniqueId());
-		}
-		else // data does not exist, load it into cache
-		{
+		} else { // data does not exist, load it into cache
 			List<UUID> blocks = getBlockedUUIDs(other.getUniqueId());
 			if(blocks == null)
 				return false;
@@ -94,27 +96,38 @@ public class PlayerBlock extends TableContainer
 		}
 	}
 	
+	
 	/**
 	 * Returns all uuid the given uuid has blocked directly from the database
 	 * @param asker uuid of the player who has blocked others
 	 * @return list of blocked uuids
 	 */
-	public List<UUID> getBlockedUUIDs(UUID asker) 
-	{
+	public List<UUID> getBlockedUUIDs(UUID asker)  {
+		Connection conn = null;
+		List<UUID> result = null;
 		try {
-			DatabaseConnector db = Karanteenials.getDatabaseConnector();
-			Statement st = db.getStatement();
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			ResultSet rs = st.executeQuery("SELECT blocked FROM blockedplayers WHERE blocker = '"+asker.toString()+"';");
 			
 			ArrayList<UUID> uuids = new ArrayList<UUID>();
 			while(rs.next())
 				uuids.add(UUID.fromString(rs.getString(1)));
-			return uuids;
+			result = uuids;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return null;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		return result;
 	}
+	
 	
 	/**
 	 * The given player blocks the player with uuid given
@@ -131,18 +144,30 @@ public class PlayerBlock extends TableContainer
 		
 		if(isBlocked(player.getUniqueId(), blocked)) return 1;
 		
+		boolean error = false;
+		Connection conn = null;
+		
 		try {
-			DatabaseConnector db = Karanteenials.getDatabaseConnector();
-			Statement st = db.getStatement();
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			int rows = st.executeUpdate("INSERT INTO blockedplayers (blocked,blocker) VALUES ('"+
 					blocked.toString()+"','"+player.getUniqueId().toString()+"');");
 			
 			if(rows <= 0)
-				return -1;
+				error = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return -1;
+			error = true;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		if(error) return -1;
 		
 		KPlayer kp = KPlayer.getKPlayer(player);
 		if(!kp.dataExists(blockdata)) { //Add to cache
@@ -167,18 +192,29 @@ public class PlayerBlock extends TableContainer
 		
 		if(!isBlocked(player.getUniqueId(), blocked)) return 0;
 		
+		Connection conn = null;
+		boolean error = false;
 		try {
-			DatabaseConnector db = Karanteenials.getDatabaseConnector();
-			Statement st = db.getStatement();
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			int rows = st.executeUpdate("DELETE FROM blockedplayers WHERE blocked = '"+
 					blocked.toString()+"' AND blocker = '"+player.getUniqueId().toString()+"';");
 			
 			if(rows <= 0)
-				return -1;
+				error = true;
 		} catch (SQLException e) {
 			e.printStackTrace();
-			return -1;
+			error = true;
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		
+		if(error) return -1;
 		
 		KPlayer kp = KPlayer.getKPlayer(player);
 		if(!kp.dataExists(blockdata)) //Add to cache

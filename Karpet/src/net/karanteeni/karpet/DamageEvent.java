@@ -165,15 +165,28 @@ public class DamageEvent implements Listener {
 	 * Don't allow carpet blocks to damage entities
 	 * @param event
 	 */
-	@EventHandler(priority = EventPriority.LOWEST)
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onDamage(EntityDamageEvent event) {
 		if(event.getCause() == DamageCause.SUFFOCATION) {
 			// prevent entities from suffocating
 			if(event.getEntity() instanceof LivingEntity) {
 				LivingEntity entity = (LivingEntity)event.getEntity();
 				
-				if(Carpet.partOfCarpet(entity.getEyeLocation().getBlock()))
+				if(Carpet.partOfCarpet(entity.getEyeLocation().getBlock())) {
 					event.setCancelled(true);
+				} else {
+					Location dmgBlock = entity.getEyeLocation().getBlock().getLocation();
+					// get the surrounding blocks
+					Location l1 = new Location(dmgBlock.getWorld(), dmgBlock.getBlockX()+1, dmgBlock.getBlockY(), dmgBlock.getBlockZ());
+					Location l2 = new Location(dmgBlock.getWorld(), dmgBlock.getBlockX()-1, dmgBlock.getBlockY(), dmgBlock.getBlockZ());
+					Location l3 = new Location(dmgBlock.getWorld(), dmgBlock.getBlockX(), dmgBlock.getBlockY(), dmgBlock.getBlockZ()+1);
+					Location l4 = new Location(dmgBlock.getWorld(), dmgBlock.getBlockX(), dmgBlock.getBlockY(), dmgBlock.getBlockZ()-1);
+					if(Carpet.partOfCarpet(l1.getBlock()) || 
+							Carpet.partOfCarpet(l2.getBlock()) || 
+							Carpet.partOfCarpet(l3.getBlock()) || 
+							Carpet.partOfCarpet(l4.getBlock()))
+						event.setCancelled(true);
+				}
 			}
 		} else if(event.getCause() == DamageCause.FALL && event.getEntity() instanceof Player) {
 			// preven player fall damage

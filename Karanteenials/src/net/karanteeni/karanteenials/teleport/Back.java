@@ -1,6 +1,5 @@
 package net.karanteeni.karanteenials.teleport;
 
-import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;

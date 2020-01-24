@@ -1,5 +1,7 @@
 package net.karanteeni.karanteenials.player.home;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -16,6 +18,7 @@ import net.karanteeni.core.information.Teleporter;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
+import net.karanteeni.karanteenials.Karanteenials;
 import net.karanteeni.karanteenials.functionality.Back;
 import net.karanteeni.karanteeniperms.KaranteeniPerms;
 import net.karanteeni.karanteeniperms.groups.player.Group;
@@ -53,16 +56,14 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 				"Teleports player to their home", 
 				KaranteeniPlugin.getDefaultMsgs().defaultNoPermission());
 		registerTranslations();
-		createHomeTable();
 		initConfig();
 		initGroupData();
 	}
 
+	
 	@Override
-	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) 
-	{
-		if(!(sender instanceof Player)) //Don't allow console to access this command
-		{
+	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args)  {
+		if(!(sender instanceof Player)) { //Don't allow console to access this command
 			KaranteeniPlugin.getMessager().sendMessage(sender, Sounds.NONE.get(), 
 					Prefix.NEGATIVE+KaranteeniPlugin.getDefaultMsgs().defaultNotForConsole());
 			return true;
@@ -79,14 +80,11 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		//Entry<String,UUID> nameUUID = new SimpleEntry<String,UUID>(homeName, player.getUniqueId()); //uuid of the home owner
 		UUID uuid = player.getUniqueId(); //UUID of the player whose home will be searched
 		
-		if(args.length == 1) //Get the name of the home from arguments
-		{
+		if(args.length == 1) { //Get the name of the home from arguments
 			homeName = args[0];
 			//nameUUID = getUUID(nameUUID.getValue(), args[0]); //Seperate uuid from argument
 			//homeName = getHomeNameFromArgument(args[0]).toLowerCase(); //Separate homename from argument
-		}
-		else if(args.length == 2)
-		{
+		} else if(args.length == 2) {
 			homeName = args[1];
 			uuid = KaranteeniPlugin.getPlayerHandler().getUUID(args[0]);
 		}
@@ -111,8 +109,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		//Load home
 		Home home = Home.getHome(uuid, homeName);
 		
-		if(home == null) //Home was not found 
-		{
+		if(home == null) { //Home was not found
 			messageHomeNotFound(player, homeName, (args.length>0)?args[0]:"", ownHome);
 			return true;
 		}
@@ -145,6 +142,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 		return true;
 	}
 	
+	
 	/**
 	 * Messages player that the home they entered was not found
 	 * @param player player to whom the message will be sent
@@ -152,8 +150,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 	 * @param playername name of the other player if other players home
 	 * @param ownHome is this the players own home
 	 */
-	private void messageHomeNotFound(Player player, String homeName, String playername, boolean ownHome)
-	{
+	private void messageHomeNotFound(Player player, String homeName, String playername, boolean ownHome) {
 		if(ownHome) 
 			KaranteeniPlugin.getMessager().sendMessage(player, Sounds.NO.get(), 
 					Prefix.NEGATIVE+
@@ -167,6 +164,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 					.replace(PLAYER_TAG, playername));
 	}
 	
+	
 	/**
 	 * Message player about the teleportation to a specific home
 	 * @param player Player to whom the message will be sent
@@ -174,8 +172,7 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 	 * @param playername name of the homes owner (if others home)
 	 * @param ownHome is this players own home
 	 */
-	private void messageHomeTeleportation(Player player, String homename, String playername, boolean ownHome)
-	{
+	private void messageHomeTeleportation(Player player, String homename, String playername, boolean ownHome) {
 		/*if(ownHome) 		//Message player that they were teleported own home
 			KaranteeniPlugin.getMessager().sendActionBar(player, Sounds.TELEPORT.get(), 
 				Prefix.NEUTRAL + 
@@ -204,9 +201,11 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 	/**
 	 * Creates a database table for homes into the database
 	 */
-	private void createHomeTable() {
+	public static void createHomeTable() {
+		Connection conn = null;
 		try {
-			Statement st = KaranteeniPlugin.getDatabaseConnector().getStatement();
+			conn = Karanteenials.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			st.execute("CREATE TABLE IF NOT EXISTS home ( "+
 				"UUID VARCHAR(128) NOT NULL, "+
 				"name VARCHAR(64) NOT NULL, "+
@@ -217,6 +216,13 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 				"PRIMARY KEY (UUID,name));");
 		} catch(Exception e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -340,12 +346,14 @@ public class HomeCommand extends AbstractCommand implements TranslationContainer
 	 */
 	private void initGroupData() {
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		Collection<Group> groups = perms.getGroupModel().getLocalGroupList().getGroups();
+		Collection<Group> groups = perms.getGroupList().getGroups();
 		
 		//Set 10 homes as the default home count limit
 		for(Group group : groups) {
-			group.setCustomData(plugin, "limit.home", 10);
-			group.saveGroup();
+			if(!group.isCustomDataSet(plugin, "limit.home")) {
+				group.setCustomData(plugin, "limit.home", 10);
+				group.saveGroup();				
+			}
 		}
 	}
 }

@@ -1,17 +1,16 @@
 package net.karanteeni.currency.commands;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-
 import net.karanteeni.core.command.AbstractCommand;
-import net.karanteeni.core.database.DatabaseConnector;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
@@ -37,6 +36,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		getMessageRowCount();
 	}
 
+	
 	@Override
 	public boolean onCommand(CommandSender sender, Command arg1, String arg2, String[] args) {
 		
@@ -51,7 +51,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		if(args.length != 0) {
 			try {
 				page = Integer.parseInt(args[0]);
-			} catch(Exception e) {
+			} catch(NumberFormatException e) {
 				//Incorrect data given, return
 				KCurrency.getMessager().sendMessage(sender, Sounds.NO.get(), 
 						Prefix.NEGATIVE + KCurrency.getTranslator().getTranslation(
@@ -85,6 +85,7 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 		return true;
 	}
 
+	
 	/**
 	 * Returns the top N players from the baltop 
 	 * @param page
@@ -92,12 +93,13 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 	 * @return
 	 */
 	private List<Entry<String,Double>> getBaltop(int offset, int rowCount) {
-		DatabaseConnector db = KCurrency.getDatabaseConnector();
 		List<Entry<String,Double>> balances = new ArrayList<Entry<String,Double>>();
+		Connection conn = null;
 		
 		//Get the balances from database
 		try {
-			Statement st = db.getStatement();
+			conn = KCurrency.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			//Select from N the next 10 rows
 			//NORMAL SQL
 			/*ResultSet rs = st.executeQuery("select player.name, "+KCurrency.getBalanceName()+
@@ -117,12 +119,20 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 			//Add the top rowCount rows to the list
 			while(rs.next())
 				balances.add(new SimpleEntry<String,Double>(rs.getString(1), rs.getDouble(2)));
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return balances;
 	}
+	
 	
 	/**
 	 * Shows the baltop to given commandsender
@@ -164,21 +174,29 @@ public class Baltop extends AbstractCommand implements TranslationContainer{
 	 * @return
 	 */
 	private int getPageCount() {
-		//Get the balances from database
-		DatabaseConnector db = KCurrency.getDatabaseConnector();
-		
+		Connection conn = null;
+		int result = -1;
 		try {
-			Statement st = db.getStatement();
+			conn = KCurrency.getDatabaseConnector().openConnection();
+			Statement st = conn.createStatement();
 			//Count the amount of balances
 			ResultSet rs = st.executeQuery("select COUNT(*)"+
 							"from "+ KCurrency.getTableName()+";");
 			//Get the bigger number if there are less rows than one page requires 
 			if(rs.next())
-				return (int) Math.max(Math.ceil(rs.getInt(1)/getMessageRowCount()),1);
-		} catch (Exception e) {
+				result = (int) Math.max(Math.ceil(rs.getInt(1)/getMessageRowCount()),1);
+		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch(SQLException e) {
+				e.printStackTrace();
+			}
 		}
-		return -1;
+		
+		return result;
 	}
 	
 	

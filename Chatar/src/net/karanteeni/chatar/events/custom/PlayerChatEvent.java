@@ -55,6 +55,15 @@ public class PlayerChatEvent extends Event implements Cancellable {
 	
 	
 	/**
+	 * Returns the player sending the message
+	 * @return
+	 */
+	public Player getSender() {
+		return this.player;
+	}
+	
+	
+	/**
 	 * Returns the message of this event
 	 * @return
 	 */
@@ -69,6 +78,16 @@ public class PlayerChatEvent extends Event implements Cancellable {
 	 */
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	
+	
+	/**
+	 * Removes the given player from the recipients
+	 * @param player player to remove from recipients
+	 * @return true if removed, false otherwise
+	 */
+	public boolean removeRecipient(Player player) {
+		return this.recipients.remove(player) != null;
 	}
 	
 	
@@ -179,6 +198,11 @@ public class PlayerChatEvent extends Event implements Cancellable {
 		
 		@EventHandler(priority = EventPriority.MONITOR)
 		private void onChat(AsyncPlayerChatEvent e) {
+			// if event is cancelled, don't display the chat message
+			boolean cancelled = e.isCancelled();
+			if(cancelled)
+				return;
+			
 			// cancel the normal chat event
 			e.setCancelled(true);
 			
@@ -262,6 +286,7 @@ public class PlayerChatEvent extends Event implements Cancellable {
 			if(!matchFound) {
 				// TODO
 			}*/
+			
 			HashMap<Player, BaseComponent> components = plugin.getFormattedMessage(event.format, event.player, event.recipients);
 			
 			// loop each recipient and send the message

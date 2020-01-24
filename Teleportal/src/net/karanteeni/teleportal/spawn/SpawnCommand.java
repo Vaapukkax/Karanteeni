@@ -66,7 +66,7 @@ public class SpawnCommand extends CommandChainer implements TranslationContainer
 			}
 			
 		} else { // teleport others
-			if(!sender.hasPermission("teleportal.spawn.teleport.self"))
+			if(!sender.hasPermission("teleportal.spawn.teleport.other"))
 				return CommandResult.NO_PERMISSION;
 			
 			SpawnManager sm = new SpawnManager((Teleportal)plugin);

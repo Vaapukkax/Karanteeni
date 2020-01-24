@@ -11,6 +11,7 @@ public class CommandResult {
 	public static final CommandResult ERROR 			= new CommandResult(null, ResultType.ERROR, 			Sounds.ERROR.get(), 	DisplayFormat.MESSAGE);
 	public static final CommandResult NOT_FOR_CONSOLE	= new CommandResult(null, ResultType.NOT_FOR_CONSOLE, 	Sounds.ERROR.get(), 	DisplayFormat.MESSAGE);
 	public static final CommandResult ONLY_CONSOLE		= new CommandResult(null, ResultType.ONLY_CONSOLE, 		Sounds.ERROR.get(), 	DisplayFormat.MESSAGE);
+	public static final CommandResult ASYNC_CALLBACK	= new CommandResult(null, ResultType.ASYNC_CALLBACK, 	Sounds.NONE.get(), 		DisplayFormat.NONE);
 	
 	private final String commandResult; // message to be sent to the player
 	private final ResultType type; // type of the result
@@ -134,7 +135,8 @@ public class CommandResult {
 		SUCCESS,
 		ERROR,
 		NOT_FOR_CONSOLE,
-		ONLY_CONSOLE;
+		ONLY_CONSOLE,
+		ASYNC_CALLBACK;
 	}
 	
 	

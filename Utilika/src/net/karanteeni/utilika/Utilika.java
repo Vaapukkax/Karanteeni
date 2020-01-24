@@ -5,17 +5,31 @@ import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.utilika.block.setsign.LineLoader;
 import net.karanteeni.utilika.block.setsign.SetSignCommand;
 import net.karanteeni.utilika.block.setsign.SetSignComponent;
+import net.karanteeni.utilika.events.EasyBridge;
 import net.karanteeni.utilika.inventory.InventoryTweaks;
 import net.karanteeni.utilika.items.RepairCommand;
 import net.karanteeni.utilika.items.setname.SetNameCommand;
 import net.karanteeni.utilika.items.setname.SetNameComponent;
 import net.karanteeni.utilika.structure.elevator.Elevator;
+import net.karanteeni.utilika.worldguard.WorldGuardManager;
 
 public class Utilika extends KaranteeniPlugin {
+	private WorldGuardManager wgm;
 	private static String KEY_PREFIX = "Plugin-functionality.";
 	
 	public Utilika() {
 		super(true);
+	}
+	
+	
+	@Override
+	public void onLoad() {
+		try {
+			wgm = new WorldGuardManager();
+		} catch (NoClassDefFoundError e) {
+			// no worldguard on server
+			wgm = null;
+		}
 	}
 	
 	
@@ -43,6 +57,11 @@ public class Utilika extends KaranteeniPlugin {
 	}
 	
 	
+	public WorldGuardManager getWorldGuardManager() {
+		return this.wgm;
+	}
+	
+	
 	private void registerEvents() {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.ELEVATOR.toString())) {
 			getServer().getPluginManager().registerEvents(new Elevator(), this);
@@ -50,6 +69,10 @@ public class Utilika extends KaranteeniPlugin {
 		
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.INVENTORY_TWEAKS.toString())) {
 			getServer().getPluginManager().registerEvents(new InventoryTweaks(), this);
+		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.EASYBRIDGE.toString())) {
+			getServer().getPluginManager().registerEvents(new EasyBridge(), this);
 		}
 	}
 	
@@ -98,6 +121,7 @@ public class Utilika extends KaranteeniPlugin {
 		ELEVATOR,
 		INVENTORY_TWEAKS,
 		SETNAME,
-		SETSIGN
+		SETSIGN,
+		EASYBRIDGE
 	}
 }

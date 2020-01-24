@@ -1,5 +1,6 @@
 package net.karanteeni.chatar.command.message;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -29,8 +30,10 @@ public class SocialSpy {
 	 * @return true if socialspy is on, false if off
 	 */
 	public boolean hasSocialSpy(UUID uuid) {
-		Statement stmt = Chatar.getDatabaseConnector().getStatement();
+		Connection conn = null;
 		try {
+			conn = Chatar.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			ResultSet rs = stmt.executeQuery("SELECT player FROM socialspy WHERE player = " + uuid.toString() + ";");
 			
 			// if something is found return true, false otherwise
@@ -38,6 +41,13 @@ public class SocialSpy {
 		} catch (SQLException e) {
 			Bukkit.broadcastMessage(Prefix.ERROR + Chatar.getDefaultMsgs().defaultDatabaseError());
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return false;
@@ -75,32 +85,54 @@ public class SocialSpy {
 	 * @return true if success, false if error
 	 */
 	public boolean setSocialSpy(UUID uuid, boolean on) {
-		Statement stmt = Chatar.getDatabaseConnector().getStatement();
-		
+		Connection conn = null;
+		boolean result = false;
 		if(on) {
 			try {
+				conn = Chatar.getDatabaseConnector().openConnection();
+				Statement stmt = conn.createStatement();
 				int res = stmt.executeUpdate("INSERT INTO socialspy (player) VALUES (" + uuid.toString() + ");");
-				return res > 0;
+				result = res > 0;
 			} catch (SQLException e) {
 				Bukkit.broadcastMessage(Prefix.ERROR + Chatar.getDefaultMsgs().defaultDatabaseError());
 				e.printStackTrace();
+			} finally {
+				try {
+					if(conn != null)
+						conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		} else {
 			try {
+				conn = Chatar.getDatabaseConnector().openConnection();
+				Statement stmt = conn.createStatement();
 				int res = stmt.executeUpdate("DELETE FROM socialspy WHERE player = " + uuid.toString() + ";");
-				return res > 0;
+				result = res > 0;
 			} catch (SQLException e) {
 				Bukkit.broadcastMessage(Prefix.ERROR + Chatar.getDefaultMsgs().defaultDatabaseError());
 				e.printStackTrace();
+			} finally {
+				try {
+					if(conn != null)
+						conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-		return false;
+		
+		return result;
 	}
 	
 	
 	private void initTable() {
-		Statement stmt = Chatar.getDatabaseConnector().getStatement();
+		Connection conn = null;
+		
 		try {
+			conn = Chatar.getDatabaseConnector().openConnection();
+			Statement stmt = conn.createStatement();
 			stmt.execute("CREATE TABLE IF NOT EXISTS socialspy \n("+
 					"player VARCHAR(64) NOT NULL,"+
 				    "\nPRIMARY KEY (player),"+
@@ -108,6 +140,13 @@ public class SocialSpy {
 					"\n);");
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if(conn != null)
+					conn.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

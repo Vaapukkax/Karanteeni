@@ -5,18 +5,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.UUID;
+import java.util.function.Consumer;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
 
 public class KPlayer implements Listener {
 	//Player held by this KPlayer class
-	private final Player player;
+	private Player player;
+	private final UUID uuid;
 	private boolean invincible = false;
 	
 	/* List of all players */
@@ -29,21 +35,87 @@ public class KPlayer implements Listener {
 	private static HashMap<UUID, HashMap<NamespacedKey, Entry<Object,Boolean>>> cache = 
 			new HashMap<UUID, HashMap<NamespacedKey, Entry<Object,Boolean>>>();
 	
+	// run these one the player has joined and late joined
+	private PriorityQueue<net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>>> runOncePlayerJoined = 
+			new PriorityQueue<net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>>>();
+	private PriorityQueue<net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>>> runOncePlayerLateJoined = 
+			new PriorityQueue<net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>>>();
+	
 	/**
 	 * Inserts a new KPlayer to list and loads possible cache data which
 	 * may still remain if player is rejoining
 	 * @param player Player of this KPlayer
 	 */
-	protected KPlayer(Player player) {
-		this.player = player;		
-		players.put(player.getUniqueId(), this); //Put player to list
+	protected KPlayer(UUID uuid) {
+		//this.player = player;
+		this.uuid = uuid;
+		players.put(uuid, this); //Put player to list
 		//Load player cache
-		if(cache.containsKey(player.getUniqueId())) {
+		if(cache.containsKey(uuid)) {
 			//Load and remove cache from memory
-			HashMap<NamespacedKey, Entry<Object, Boolean>> data = clearCache(player.getUniqueId());
+			HashMap<NamespacedKey, Entry<Object, Boolean>> data = clearCache(uuid);
 			if(data != null) //Set data only if it's not null
 				playerData = data;
 		}
+	}
+	
+	
+	/**
+	 * Add a new consumer to run once player has logged onto the server
+	 * @param priority priority of consumer
+	 * @param consumer consumer to run once player joins
+	 * @throws Exception modifier added after player has already joined
+	 */
+	public void addPlayerJoinModifier(EventPriority priority, Consumer<KPlayer> consumer) throws IllegalArgumentException {
+		if(isValid()) throw new IllegalArgumentException("Player is already online");
+		runOncePlayerJoined.add(new net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>>(priority,consumer));
+	}
+	
+	
+	/**
+	 * Add a new consumer to run once player has logged onto the server
+	 * @param priority priority of consumer
+	 * @param consumer consumer to run once player joins
+	 * @throws Exception modifier added after player has already joined
+	 */
+	public void addPlayerLateJoinModifier(EventPriority priority, Consumer<KPlayer> consumer) throws IllegalArgumentException {
+		if(isValid()) throw new IllegalArgumentException("Player is already online");
+		runOncePlayerJoined.add(new net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>>(priority,consumer));
+	}
+	
+	
+	/**
+	 * Runs the player join modifiers
+	 */
+	protected void runPlayerJoinModifiers() {
+		for(net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>> entry = runOncePlayerJoined.poll(); 
+				entry != null; 
+				entry = runOncePlayerJoined.poll()) {
+			entry.getValue().accept(this);
+		}
+		
+		runOncePlayerJoined.clear();
+	}
+	
+	
+	/**
+	 * Runs the player join modifiers with a small delay
+	 */
+	protected void runPlayerLateJoinModifiers() {
+		KPlayer self = this;
+		// run the late join modifiers 3 ticks after join
+		Bukkit.getScheduler().runTaskLater(KaranteeniCore.getPlugin(KaranteeniCore.class), new Runnable() {			
+				@Override
+				public void run() {
+					for(net.karanteeni.core.data.Entry<EventPriority, Consumer<KPlayer>> entry = runOncePlayerLateJoined.poll(); 
+							entry != null; 
+							entry = runOncePlayerJoined.poll()) {
+						entry.getValue().accept(self);
+					}
+					
+					runOncePlayerLateJoined.clear();
+				}			
+		}, 3);
 	}
 	
 	
@@ -54,6 +126,27 @@ public class KPlayer implements Listener {
 	 */
 	public static KPlayer getKPlayer(Player player) {
 		return players.get(player.getUniqueId());
+	}
+	
+	
+	/**
+	 * Returns the KPlayer entity
+	 * @param player
+	 * @returnQ
+	 */
+	public static KPlayer getKPlayer(UUID uuid) {
+		return players.get(uuid);
+	}
+	
+	
+	/**
+	 * Sets the player to this KPlayer class
+	 * @param player player to set
+	 */
+	protected void setPlayer(Player player) throws IllegalArgumentException {
+		if(!player.getUniqueId().equals(uuid))
+			throw new IllegalArgumentException("UUID doesn't match with given players UUID");
+		this.player = player;
 	}
 	
 	
@@ -71,7 +164,7 @@ public class KPlayer implements Listener {
 	 * saves the cache of this player
 	 */
 	public void destroy() {
-		HashMap<NamespacedKey, Entry<Object, Boolean>> data = players.remove(player.getUniqueId()).playerData;
+		HashMap<NamespacedKey, Entry<Object, Boolean>> data = players.remove(uuid).playerData;
 		HashMap<NamespacedKey, Entry<Object, Boolean>> storable = new HashMap<NamespacedKey, Entry<Object, Boolean>>();
 		
 		//Store only cacheable data to cache
@@ -82,7 +175,7 @@ public class KPlayer implements Listener {
 				storable.put(entry.getKey(), entry.getValue());
 		
 		if(!storable.isEmpty())
-			cache.put(player.getUniqueId(), storable);
+			cache.put(uuid, storable);
 	}
 	
 	
@@ -237,7 +330,16 @@ public class KPlayer implements Listener {
 	public Player getPlayer() {
 		return player;
 	}
-		
+	
+	
+	/**
+	 * Check if the player variable has been set
+	 * @return true if is set, false otherwise
+	 */
+	public boolean isValid() {
+		return player != null;
+	}
+	
 	
 	/**
 	 * Gets nonspecific datavalue from players data
@@ -306,10 +408,13 @@ public class KPlayer implements Listener {
 	 * Drops the given items at the location of the player
 	 * @param items
 	 */
-	public void dropItemsAtPlayer(List<ItemStack> items) {
+	public boolean dropItemsAtPlayer(List<ItemStack> items) {
+		if(!isValid()) return false;
+		
 		Location l = player.getLocation();
 		for(ItemStack item : items)
 			l.getWorld().dropItemNaturally(l, item);
+		return true;
 	}
 	
 	

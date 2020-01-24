@@ -80,14 +80,16 @@ public class SpawnerSpawn implements Listener,TranslationContainer {
 		if(!ItemType.PICKAXE.contains(event.getPlayer().getInventory().getItemInMainHand().getType()))
 			return;
 		
-		if(!event.getPlayer().hasPermission("katura.dropspawner.always")) //Continue if player can always pick spawner
-			if(event.getPlayer().hasPermission("katura.dropspawner.silk")) //Check if player can pick with silk
+		if(!event.getPlayer().hasPermission("katura.dropspawner.always")) { //Continue if player can always pick spawner
+			if(event.getPlayer().hasPermission("katura.dropspawner.silk")) { //Check if player can pick with silk
 				if(!event.getPlayer().getInventory().getItemInMainHand() //If player does not have silk return
-						.getEnchantments().containsKey(Enchantment.SILK_TOUCH))
+						.getEnchantments().containsKey(Enchantment.SILK_TOUCH)) {
 					return;
-			else
+				}
+			} else {
 				return;
-		
+			}
+		}
 		// register to coreprotect
 		/*if(pl.isCoreProtectEnabled()) {
 			pl.getCoreProtectAccess().getCoreProtect().logRemoval(

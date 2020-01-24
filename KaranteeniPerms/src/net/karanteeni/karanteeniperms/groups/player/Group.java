@@ -3,44 +3,44 @@ package net.karanteeni.karanteeniperms.groups.player;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
-
-import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.config.YamlConfig;
-import net.karanteeni.core.players.KPlayer;
+import net.karanteeni.core.data.ObjectPair;
 import net.karanteeni.karanteeniperms.KaranteeniPerms;
 
-public class Group {
-	//private String 				prefix 					= "";
-	//private String 				suffix 					= "";
+public class Group implements Comparable<Group> {
 	private GroupData			groupData;
 	private final String 		ID;
 	private boolean 			def;
 	//private List<Permission> 	permissions;
-	private List<Group> 		inheritedGroups 		= new ArrayList<Group>();
-	private KaranteeniPlugin 	pl;
+	private TreeSet<Group> 	inheritedGroups 		= new TreeSet<Group>();
+	// entities using this group and their permission attachments connected to this group
+	private HashMap<UUID, ObjectPair<Integer, PermissionAttachment>> attachments = new HashMap<UUID, ObjectPair<Integer, PermissionAttachment>>();
+	private KaranteeniPerms 	pl;
 	private static YamlConfig 	groupConfig;
 	private static final String GROUP_SECTION 			= "Groups";
 	private static final String RANK_SHORT_NAME_DEST 	= GROUP_SECTION + ".%s.shortname";
 	private static final String RANK_LONG_NAME_DEST 	= GROUP_SECTION + ".%s.name";
 	private static final String SAVE_GROUP_LOCATION 	= GROUP_SECTION + ".%s.";
-	private BiConsumer<UUID, String> addPermission;
-	private BiConsumer<UUID, String> removePermission;
+	//private BiConsumer<UUID, String> addPermission;
+	//private BiConsumer<UUID, String> removePermission;
 	protected static final String GROUP_STRING_TAG		= "%group%";
 	
 	/**
@@ -60,9 +60,7 @@ public class Group {
 			String prefix, 
 			String suffix, 
 			boolean defaultGroup,
-			List<String> perms,
-			BiConsumer<UUID,String> addPermission,
-			BiConsumer<UUID,String> removePermission)
+			List<String> perms)
 	{
 		pl = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 		this.ID = ID;
@@ -76,8 +74,8 @@ public class Group {
 				String.format(RANK_SHORT_NAME_DEST, ID), 
 				rankShortName);
 		
-		this.addPermission = addPermission;
-		this.removePermission = removePermission;
+		/*this.addPermission = addPermission;
+		this.removePermission = removePermission;*/
 		this.groupData = new GroupData(prefix, suffix, perms);
 		//this.permissions = perms;
 		this.def = defaultGroup;
@@ -103,22 +101,6 @@ public class Group {
 		boolean addedNew = inheritedGroups.add(group);
 		if(!addedNew) //If group is already inherited, don't inherit it again
 			return false;
-		
-		//Loop all permissions of parent group
-		/*for(String perm : group.getPermissions())
-			this.addPermission(perm, false);
-		
-		//Get all inherited groups of inherited group
-		Deque<Group> queue = new ArrayDeque<Group>();
-		queue.addAll(group.getInheritedGroups()); //Get inherited groups from inherited group
-		
-		while(!queue.isEmpty())
-		{
-			Group g = queue.pop();
-			queue.addAll(getInheritedGroups());
-			for(String perm : g.getPermissions())
-				this.addPermission(perm, false);
-		}*/
 		
 		return true; //Inheritance of group(s) was successful
 	}
@@ -345,7 +327,7 @@ public class Group {
 	 * Get all the groups directly inherited by this group
 	 * @return
 	 */
-	public Collection<Group> getInheritedGroups()
+	public Set<Group> getInheritedGroups()
 	{ return this.inheritedGroups; }
 	
 	
@@ -541,11 +523,9 @@ public class Group {
 		if(longVersion) {
 			KaranteeniPerms.getTranslator().setTranslation(this.pl, locale, 
 					String.format(RANK_LONG_NAME_DEST, ID), name);
-			//this.groupData.setGroupName(name);
 		} else {
 			KaranteeniPerms.getTranslator().setTranslation(this.pl, locale, 
 					String.format(RANK_SHORT_NAME_DEST, ID), name);
-			//this.groupData.setGroupShortName(name);
 		}
 	}
 	
@@ -585,15 +565,86 @@ public class Group {
 	
 	
 	/**
+	 * Get the permissions of this group
+	 * @return
+	 */
+	public LinkedList<ExtendedPermission> getPermissions() {
+		return this.groupData.getPermissions();
+	}
+	
+	
+	/**
 	 * Get all the permissions this group and inherited groups have
 	 * @return
 	 */
-	public List<String> getPermissions() { 
-		List<String> perms = this.groupData.getPermissions();
+	public LinkedList<ExtendedPermission> getFullPermissions() { 
+		LinkedList<ExtendedPermission> perms = this.groupData.getPermissions();
 		for(Group group : inheritedGroups) {
 			perms.addAll(group.getPermissions());
 		}
 		return perms;
+	}
+	
+	
+	/**
+	 * Registers this player to use this group
+	 * @param player player to use the permissions of this group
+	 */
+	protected void registerUser(Player player) {
+		// register inherited groups
+		for(Group group : inheritedGroups)
+			group.registerUser(player);
+		
+		PermissionAttachment attch = player.addAttachment(this.pl);
+		// if player already has this attachment, increase the counter of times this attachment has been inherited
+		if(attachments.containsKey(player.getUniqueId())) {
+			ObjectPair<Integer, PermissionAttachment> entry = attachments.get(player.getUniqueId());
+			entry.first += 1;
+		} else {
+			// add permissions to this player
+			for(ExtendedPermission perm : this.groupData.getPermissions())
+				attch.setPermission(perm.getPermission(), perm.isPositive());
+				
+			attachments.put(player.getUniqueId(), new ObjectPair<Integer, PermissionAttachment>(1, attch));
+		}
+	}
+	
+	
+	/**
+	 * Unregisters user from using this group. If other groups also use this those need to be unregistered too
+	 * @param player player to remove from registration
+	 */
+	protected boolean unregisterUser(Player player) {
+		if(!attachments.containsKey(player.getUniqueId()))
+			return false;
+		ObjectPair<Integer, PermissionAttachment> pair = attachments.get(player.getUniqueId());
+		pair.first -= 1;
+		
+		// if nothing uses this group remove the permissions of this group from player
+		if(pair.first == 0) {
+			attachments.remove(player.getUniqueId());
+			player.removeAttachment(pair.second);
+			
+			for(Group group : inheritedGroups)
+				group.unregisterUser(player);
+		}
+		
+		return true;
+	}
+	
+	
+	/**
+	 * Removes the attachments from the memory for the given player
+	 * @param player player to remove from attachments
+	 */
+	protected void destroyUser(Player player) {
+		ObjectPair<Integer, PermissionAttachment> pair = this.attachments.remove(player.getUniqueId());
+		
+		if(pair != null) {
+			player.removeAttachment(pair.second);
+			for(Group group : inheritedGroups)
+				group.destroyUser(player);			
+		}
 	}
 	
 	
@@ -606,14 +657,15 @@ public class Group {
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"prefix", this.groupData.getPrefix());
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"suffix", this.groupData.getSuffix());
 		
-		List<String> inheritedIDs = new ArrayList<String>();
-		List<String> perms = new ArrayList<String>();
+		List<String> inheritedIDs = new LinkedList<String>();
+		LinkedList<String> perms = new LinkedList<String>();
 		
 		for(Group g : this.inheritedGroups)
 			inheritedIDs.add(g.ID);
 		
-		for(String perm : this.groupData.getPermissions())
-			perms.add(perm);
+		for(ExtendedPermission perm : this.groupData.getPermissions()) {			
+			perms.add(perm.toString());
+		}
 		
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"inherited-groups", inheritedIDs);
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"permissions", perms);
@@ -625,19 +677,16 @@ public class Group {
 	 * Generates a new default group to config and saves it.
 	 * @return Was the save successful
 	 */
-	private static boolean generateDefaultGroup(
-			BiConsumer<UUID,String> addPermission,
-			BiConsumer<UUID,String> removePermission)
-	{
+	private static boolean generateDefaultGroup() {
 		Group group = new Group("myGroup", 
 				"DefaultGroup", 
 				"DG", 
 				"§f[§7"+GROUP_STRING_TAG+"§f] ", 
 				" §6> §f", 
 				true, 
-				new ArrayList<String>(),
+				new ArrayList<String>()/*,
 				addPermission,
-				removePermission);
+				removePermission*/);
 		
 		return group.saveGroup();
 	}
@@ -651,23 +700,27 @@ public class Group {
 	 */
 	public boolean addPermission(String perm, boolean save) {
 		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		if(perms.getGroupModel() != null) //If groupmodel is null, this is a reload
-		for(Player player : Bukkit.getOnlinePlayers()) { //Loop each player in this group
-			//If KPlayer is not loaded, don't try to add permissions
-			if(KPlayer.getKPlayer(player) != null) {
-				//KPlayer kp = KPlayer.getKPlayer(player);
-				if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
-					this.addPermission.accept(player.getUniqueId(), perm);
-			}
-		}
+		if(perms.getGroupList() != null) //If groupmodel is null, this is a reload
 		
 		if(this.groupData.hasPermission(perm))
 			return false;
 		if(!this.groupData.addPermission(perm))
 			return false;
-		if(save)
-			return this.saveGroup();
-		return false;
+		if(save) {
+			if(this.saveGroup()) {
+				ExtendedPermission perm_ = new ExtendedPermission(perm);
+				for(ObjectPair<Integer, PermissionAttachment> attch : this.attachments.values())
+					attch.second.setPermission(perm_.getPermission(), perm_.isPositive());
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		ExtendedPermission perm_ = new ExtendedPermission(perm);
+		for(ObjectPair<Integer, PermissionAttachment> attch : this.attachments.values())
+			attch.second.setPermission(perm_.getPermission(), perm_.isPositive());
+		return true;
 	}
 	
 	
@@ -677,16 +730,25 @@ public class Group {
 	 * @return True if removal was successful, false if nothing to remove
 	 */
 	public boolean removePermission(String perm, boolean save) {
-		KaranteeniPerms perms = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
-		for(Player player : Bukkit.getOnlinePlayers()) //Loop each player in this group
-			if(perms.getPlayerModel().getLocalGroup(player).getID().equals(this.ID))
-				this.removePermission.accept(player.getUniqueId(), perm);
-		
-		if(!this.groupData.removePermission(perm))
+		boolean permissionRemoved = this.groupData.removePermission(perm);
+		if(!permissionRemoved)
 			return false;
-		if(save)
-			return this.saveGroup();
-		return false;
+		
+		if(save) {
+			if(this.saveGroup()) {
+				ExtendedPermission perm_ = new ExtendedPermission(perm);
+				for(ObjectPair<Integer, PermissionAttachment> pairs : this.attachments.values())
+					pairs.second.unsetPermission(perm_.getPermission());
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		ExtendedPermission perm_ = new ExtendedPermission(perm);
+		for(ObjectPair<Integer, PermissionAttachment> pairs : this.attachments.values())
+			pairs.second.unsetPermission(perm_.getPermission());
+		return true;
 	}
 	
 	
@@ -695,10 +757,7 @@ public class Group {
 	 * @return All groups that could be loaded from the config
 	 */
 	public static Collection<Group> getGroupsFromConfig(
-			KaranteeniPerms plugin,
-			BiConsumer<UUID, String> addPermission,
-			BiConsumer<UUID, String> removePermission) throws Exception
-	{
+			KaranteeniPerms plugin) throws Exception {
 		if(groupConfig == null)
 			groupConfig = new YamlConfig(plugin, "Groups.yml");
 		
@@ -709,7 +768,7 @@ public class Group {
 		
 		//Verify that the at least one group exists. If not, try to create one
 		if(groupSecs == null || groupSecs.getKeys(false) == null)
-			if(!generateDefaultGroup(addPermission, removePermission))
+			if(!generateDefaultGroup())
 				throw new Exception("Failed to load/generate any groups!");
 			else
 				groupSecs = groupConfig.getConfig().getConfigurationSection(GROUP_SECTION);
@@ -753,9 +812,9 @@ public class Group {
 					prefix,
 					suffix,
 					def,
-					permissions,
+					permissions/*,
 					addPermission,
-					removePermission);
+					removePermission*/);
 			
 			//Add the new group to the map
 			groups.put(key, g);
@@ -785,5 +844,11 @@ public class Group {
 		if(!(obj instanceof Group))
 			return false;
 		return ((Group)obj).ID.equals(this.ID);
+	}
+
+
+	@Override
+	public int compareTo(Group group) {
+		return ID.compareTo(group.ID);
 	}
 }
