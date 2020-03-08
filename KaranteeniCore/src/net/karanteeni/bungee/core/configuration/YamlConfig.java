@@ -2,6 +2,7 @@ package net.karanteeni.bungee.core.configuration;
 
 import java.io.File;
 import java.io.IOException;
+import net.karanteeni.bungee.core.KaranteeniPlugin;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -12,12 +13,13 @@ public class YamlConfig {
 	//private final String path;
 	private File file;
 	private Configuration configuration;
+	private KaranteeniPlugin plugin;
 	
-	public YamlConfig(String fileName) {
+	public YamlConfig(KaranteeniPlugin plugin, String fileName) {
 		this.fileName = fileName + ".yml";
 		//this.path = ProxyServer.getInstance().getPluginsFolder().getPath();
 		
-		file = new File(ProxyServer.getInstance().getPluginsFolder(), File.separator + this.fileName);
+		file = new File(ProxyServer.getInstance().getPluginsFolder(), File.separator + plugin.getPluginName() + File.separator + this.fileName);
 		
 		try {
 			if(!file.exists())
@@ -58,6 +60,15 @@ public class YamlConfig {
 	 */
 	public Configuration getConfig() {
 		return this.configuration;
+	}
+	
+	
+	/**
+	 * Returns the plugin this config belongs to
+	 * @return plugin this config belongs to
+	 */
+	public KaranteeniPlugin getPlugin() {
+		return this.plugin;
 	}
 	
 	

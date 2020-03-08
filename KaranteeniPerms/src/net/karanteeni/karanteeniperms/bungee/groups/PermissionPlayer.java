@@ -1,15 +1,12 @@
-package net.karanteeni.karanteeniperms.groups.player;
+package net.karanteeni.karanteeniperms.bungee.groups;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.permissions.PermissionAttachment;
 import net.karanteeni.core.database.QueryState;
-import net.karanteeni.core.players.KPlayer;
-import net.karanteeni.karanteeniperms.KaranteeniPerms;
+import net.karanteeni.karanteeniperms.bungee.KaranteeniPermsBungee;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 
 /**
@@ -18,16 +15,16 @@ import net.karanteeni.karanteeniperms.KaranteeniPerms;
  *
  */
 public class PermissionPlayer {
-	private final static String GROUP_DATA_KEY = "GROUP_DATA";
-	private final static String GROUP_KEY = "GROUP";
-	private final KaranteeniPerms plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+	//private final static String GROUP_DATA_KEY = "GROUP_DATA"; // TODO Cacheable data
+	//private final static String GROUP_KEY = "GROUP";
+	private final KaranteeniPermsBungee plugin = KaranteeniPermsBungee.getInstance();
 	private GroupData groupData;
-	private PermissionAttachment pAttachment = null;
 	private UUID uuid;
 	private Group group;
-	private BungeeGroup globalGroup = null;
 	private boolean changedGroup = false;
 	private boolean changedPlayerInformation = false;
+	private HashMap<UUID, PermissionAttachment> attachments = new HashMap<UUID, PermissionAttachment>();
+	private PermissionAttachment mainAttachment;
 	
 	
 	private PermissionPlayer(UUID uuid) {
@@ -41,29 +38,41 @@ public class PermissionPlayer {
 	 * @return true if player was loaded, false otherwise
 	 */
 	protected boolean activatePlayer() {
-		Player player = Bukkit.getPlayer(uuid);
+		ProxiedPlayer player = KaranteeniPermsBungee.getInstance().getProxy().getPlayer(uuid);
+		
 		if(player == null) return false;
-		KPlayer kp = KPlayer.getKPlayer(player);
-		if(kp == null) return false;
 		
-		this.pAttachment = player.addAttachment(plugin);
+		this.mainAttachment = this.addAttachment();
 		// generate and set the permission attachment of the player
-		for(ExtendedPermission ep : this.groupData.getPermissions())
-			this.pAttachment.setPermission(ep.getPermission(), ep.isPositive());
-		
-		kp.setCacheData(plugin, GROUP_DATA_KEY, groupData);
+		for(ExtendedPermission ep : this.groupData.getBungeePermissions())
+			this.mainAttachment.addPermission(ep);
 		
 		// register player to use this group
 		this.group.registerUser(player);
 		// store data to KPlayer
-		kp.setCacheData(plugin, GROUP_KEY, group);
-		
-		// register player to use this global group
-		// TODO
-		// store data to KPlayer
-		// TODO
 		
 		return true;
+	}
+	
+	
+	/**
+	 * Adds a permission attachment to this player
+	 * @param attachment
+	 */
+	public PermissionAttachment addAttachment() {
+		PermissionAttachment attachment = new PermissionAttachment();
+		this.attachments.put(attachment.getUniqueId(), attachment);
+		return attachment;
+	}
+	
+	
+	/**
+	 * Removes a permission attachment from this player
+	 * @param attachment attachment to remove
+	 * @return attachment removed
+	 */
+	public PermissionAttachment removeAttachment(PermissionAttachment attachment) {
+		return this.attachments.remove(attachment.getUniqueId());
 	}
 	
 	
@@ -72,7 +81,7 @@ public class PermissionPlayer {
 	 */
 	protected boolean deActivatePlayer() {
 		// unregister player from the given groups
-		Player player = Bukkit.getPlayer(getUUID());
+		ProxiedPlayer player = this.plugin.getProxy().getPlayer(uuid);
 		if(player != null && this.group != null) 
 			return this.group.unregisterUser(player);
 		return false;
@@ -84,25 +93,13 @@ public class PermissionPlayer {
 	 * @return true if load was successful, false otherwise
 	 */
 	private boolean loadGroupData() {
-		KPlayer kp = KPlayer.getKPlayer(uuid);
+		// load the private group data and permissions from database
+		GroupData gd = plugin.getPlayerModel().getGroupDatabase().getPrivateGroupData(uuid);
+		if(gd == null) return false;
 		
-		// use cache if it has been set
-		if(kp != null && kp.dataExists(plugin, GROUP_DATA_KEY)) {
-			this.groupData = (GroupData)kp.getData(plugin, GROUP_DATA_KEY);
-			return true;
-		} else {
-			// load the private group data and permissions from database
-			GroupData gd = plugin.getPlayerModel().getGroupDatabase().getPrivateGroupData(uuid, null);
-			if(gd == null) return false;
+		this.groupData = gd;
 			
-			this.groupData = gd;
-			
-			// store to cache if not null. Uses same object to allow modification from multiple places
-			if(kp != null)
-				kp.setCacheData(plugin, GROUP_DATA_KEY, gd);
-				
-			return true;
-		}
+		return true;
 	}
 	
 	
@@ -111,27 +108,9 @@ public class PermissionPlayer {
 	 * @return true if load was successful, false otherwise
 	 */
 	private boolean loadGroup() {
-		KPlayer kp = KPlayer.getKPlayer(uuid);
-		
-		// load from cache if available
-		if(kp != null && kp.dataExists(plugin, GROUP_KEY)) {
-			this.group = (Group)kp.getData(plugin, GROUP_KEY);
-			return true;
-		}
-		
-		Group group = plugin.getPlayerModel().getGroupDatabase().getLocalGroup(plugin.getGroupList(), uuid);
+		Group group = plugin.getPlayerModel().getGroupDatabase().loadGroup(uuid);
 		if(group == null) return false;
 		this.group = group;
-		return true;
-	}
-	
-	
-	/**
-	 * Loads and sets the bungeegroup built from data offered by BungeeCord
-	 * @return true if load was successful, false otherwise
-	 */
-	private boolean loadBungeeGroup() {
-		Bukkit.getLogger().log(Level.SEVERE, "Bungee group load and activation not implemented");
 		return true;
 	}
 	
@@ -148,9 +127,7 @@ public class PermissionPlayer {
 		if(!pp.loadGroupData()) return null;
 		// load players local group
 		if(!pp.loadGroup()) return null;
-		// load players global group 
-		if(!pp.loadBungeeGroup()) return null;
-		//TODO
+		//TODO send data to spigot
 		
 		return pp;
 	}
@@ -158,11 +135,26 @@ public class PermissionPlayer {
 	
 	/**
 	 * Checks if this player has a given permission
-	 * @param permission
+	 * @param permission permission to check for
+	 * @param exact whether the checked permission should match exactly
 	 * @return
 	 */
-	public boolean hasPermission(String permission) {
-		return this.groupData.hasPermission(permission) || this.group.hasPermission(permission); // TODO add globalgroup
+	public boolean hasPermission(String permission, boolean exact) {
+		boolean hasPermission = false;
+		
+		hasPermission = this.group.hasPermission(permission, exact);
+		
+		for(PermissionAttachment attch : attachments.values()) {
+			if(!attch.isPermissionNegated(permission)) {
+				if(!hasPermission) {
+					hasPermission = attch.hasPermission(permission, exact);
+				}
+			} else {
+				hasPermission = false;
+			}
+		}
+		
+		return hasPermission;
 	}
 	
 	
@@ -171,8 +163,8 @@ public class PermissionPlayer {
 	 * @param permission permission to have
 	 * @return true if player has this permission, false otherwise
 	 */
-	public boolean hasPrivatePermission(String permission) {
-		return this.groupData.hasPermission(permission);
+	public boolean hasPrivatePermission(String permission, boolean isSpigot) {
+		return this.groupData.hasPermission(permission, isSpigot);
 	}
 	
 	
@@ -191,13 +183,7 @@ public class PermissionPlayer {
 		
 		// group prefix
 		prefix = group.getPrefix(sender, shortened);
-		if(prefix != null) return prefix;
-		
-		// bungee group prefix
-		prefix = "TODO: BUNGEEGROUP prefix PermissionPlayer"; // TODO
-		if(prefix != null) return prefix;
-		
-		return null;
+		return prefix;
 	}
 	
 	
@@ -216,13 +202,7 @@ public class PermissionPlayer {
 		
 		// group prefix
 		prefix = group.getPrefix(locale, shortened);
-		if(prefix != null) return prefix;
-		
-		// bungee group prefix
-		prefix = "TODO: BUNGEEGROUP prefix PermissionPlayer"; // TODO
-		if(prefix != null) return prefix;
-		
-		return null;
+		return prefix;
 	}
 	
 	
@@ -233,20 +213,17 @@ public class PermissionPlayer {
 	public String getRawPrefix() {
 		if(groupData.getPrefix() != null) return groupData.getPrefix();
 		if(group.getRawPrefix() != null) return group.getRawPrefix();
-		if(true) return "TODO: BUNGEEGROUP getRawPrefix PermissionPlayer"; // TODO
 		return null;
 	}
 	
 	
 	/**
-	 * Returns the suffix of this player or
-	 * null if using groups suffix
+	 * Returns the suffix of this player or if not set then groups suffix
 	 * @return
 	 */
 	public String getSuffix() {
 		if(this.groupData.getSuffix() != null) return this.groupData.getSuffix();
 		if(this.group.getSuffix() != null) return this.group.getSuffix();
-		if(true) return "TODO: BungeeGroup getSuffix"; // TODO
 		return null;
 	}
 	
@@ -260,11 +237,9 @@ public class PermissionPlayer {
 		if(shortened) {
 			if(this.groupData.getGroupShortName() != null) return this.groupData.getGroupShortName();
 			if(this.group.getShortName(sender) != null) return this.group.getShortName(sender);
-			if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
 		} else {
 			if(this.groupData.getGroupName() != null) return this.groupData.getGroupName();
 			if(this.group.getName(sender) != null) return this.group.getName(sender);
-			if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
 		}
 		
 		return null;
@@ -280,49 +255,14 @@ public class PermissionPlayer {
 		if(shortened) {
 			if(this.groupData.getGroupShortName() != null) return this.groupData.getGroupShortName();
 			if(this.group.getShortName(locale) != null) return this.group.getShortName(locale);
-			if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
 		} else {
 			if(this.groupData.getGroupName() != null) return this.groupData.getGroupName();
 			if(this.group.getName(locale) != null) return this.group.getName(locale);
-			if(true) return "TODO: getGroupName BungeeGroup PermissionPlayer"; //TODO
 		}
 		
 		return null;
 	}
-	
-	
-	/**
-	 * Gets the global group player belongs to
-	 * @return global group player belongs to
-	 */
-	public BungeeGroup getBungeeGroup() {
-		return this.globalGroup;
-	}
-	
-	
-	/**
-	 * Sets the player global group. To keep the change, call save()
-	 * @param group the global group for player
-	 */
-	public BungeeGroup setBungeeGroup(BungeeGroup group) {
-		// TODO call bungee to update the group
-		
-		if(this.globalGroup.equals(group)) return this.globalGroup;
-		BungeeGroup g = this.globalGroup;
-		
-		Player player = Bukkit.getPlayer(uuid);
-		if(player != null && player.isOnline())
-			this.globalGroup.unregisterUser(player);
-		this.globalGroup = group;
-		
-		if(player != null && player.isOnline())
-			this.globalGroup.registerUser(player);
 
-		// global group changes should be handled from bungee, not spigot
-		
-		return g;
-	}
-	
 	
 	/**
 	 * Returns the group of this player
@@ -344,13 +284,13 @@ public class PermissionPlayer {
 		
 		Group g = this.group;
 		// if player is online remember to modify existing player data directly
-		Player player = Bukkit.getPlayer(uuid);
+		ProxiedPlayer player = this.plugin.getProxy().getPlayer(uuid);
 		
-		if(player != null && player.isOnline())
+		if(player != null)
 			this.group.unregisterUser(player);
 		this.group = group;
 		
-		if(player != null && player.isOnline())
+		if(player != null)
 			this.group.registerUser(player);
 		this.changedGroup = true;
 		
@@ -363,18 +303,16 @@ public class PermissionPlayer {
 	 * @return
 	 */
 	public boolean save() {
-		GroupDatabase gdb = new GroupDatabase();
+		BungeeGroupDatabase gdb = new BungeeGroupDatabase();
 		boolean success = true;
 		
 		if(this.changedPlayerInformation)
 		if(!gdb.setPrivateGroupData(getUUID(), groupData))
 			success = false;
 		if(this.changedGroup)
-		if(!gdb.setLocalGroup(getUUID(), group))
+		if(gdb.saveGroup(getUUID(), group) == QueryState.INSERTION_SUCCESSFUL)
 			success = false;
 		
-		
-		// TODO call to bungee to save global group change
 		return success;
 	}
 	
@@ -512,16 +450,16 @@ public class PermissionPlayer {
 	 * @param permission
 	 * @return
 	 */
-	public QueryState addPermission(String permission) { 
+	public QueryState addPermission(String permission, boolean isSpigot) { 
 		// add the permission to the player
-		if(this.pAttachment != null) {
-			ExtendedPermission ePermission = new ExtendedPermission(permission);
-			this.pAttachment.setPermission(ePermission.getPermission(), ePermission.isPositive());
-			this.groupData.addPermission(permission);
+		if(this.mainAttachment != null) {
+			if(!isSpigot)
+				this.mainAttachment.addPermission(permission);
+			this.groupData.addPermission(permission, isSpigot);
 		}
 		
 		// add and save a new permission for player
-		return (new GroupDatabase()).addPlayerPermission(getUUID(), permission);
+		return (new BungeeGroupDatabase()).addPlayerPermission(getUUID(), permission, isSpigot);
 	}
 	
 	
@@ -530,16 +468,16 @@ public class PermissionPlayer {
 	 * @param permission
 	 * @return
 	 */
-	public QueryState removePermission(String permission) {
+	public QueryState removePermission(String permission, boolean isSpigot) {
 		// remove this permission from player
-		if(this.pAttachment != null) {
-			ExtendedPermission ePermission = new ExtendedPermission(permission);
-			this.pAttachment.unsetPermission(ePermission.getPermission());
-			this.groupData.removePermission(permission);
+		if(this.mainAttachment != null) {
+			if(!isSpigot)
+				this.mainAttachment.removePermission(permission);
+			this.groupData.removePermission(permission, isSpigot);
 		}
 		
 		// save the removal
-		return (new GroupDatabase()).removePlayerPermission(getUUID(), permission);
+		return (new BungeeGroupDatabase()).removePlayerPermission(getUUID(), permission, isSpigot);
 	}
 	
 	

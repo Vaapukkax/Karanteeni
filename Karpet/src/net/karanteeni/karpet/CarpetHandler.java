@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.UUID;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -20,8 +21,8 @@ import net.karanteeni.core.timers.KaranteeniTimer;
 import net.karanteeni.karpet.worldguard.WorldGuardManager;
 
 public class CarpetHandler implements KaranteeniTimer {
-	private LinkedHashMap<Player, Carpet> carpets = new LinkedHashMap<Player, Carpet>();
-	private HashMap<Player, Location> movementLocked = new HashMap<Player, Location>();
+	private LinkedHashMap<UUID, Carpet> carpets = new LinkedHashMap<UUID, Carpet>();
+	private HashMap<UUID, Location> movementLocked = new HashMap<UUID, Location>();
 	private List<Material> availableBlocks;
 	private List<Material> clippableBlocks;
 	private Material[][] defaultLayout;
@@ -300,9 +301,16 @@ public class CarpetHandler implements KaranteeniTimer {
 	 * Adds a carpet to the given player
 	 * @param player
 	 */
-	public void addCarpet(Player player) {
-		Carpet carpet = new Carpet(getLayout(player.getUniqueId()));
-		carpets.put(player, carpet);
+	public boolean addCarpet(Player player) {
+		return addCarpet(player.getUniqueId());
+	}
+	
+	
+	public boolean addCarpet(UUID uuid) {
+		if(this.hasCarpet(uuid)) return false;
+		Carpet carpet = new Carpet(getLayout(uuid));
+		carpets.put(uuid, carpet);
+		return true;
 	}
 	
 	
@@ -310,11 +318,17 @@ public class CarpetHandler implements KaranteeniTimer {
 	 * Removes an active carpet from the given player
 	 * @param player player to remove the carpet from
 	 */
-	public void removeCarpet(Player player) {
-		Carpet carpet = carpets.remove(player);
+	public boolean removeCarpet(Player player) {
+		return removeCarpet(player.getUniqueId());
+	}
+	
+	
+	public boolean removeCarpet(UUID uuid) {
+		Carpet carpet = carpets.remove(uuid);
 		if(carpet != null)
 			carpet.remove();
-		movementLocked.remove(player);
+		movementLocked.remove(uuid);
+		return carpet != null;
 	}
 	
 	
@@ -324,7 +338,12 @@ public class CarpetHandler implements KaranteeniTimer {
 	 * @return true if carpet is on, false if not
 	 */
 	public boolean hasCarpet(Player player) {
-		return carpets.containsKey(player);
+		return hasCarpet(player.getUniqueId());
+	}
+	
+	
+	public boolean hasCarpet(UUID uuid) {
+		return carpets.containsKey(uuid);
 	}
 	
 	
@@ -339,35 +358,38 @@ public class CarpetHandler implements KaranteeniTimer {
 	
 	@Override
 	public void runTimer() {
-		for(Entry<Player, Carpet> entry : carpets.entrySet()) {
+		for(Entry<UUID, Carpet> entry : carpets.entrySet()) {
+			Player player = Bukkit.getPlayer(entry.getKey());
+			if(player == null) continue;
+			
 			// check if the carpet is in allowed region
-			if(wgm != null && !wgm.isCarpetAllowed(entry.getKey().getLocation())) {
+			if(wgm != null && !wgm.isCarpetAllowed(player.getLocation())) {
 				removeCarpet(entry.getKey());
 				Karpet.getMessager().sendActionBar(
-						entry.getKey(), 
+						player, 
 						Sounds.EQUIP.get(), 
-						Karpet.getTranslator().getRandomTranslation(plugin, entry.getKey(), "carpet.disabled"));
+						Karpet.getTranslator().getRandomTranslation(plugin, player, "carpet.disabled"));
 				continue;
 			}
 			
 			// draw the carpet and if the player is sneaking, lower the carpet
-			if(entry.getKey().isSneaking() && entry.getKey().isOnGround()) {
-				entry.getValue().draw(entry.getKey().getLocation().subtract(0, 2, 0));
+			if(player.isSneaking() && player.isOnGround()) {
+				entry.getValue().draw(player.getLocation().subtract(0, 2, 0));
 				// prevent carpet from moving up
-				movementLocked.put(entry.getKey(), entry.getKey().getLocation());
+				movementLocked.put(entry.getKey(), player.getLocation());
 			} else {
 				// if player is trying to descend and has not done so yet, wait
 				if(movementLocked.containsKey(entry.getKey())) {
 					// if player is not sneaking anymore, prevent movement lock
-					if(entry.getKey().isSneaking()) {
-						if(movementLocked.get(entry.getKey()).getY() - 0.3 <= entry.getKey().getLocation().getY())
+					if(player.isSneaking()) {
+						if(movementLocked.get(entry.getKey()).getY() - 0.3 <= player.getLocation().getY())
 							continue;
 					} else {
 						movementLocked.remove(entry.getKey());
 					}
 				}
 				
-				entry.getValue().draw(entry.getKey().getLocation().subtract(0, 1, 0));
+				entry.getValue().draw(player.getLocation().subtract(0, 1, 0));
 			}
 		}
 	}
@@ -375,11 +397,11 @@ public class CarpetHandler implements KaranteeniTimer {
 	
 	@Override
 	public void timerStopped() {
-		Iterator<Entry<Player, Carpet>> iter = carpets.entrySet().iterator();
+		Iterator<Entry<UUID, Carpet>> iter = carpets.entrySet().iterator();
 		
 		// remove all carpets and clear the map of them
 		while(iter.hasNext()) {
-			Entry<Player, Carpet> pair = iter.next();
+			Entry<UUID, Carpet> pair = iter.next();
 			pair.getValue().remove();
 			
 			iter.remove();

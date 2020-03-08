@@ -3,6 +3,7 @@ package net.karanteeni.karanteeniperms;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.Bukkit;
 import org.bukkit.permissions.PermissibleBase;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachmentInfo;
@@ -39,10 +40,11 @@ public class PermissionBase extends PermissibleBase {
 	
 	@Override
 	public boolean hasPermission(String permission) {
+		Bukkit.broadcastMessage("Checking permissions in PermissionBase step 1");
 		if(super.hasPermission(permission)) return true;
 		
 		Set<String> permissions = getPermissions();
-		
+		Bukkit.broadcastMessage("Checking permissions in PermissionBase step 2");
 		for(String perm : permissions) {
 			if(perm.charAt(perm.length()-1) != '*') continue;
 			perm = perm.substring(0, perm.length()-1);

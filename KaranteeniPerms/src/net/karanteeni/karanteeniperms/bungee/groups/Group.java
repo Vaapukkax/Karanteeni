@@ -1,31 +1,25 @@
 package net.karanteeni.karanteeniperms.bungee.groups;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.Permission;
-import org.bukkit.permissions.PermissionAttachment;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.util.Vector;
-import net.karanteeni.core.config.YamlConfig;
+import net.karanteeni.bungee.core.configuration.YamlConfig;
 import net.karanteeni.core.data.ObjectPair;
-import net.karanteeni.karanteeniperms.KaranteeniPerms;
 import net.karanteeni.karanteeniperms.bungee.KaranteeniPermsBungee;
-import net.karanteeni.karanteeniperms.groups.player.ExtendedPermission;
+import net.md_5.bungee.api.CommandSender;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.config.Configuration;
 
 public class Group implements Comparable<Group> {
 	private GroupData			groupData;
@@ -35,7 +29,7 @@ public class Group implements Comparable<Group> {
 	private TreeSet<Group> 	inheritedGroups 		= new TreeSet<Group>();
 	// entities using this group and their permission attachments connected to this group
 	private HashMap<UUID, ObjectPair<Integer, PermissionAttachment>> attachments = new HashMap<UUID, ObjectPair<Integer, PermissionAttachment>>();
-	private KaranteeniPerms 	pl;
+	private KaranteeniPermsBungee 	pl;
 	private static YamlConfig 	groupConfig;
 	private static final String GROUP_SECTION 			= "Groups";
 	private static final String RANK_SHORT_NAME_DEST 	= GROUP_SECTION + ".%s.shortname";
@@ -62,9 +56,10 @@ public class Group implements Comparable<Group> {
 			String prefix, 
 			String suffix, 
 			boolean defaultGroup,
-			List<String> perms)
+			List<String> spigotPermissions,
+			List<String> bungeePermissions)
 	{
-		pl = KaranteeniPermsBungee.getPlugin(KaranteeniPermsBungee.class);
+		pl = KaranteeniPermsBungee.getInstance();
 		this.ID = ID;
 		
 		KaranteeniPermsBungee.getTranslator().registerTranslation(
@@ -78,7 +73,7 @@ public class Group implements Comparable<Group> {
 		
 		/*this.addPermission = addPermission;
 		this.removePermission = removePermission;*/
-		this.groupData = new GroupData(prefix, suffix, perms);
+		this.groupData = new GroupData(prefix, suffix, rankName, rankShortName, spigotPermissions, bungeePermissions);
 		//this.permissions = perms;
 		this.def = defaultGroup;
 		if(groupConfig == null)
@@ -116,20 +111,8 @@ public class Group implements Comparable<Group> {
 	 */
 	public void setCustomData(Plugin plugin, String path, Object value) {
 		groupConfig.getConfig().set(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path, 
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path, 
 				value);
-	}
-	
-	
-	/**
-	 * Checks if the custom data in group plugin section is set
-	 * @param plugin plugin of which path
-	 * @param path path to data
-	 * @return was the data set
-	 */
-	public boolean isCustomDataSet(Plugin plugin, String path) {
-		return groupConfig.getConfig().isSet(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
 	}
 	
 	
@@ -141,7 +124,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public int getCustomInt(Plugin plugin, String path) {
 		return groupConfig.getConfig().getInt(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -153,7 +136,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public String getCustomString(Plugin plugin, String path) {
 		return groupConfig.getConfig().getString(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -165,19 +148,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public List<String> getCustomStringList(Plugin plugin, String path) {
 		return groupConfig.getConfig().getStringList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
-	}
-	
-	
-	/**
-	 * Returns the custom in from path
-	 * @param plugin plugin of which path
-	 * @param path path to data
-	 * @return value at path
-	 */
-	public List<Integer> getCustomIntList(Plugin plugin, String path) {
-		return groupConfig.getConfig().getIntegerList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -189,7 +160,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public boolean getCustomBoolean(Plugin plugin, String path) {
 		return groupConfig.getConfig().getBoolean(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -201,7 +172,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public List<Boolean> getCustomBooleanList(Plugin plugin, String path) {
 		return groupConfig.getConfig().getBooleanList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -213,7 +184,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public Object getCustomData(Plugin plugin, String path) {
 		return groupConfig.getConfig().get(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -225,7 +196,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public List<?> getCustomDataList(Plugin plugin, String path) {
 		return groupConfig.getConfig().getList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -237,7 +208,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public double getCustomDouble(Plugin plugin, String path) {
 		return groupConfig.getConfig().getDouble(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 
 	
@@ -249,7 +220,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public List<Double> getCustomDoubleList(Plugin plugin, String path) {
 		return groupConfig.getConfig().getDoubleList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -261,7 +232,7 @@ public class Group implements Comparable<Group> {
 	 */
 	public long getCustomLong(Plugin plugin, String path) {
 		return groupConfig.getConfig().getLong(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
 	
@@ -273,58 +244,10 @@ public class Group implements Comparable<Group> {
 	 */
 	public List<Long> getCustomLongList(Plugin plugin, String path) {
 		return groupConfig.getConfig().getLongList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
+				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getDescription().getName()+"."+path);
 	}
 	
-	
-	/**
-	 * Returns the custom in from path
-	 * @param plugin plugin of which path
-	 * @param path path to data
-	 * @return value at path
-	 */
-	public ItemStack getCustomItemStack(Plugin plugin, String path) {
-		return groupConfig.getConfig().getItemStack(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
-	}
-	
-	
-	/**
-	 * Returns the custom in from path
-	 * @param plugin plugin of which path
-	 * @param path path to data
-	 * @return value at path
-	 */
-	public List<Map<?,?>> getCustomMapList(Plugin plugin, String path) {
-		return groupConfig.getConfig().getMapList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
-	}
-	
-	
-	/**
-	 * Returns the custom in from path
-	 * @param plugin plugin of which path
-	 * @param path path to data
-	 * @return value at path
-	 */
-	public List<Character> getCustomCharacterList(Plugin plugin, String path) {
-		return groupConfig.getConfig().getCharacterList(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
-	}
-	
-	
-	/**
-	 * Returns the custom in from path
-	 * @param plugin plugin of which path
-	 * @param path path to data
-	 * @return value at path
-	 */
-	public Vector getCustomVector(Plugin plugin, String path) {
-		return groupConfig.getConfig().getVector(
-				String.format(SAVE_GROUP_LOCATION, ID)+"CustomData."+plugin.getName()+"."+path);
-	}
-	
-	
+
 	/**
 	 * Get all the groups directly inherited by this group
 	 * @return
@@ -379,7 +302,7 @@ public class Group implements Comparable<Group> {
 	 * @return Prefix of group like [GroupName] or [GN] if shortened
 	 * set to false
 	 */
-	public String getPrefix(Player player, boolean shortened) {
+	public String getPrefix(ProxiedPlayer player, boolean shortened) {
 		String rankName = null; 
 		
 		if(!shortened)
@@ -450,15 +373,15 @@ public class Group implements Comparable<Group> {
 	 * @return
 	 */
 	public String getName(Locale locale)
-	{ return KaranteeniPerms.getTranslator().getTranslation(pl, locale, String.format(RANK_LONG_NAME_DEST, ID)); }
+	{ return KaranteeniPermsBungee.getTranslator().getTranslation(pl, locale, String.format(RANK_LONG_NAME_DEST, ID)); }
 	
 	
 	/**
 	 * Returns the name for this rank
 	 * @return
 	 */
-	public String getName(Player player)
-	{  return KaranteeniPerms.getTranslator().getTranslation(pl, player, String.format(RANK_LONG_NAME_DEST, ID)); }
+	public String getName(ProxiedPlayer player)
+	{  return KaranteeniPermsBungee.getTranslator().getTranslation(pl, player, String.format(RANK_LONG_NAME_DEST, ID)); }
 	
 	
 	/**
@@ -466,7 +389,7 @@ public class Group implements Comparable<Group> {
 	 * @return
 	 */
 	public String getName(CommandSender sender)
-	{  return KaranteeniPerms.getTranslator().getTranslation(pl, sender, String.format(RANK_LONG_NAME_DEST, ID)); }
+	{  return KaranteeniPermsBungee.getTranslator().getTranslation(pl, sender, String.format(RANK_LONG_NAME_DEST, ID)); }
 	
 	
 	/**
@@ -474,8 +397,8 @@ public class Group implements Comparable<Group> {
 	 * @return
 	 */
 	public String getName() { 
-		return KaranteeniPerms.getTranslator().getTranslation(pl, 
-				KaranteeniPerms.getTranslator().getDefaultLocale(),
+		return KaranteeniPermsBungee.getTranslator().getTranslation(pl, 
+				KaranteeniPermsBungee.getTranslator().getDefaultLocale(),
 				String.format(RANK_LONG_NAME_DEST, ID));
 	}
 	
@@ -485,15 +408,15 @@ public class Group implements Comparable<Group> {
 	 * @return
 	 */
 	public String getShortName(Locale locale)
-	{ return KaranteeniPerms.getTranslator().getTranslation(pl, locale, String.format(RANK_SHORT_NAME_DEST, ID)); }
+	{ return KaranteeniPermsBungee.getTranslator().getTranslation(pl, locale, String.format(RANK_SHORT_NAME_DEST, ID)); }
 	
 	
 	/**
 	 * Returns the name for this rank
 	 * @return
 	 */
-	public String getShortName(Player player)
-	{ return KaranteeniPerms.getTranslator().getTranslation(pl, player, String.format(RANK_SHORT_NAME_DEST, ID)); }
+	public String getShortName(ProxiedPlayer player)
+	{ return KaranteeniPermsBungee.getTranslator().getTranslation(pl, player, String.format(RANK_SHORT_NAME_DEST, ID)); }
 	
 	
 	/**
@@ -501,7 +424,7 @@ public class Group implements Comparable<Group> {
 	 * @return
 	 */
 	public String getShortName(CommandSender sender)
-	{ return KaranteeniPerms.getTranslator().getTranslation(pl, sender, String.format(RANK_SHORT_NAME_DEST, ID)); }
+	{ return KaranteeniPermsBungee.getTranslator().getTranslation(pl, sender, String.format(RANK_SHORT_NAME_DEST, ID)); }
 	
 	
 	/**
@@ -509,8 +432,8 @@ public class Group implements Comparable<Group> {
 	 * @return
 	 */
 	public String getShortName() { 
-		return KaranteeniPerms.getTranslator().getTranslation(pl, 
-				KaranteeniPerms.getTranslator().getDefaultLocale(),
+		return KaranteeniPermsBungee.getTranslator().getTranslation(pl, 
+				KaranteeniPermsBungee.getTranslator().getDefaultLocale(),
 				String.format(RANK_SHORT_NAME_DEST, ID));
 	}
 	
@@ -523,10 +446,10 @@ public class Group implements Comparable<Group> {
 	 */
 	public void setName(Locale locale, String name, boolean longVersion) {
 		if(longVersion) {
-			KaranteeniPerms.getTranslator().setTranslation(this.pl, locale, 
+			KaranteeniPermsBungee.getTranslator().setTranslation(this.pl, locale, 
 					String.format(RANK_LONG_NAME_DEST, ID), name);
 		} else {
-			KaranteeniPerms.getTranslator().setTranslation(this.pl, locale, 
+			KaranteeniPermsBungee.getTranslator().setTranslation(this.pl, locale, 
 					String.format(RANK_SHORT_NAME_DEST, ID), name);
 		}
 	}
@@ -537,10 +460,10 @@ public class Group implements Comparable<Group> {
 	 * @param perm
 	 * @return
 	 */
-	public boolean hasPermission(Permission perm) { 
-		if(!this.groupData.hasPermission(perm.getName())) {
+	public boolean hasPermission(ExtendedPermission perm, boolean spigotSide) { 
+		if(!this.groupData.hasPermission(perm, spigotSide)) {
 			for(Group group : inheritedGroups) {
-				if(group.hasPermission(perm))
+				if(group.hasPermission(perm, spigotSide))
 					return true;
 			}
 			return false;
@@ -554,10 +477,10 @@ public class Group implements Comparable<Group> {
 	 * @param permission
 	 * @return
 	 */
-	public boolean hasPermission(String permission) { 
-		if(!this.groupData.hasPermission(permission)) {
+	public boolean hasPermission(String permission, boolean spigotSide) { 
+		if(!this.groupData.hasPermission(permission, spigotSide)) {
 			for(Group group : inheritedGroups) {
-				if(group.hasPermission(permission))
+				if(group.hasPermission(permission, spigotSide))
 					return true;
 			}
 			return false;
@@ -570,8 +493,11 @@ public class Group implements Comparable<Group> {
 	 * Get the permissions of this group
 	 * @return
 	 */
-	public LinkedList<ExtendedPermission> getPermissions() {
-		return this.groupData.getPermissions();
+	public LinkedList<ExtendedPermission> getPermissions(boolean spigotSide) {
+		if(spigotSide)
+			return this.groupData.getSpigotPermissions();
+		else
+			return this.groupData.getBungeePermissions();
 	}
 	
 	
@@ -579,12 +505,19 @@ public class Group implements Comparable<Group> {
 	 * Get all the permissions this group and inherited groups have
 	 * @return
 	 */
-	public LinkedList<ExtendedPermission> getFullPermissions() { 
-		LinkedList<ExtendedPermission> perms = this.groupData.getPermissions();
-		for(Group group : inheritedGroups) {
-			perms.addAll(group.getPermissions());
+	public LinkedList<ExtendedPermission> getFullPermissions(boolean spigotSide) {
+		LinkedList<ExtendedPermission> perms = null;
+		
+		if(spigotSide) {
+			perms = this.groupData.getSpigotPermissions();
+		} else {
+			perms = this.groupData.getBungeePermissions();
 		}
-		return perms;
+		
+		for(Group group : inheritedGroups) {
+			perms.addAll(group.getPermissions(spigotSide));
+		}
+		return perms;		
 	}
 	
 	
@@ -592,20 +525,21 @@ public class Group implements Comparable<Group> {
 	 * Registers this player to use this group
 	 * @param player player to use the permissions of this group
 	 */
-	protected void registerUser(Player player) {
+	protected void registerUser(ProxiedPlayer player) {
 		// register inherited groups
 		for(Group group : inheritedGroups)
 			group.registerUser(player);
+		PermissionPlayer pPlayer = this.pl.getPlayerModel().getPermissionPlayer(player.getUniqueId());
 		
-		PermissionAttachment attch = player.addAttachment(this.pl);
+		PermissionAttachment attch = pPlayer.addAttachment();
 		// if player already has this attachment, increase the counter of times this attachment has been inherited
 		if(attachments.containsKey(player.getUniqueId())) {
 			ObjectPair<Integer, PermissionAttachment> entry = attachments.get(player.getUniqueId());
 			entry.first += 1;
 		} else {
 			// add permissions to this player
-			for(ExtendedPermission perm : this.groupData.getPermissions())
-				attch.setPermission(perm.getPermission(), perm.isPositive());
+			for(ExtendedPermission perm : this.groupData.getBungeePermissions())
+				attch.addPermission(perm);
 				
 			attachments.put(player.getUniqueId(), new ObjectPair<Integer, PermissionAttachment>(1, attch));
 		}
@@ -616,16 +550,18 @@ public class Group implements Comparable<Group> {
 	 * Unregisters user from using this group. If other groups also use this those need to be unregistered too
 	 * @param player player to remove from registration
 	 */
-	protected boolean unregisterUser(Player player) {
+	protected boolean unregisterUser(ProxiedPlayer player) {
 		if(!attachments.containsKey(player.getUniqueId()))
 			return false;
 		ObjectPair<Integer, PermissionAttachment> pair = attachments.get(player.getUniqueId());
 		pair.first -= 1;
 		
+		PermissionPlayer pPlayer = this.pl.getPlayerModel().getPermissionPlayer(player.getUniqueId());
+		
 		// if nothing uses this group remove the permissions of this group from player
 		if(pair.first == 0) {
 			attachments.remove(player.getUniqueId());
-			player.removeAttachment(pair.second);
+			pPlayer.removeAttachment(pair.second);
 			
 			for(Group group : inheritedGroups)
 				group.unregisterUser(player);
@@ -639,11 +575,12 @@ public class Group implements Comparable<Group> {
 	 * Removes the attachments from the memory for the given player
 	 * @param player player to remove from attachments
 	 */
-	protected void destroyUser(Player player) {
+	protected void destroyUser(ProxiedPlayer player) {
 		ObjectPair<Integer, PermissionAttachment> pair = this.attachments.remove(player.getUniqueId());
+		PermissionPlayer pPlayer = this.pl.getPlayerModel().getPermissionPlayer(player.getUniqueId());
 		
 		if(pair != null) {
-			player.removeAttachment(pair.second);
+			pPlayer.removeAttachment(pair.second);
 			for(Group group : inheritedGroups)
 				group.destroyUser(player);			
 		}
@@ -660,18 +597,24 @@ public class Group implements Comparable<Group> {
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"suffix", this.groupData.getSuffix());
 		
 		List<String> inheritedIDs = new LinkedList<String>();
-		LinkedList<String> perms = new LinkedList<String>();
+		LinkedList<String> spigotPerms = new LinkedList<String>();
+		LinkedList<String> bungeePerms = new LinkedList<String>();
 		
 		for(Group g : this.inheritedGroups)
 			inheritedIDs.add(g.ID);
 		
-		for(ExtendedPermission perm : this.groupData.getPermissions()) {			
-			perms.add(perm.toString());
+		for(ExtendedPermission perm : this.groupData.getSpigotPermissions()) {			
+			spigotPerms.add(perm.toString());
+		}
+		
+		for(ExtendedPermission perm : this.groupData.getBungeePermissions()) {			
+			bungeePerms.add(perm.toString());
 		}
 		
 		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"inherited-groups", inheritedIDs);
-		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"permissions", perms);
-		return groupConfig.save();
+		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"bungee-permissions", bungeePerms);
+		groupConfig.getConfig().set(String.format(SAVE_GROUP_LOCATION, ID)+"spigot-permissions", spigotPerms);
+		return groupConfig.saveConfig();
 	}
 	
 	
@@ -686,9 +629,8 @@ public class Group implements Comparable<Group> {
 				"§f[§7"+GROUP_STRING_TAG+"§f] ", 
 				" §6> §f", 
 				true, 
-				new ArrayList<String>()/*,
-				addPermission,
-				removePermission*/);
+				new ArrayList<String>(),
+				new ArrayList<String>());
 		
 		return group.saveGroup();
 	}
@@ -700,28 +642,28 @@ public class Group implements Comparable<Group> {
 	 * @param perm
 	 * @return was the new permission inserted or did it already exist
 	 */
-	public boolean addPermission(String perm, boolean save) {
-		KaranteeniPermsBungee perms = KaranteeniPermsBungee.getPlugin(KaranteeniPermsBungee.class);
+	public boolean addPermission(String perm, boolean save, boolean spigotSide) {
+		KaranteeniPermsBungee perms = KaranteeniPermsBungee.getInstance();
 		if(perms.getGroupList() != null) //If groupmodel is null, this is a reload
 		
-		if(this.groupData.hasPermission(perm))
+		if(this.groupData.hasPermission(perm, spigotSide))
 			return false;
-		if(!this.groupData.addPermission(perm))
+		if(!this.groupData.addPermission(perm, spigotSide))
 			return false;
 		if(save) {
 			if(this.saveGroup()) {
-				ExtendedPermission perm_ = new ExtendedPermission(perm);
+				if(!spigotSide)
 				for(ObjectPair<Integer, PermissionAttachment> attch : this.attachments.values())
-					attch.second.setPermission(perm_.getPermission(), perm_.isPositive());
+					attch.second.addPermission(perm);
 				return true;
 			} else {
 				return false;
 			}
 		}
 		
-		ExtendedPermission perm_ = new ExtendedPermission(perm);
+		if(!spigotSide)
 		for(ObjectPair<Integer, PermissionAttachment> attch : this.attachments.values())
-			attch.second.setPermission(perm_.getPermission(), perm_.isPositive());
+			attch.second.addPermission(perm);
 		return true;
 	}
 	
@@ -731,25 +673,25 @@ public class Group implements Comparable<Group> {
 	 * @param perm
 	 * @return True if removal was successful, false if nothing to remove
 	 */
-	public boolean removePermission(String perm, boolean save) {
-		boolean permissionRemoved = this.groupData.removePermission(perm);
+	public boolean removePermission(String perm, boolean save, boolean spigotSide) {
+		boolean permissionRemoved = this.groupData.removePermission(perm, spigotSide);
 		if(!permissionRemoved)
 			return false;
 		
 		if(save) {
 			if(this.saveGroup()) {
-				ExtendedPermission perm_ = new ExtendedPermission(perm);
+				if(!spigotSide)
 				for(ObjectPair<Integer, PermissionAttachment> pairs : this.attachments.values())
-					pairs.second.unsetPermission(perm_.getPermission());
+					pairs.second.removePermission(perm);
 				return true;
 			} else {
 				return false;
 			}
 		}
 		
-		ExtendedPermission perm_ = new ExtendedPermission(perm);
+		if(!spigotSide)
 		for(ObjectPair<Integer, PermissionAttachment> pairs : this.attachments.values())
-			pairs.second.unsetPermission(perm_.getPermission());
+			pairs.second.removePermission(perm);
 		return true;
 	}
 	
@@ -759,32 +701,33 @@ public class Group implements Comparable<Group> {
 	 * @return All groups that could be loaded from the config
 	 */
 	public static Collection<Group> getGroupsFromConfig(
-			KaranteeniPerms plugin) throws Exception {
+			KaranteeniPermsBungee plugin) throws Exception {
 		if(groupConfig == null)
 			groupConfig = new YamlConfig(plugin, "Groups.yml");
 		
 		HashMap<String, Group> groups = new HashMap<String, Group>();
 		
-		ConfigurationSection groupSecs = 
-				groupConfig.getConfig().getConfigurationSection(GROUP_SECTION);
+		Configuration groupSecs = 
+				groupConfig.getConfig().getSection(GROUP_SECTION);
 		
 		//Verify that the at least one group exists. If not, try to create one
-		if(groupSecs == null || groupSecs.getKeys(false) == null)
+		if(groupSecs == null || groupSecs.getKeys() == null)
 			if(!generateDefaultGroup())
 				throw new Exception("Failed to load/generate any groups!");
 			else
-				groupSecs = groupConfig.getConfig().getConfigurationSection(GROUP_SECTION);
+				groupSecs = groupConfig.getConfig().getSection(GROUP_SECTION);
 		
 		//Which group inherits which groups
 		HashMap<String, List<String>> groupInheritance = new HashMap<String, List<String>>();
 		
 		//Run through all the groups
-		for(String key : groupSecs.getKeys(false)) {
+		for(String key : groupSecs.getKeys()) {
 			boolean def = groupSecs.getBoolean(key+".default");
 			String prefix = groupSecs.getString(key+".prefix");
 			String suffix = groupSecs.getString(key+".suffix");
 			groupInheritance.put(key, groupSecs.getStringList(key+".inherited-groups"));
-			List<String> permissions = groupSecs.getStringList(key+".permissions");
+			List<String> spigotPermissions = groupSecs.getStringList(key+".spigot-permissions");
+			List<String> bungeePermissions = groupSecs.getStringList(key+".bungee-permissions");
 			
 			//Check if all the group has all values loaded
 			if(prefix == null)
@@ -814,9 +757,8 @@ public class Group implements Comparable<Group> {
 					prefix,
 					suffix,
 					def,
-					permissions/*,
-					addPermission,
-					removePermission*/);
+					spigotPermissions,
+					bungeePermissions);
 			
 			//Add the new group to the map
 			groups.put(key, g);
@@ -834,10 +776,55 @@ public class Group implements Comparable<Group> {
 				if(groups.get(groupID) != null)
 					g.inheritGroup(groups.get(groupID));
 				else
-					Bukkit.getLogger().log(Level.CONFIG, "Cannot inherit nonexistent group '"+groupID+"'");
+					System.out.println("Cannot inherit nonexistent group '"+groupID+"'");
 		}
 		
 		return groups.values();
+	}
+	
+	
+	/**
+	 * Converts to spigot sided bungeegroup ready to send
+	 * @return
+	 */
+	public byte[] convertToSpigotBungeeGroup() throws IOException {
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+		DataOutputStream out = new DataOutputStream(b);
+		
+		// write all singular data
+		// ID
+		out.writeUTF(ID);
+		out.writeUTF(this.getRawPrefix());
+		out.writeUTF(this.getSuffix());
+		out.writeUTF(this.getName());
+		out.writeUTF(this.getShortName());
+		
+		// write locale count
+		out.writeByte(KaranteeniPermsBungee.getTranslator().getLocales().size());
+		// write locales
+		for(Locale locale : KaranteeniPermsBungee.getTranslator().getLocales())
+			out.writeUTF(locale.toLanguageTag());
+		
+		// write rank long names in every language
+		for(Locale locale : KaranteeniPermsBungee.getTranslator().getLocales())
+			out.writeUTF(this.getName(locale));
+		
+		// write rank short names in every language
+		for(Locale locale : KaranteeniPermsBungee.getTranslator().getLocales())
+			out.writeUTF(this.getShortName(locale));
+		
+		// write amount of permissions
+		out.writeInt(this.groupData.getSpigotPermissions().size());
+		// write permissions
+		for(ExtendedPermission permission : this.groupData.getSpigotPermissions())
+			out.writeUTF(permission.toString());
+		
+		// write amount of groups inherited
+		out.writeByte(this.inheritedGroups.size());
+		for(Group group : this.inheritedGroups)
+			out.writeUTF(group.ID);
+		
+		return b.toByteArray();
 	}
 	
 	

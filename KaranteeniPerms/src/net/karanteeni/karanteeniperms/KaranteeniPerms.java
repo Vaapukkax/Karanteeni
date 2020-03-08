@@ -31,6 +31,7 @@ import net.karanteeni.karanteeniperms.command.player.SetPrefixComponent;
 import net.karanteeni.karanteeniperms.command.player.SetShortRanknameComponent;
 import net.karanteeni.karanteeniperms.command.player.SetSuffixComponent;
 import net.karanteeni.karanteeniperms.command.player.TestComponent;
+import net.karanteeni.karanteeniperms.groups.player.BungeeGroupBuilder;
 import net.karanteeni.karanteeniperms.groups.player.GroupDatabase;
 import net.karanteeni.karanteeniperms.groups.player.GroupList;
 import net.karanteeni.karanteeniperms.groups.player.JoinEvent;
@@ -67,7 +68,10 @@ public class KaranteeniPerms extends KaranteeniPlugin {
 	public void onEnable() {
 		try {
 			this.playerModel = new PlayerModel(this);
-			this.groupList = new GroupList(this);
+			BungeeGroupBuilder builder = new BungeeGroupBuilder();
+			getServer().getMessenger().registerOutgoingPluginChannel(this, "karanteeniperms:groups");
+			getServer().getMessenger().registerIncomingPluginChannel(this, "karanteeniperms:groups", builder);
+			this.groupList = new GroupList(this, builder);
 		} catch (Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, 
 					"Error happened trying to launch KaranteeniPerms, closing plugin...:", e);

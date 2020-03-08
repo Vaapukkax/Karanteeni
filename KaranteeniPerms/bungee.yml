@@ -4,5 +4,5 @@ version: 1.0
 author: Nuubles
 description: This plugin handles all BASIC permissions and groups in worlds
 api-version: 1.15
-depends: []
+depends: [KaranteeniCore]
 database: true

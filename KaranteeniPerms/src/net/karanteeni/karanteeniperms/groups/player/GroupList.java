@@ -1,6 +1,8 @@
 package net.karanteeni.karanteeniperms.groups.player;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
@@ -9,6 +11,7 @@ import net.karanteeni.karanteeniperms.KaranteeniPerms;
 public class GroupList {
 	private Group defaultGroup;
 	private TreeMap<String, Group> groups = new TreeMap<String, Group>(String.CASE_INSENSITIVE_ORDER);
+	private TreeMap<String, BungeeGroup> bungeeGroups = new TreeMap<String, BungeeGroup>(String.CASE_INSENSITIVE_ORDER);
 	
 	/**
 	 * Initializes the grouphandler
@@ -19,7 +22,7 @@ public class GroupList {
 	/**
 	 * Load the grouplist with configuration groups.
 	 */
-	public GroupList(KaranteeniPerms plugin) throws Exception {
+	public GroupList(KaranteeniPerms plugin, BungeeGroupBuilder builder) throws Exception {
 		if(plugin.getGroupList() != null) throw new IllegalArgumentException("Grouplist has already been generated");
 			
 		Collection<Group> groups;
@@ -38,6 +41,12 @@ public class GroupList {
 			
 			//Put the group to the grouplist
 			this.groups.put(g.getID(), g);
+		}
+		
+		List<BungeeGroup> bungeeGroups = builder.requestBungeeGroupData();
+		// put all of the groups to the map
+		for(BungeeGroup g : bungeeGroups) {
+			this.bungeeGroups.put(g.getID(), g);
 		}
 	}
 	
@@ -87,6 +96,24 @@ public class GroupList {
 	 */
 	public void clearGroups()
 	{ groups.clear(); }
+	
+	
+	/**
+	 * Refreshes all bungeegroups. Requests group from bungee, overrides the previous group values
+	 * and then refreshes players bungeegroups from spigot side
+	 */
+	public void refreshBungeeGroups() throws IOException {
+		BungeeGroupBuilder builder = new BungeeGroupBuilder();
+		List<BungeeGroup> bungeeGroups = builder.requestBungeeGroupData();
+		this.bungeeGroups.clear();
+		
+		// put all of the groups to the map
+		for(BungeeGroup g : bungeeGroups) {
+			this.bungeeGroups.put(g.getID(), g);
+		}
+		
+		// TODO refresh PermissionPlayers
+	}
 	
 	
 	/**

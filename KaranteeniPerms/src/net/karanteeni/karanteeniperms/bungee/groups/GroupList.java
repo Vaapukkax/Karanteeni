@@ -2,8 +2,6 @@ package net.karanteeni.karanteeniperms.bungee.groups;
 
 import java.util.Collection;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import net.karanteeni.karanteeniperms.bungee.KaranteeniPermsBungee;
 import net.karanteeni.karanteeniperms.bungee.groups.Group;
 
@@ -27,11 +25,10 @@ public class GroupList {
 		
 		groups = Group.getGroupsFromConfig(plugin);
 		
-		
 		//Loop each bungee group through
 		for(Group g : groups) {
 			if(g.isDefault() && defaultGroup != null) //Default group has already been set, give a warning
-				Bukkit.getLogger().log(Level.WARNING, "Default group ("+defaultGroup.getID()+
+				System.out.println("Default group ("+defaultGroup.getID()+
 						") already set! Changing to "+g.getID()+". "
 						+ "Please edit groups config to have only one default group!");
 			

@@ -25,6 +25,7 @@ import net.md_5.bungee.event.EventHandler;
 
 public abstract class KaranteeniPlugin extends Plugin implements Listener {
 	private YamlConfig config;
+	private final String pluginName;
 	private static Translator translator;
 	private static DatabaseConnector dbc;
 	private static ConfigManager configManager;
@@ -33,6 +34,7 @@ public abstract class KaranteeniPlugin extends Plugin implements Listener {
 	
 	public KaranteeniPlugin(String name) {
 		super();
+		this.pluginName = name;
 		
 		//Keep up the plugins
 		kPluginInstances.put(name, this);
@@ -164,6 +166,14 @@ public abstract class KaranteeniPlugin extends Plugin implements Listener {
 		return config.reloadConfig();
 	}
 	
+	
+	/**
+	 * Returns the name of this plugin
+	 * @return name of the plugin
+	 */
+	public String getPluginName() {
+		return this.pluginName;
+	}
 	
 	
 	/**
