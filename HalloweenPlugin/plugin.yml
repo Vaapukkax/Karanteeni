@@ -1,0 +1,7 @@
+main: net.karanteeni.halloween.Halloween
+name: HalloweenPlugin
+version: 1.0
+author: Nuubles
+description: Spoopy
+api-version: 1.14
+depend: [KaranteeniCore]
