@@ -17,7 +17,7 @@ import net.karanteeni.core.information.translation.TranslationContainer;
  * @author Nuubles
  *
  */
-public class BinaryComponent extends CommandLoader implements TranslationContainer {
+public class BinaryLoader extends CommandLoader implements TranslationContainer {
 	private final BINARY binary;
 	public final static String BINARY_KEY = "core.binary";
 	
@@ -26,7 +26,7 @@ public class BinaryComponent extends CommandLoader implements TranslationContain
 	 * @param before should this be run before next component
 	 * @param binary texts to use as the binary format
 	 */
-	public BinaryComponent(boolean before, BINARY binary) {
+	public BinaryLoader(boolean before, BINARY binary) {
 		super(before);
 		this.binary = binary;
 	}
@@ -38,7 +38,7 @@ public class BinaryComponent extends CommandLoader implements TranslationContain
 	 * @param before load before the attached component
 	 * @param binary
 	 */
-	public BinaryComponent(CommandLoader loader, boolean before, BINARY binary) {
+	public BinaryLoader(CommandLoader loader, boolean before, BINARY binary) {
 		super(loader, before);
 		this.binary = binary;
 	}

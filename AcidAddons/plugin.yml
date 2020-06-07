@@ -1,0 +1,6 @@
+main: net.karanteeni.acidaddons.AcidAddons
+name: AcidAddons
+version: 1.0
+author: Nuubles
+description: Addons for the Acid Island plugin
+api-version: 1.15

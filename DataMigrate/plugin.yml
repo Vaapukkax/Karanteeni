@@ -1,0 +1,7 @@
+main: net.karanteeni.migrate.TesterMain
+name: DataMigrate
+version: 1.0
+author: Nuubles
+description: The Core plugin for other Karanteeni plugins
+api-version: 1.14
+depend: [KaranteeniCore]

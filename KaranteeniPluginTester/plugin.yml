@@ -7,6 +7,6 @@ api-version: 1.15
 depend: [KaranteeniCore]
 softdepend: [WorldEdit, WorldGuard]
 
-commands:
-  createaction:
-    description: "yeet"
+permissions:
+  hello.world:
+    description: prints hello world to the console

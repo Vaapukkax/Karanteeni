@@ -4,5 +4,5 @@ version: 1.0
 author: Nuubles
 description: provides extra flags to worldguard
 api-version: 1.15
-depend: [KaranteeniCore]
+depend: [KaranteeniCore, WorldGuard]
 softdepend: [NoteBlockAPI]

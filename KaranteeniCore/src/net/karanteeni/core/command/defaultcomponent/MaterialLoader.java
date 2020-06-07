@@ -94,10 +94,8 @@ public class MaterialLoader extends CommandLoader implements TranslationContaine
 					Sounds.NO.get());
 		} else if(singular && materials.size() == 0) {
 			if(mandatory) {
-				// no players found with given arguments
-				return new CommandResult(KaranteeniCore.getDefaultMsgs().playerNotFound(sender, args[0]),
-						ResultType.INVALID_ARGUMENTS,
-						Sounds.NO.get());
+				// no materials found with given arguments
+				return CommandResult.INVALID_ARGUMENTS;
 			} else {
 				return CommandResult.SUCCESS;
 			}

@@ -1,0 +1,7 @@
+main: net.karanteeni.christmas2019.Christmas
+name: Chrismas2019
+version: 1.0
+author: Nuubles
+description: jouluballit
+api-version: 1.14
+depend: [KaranteeniCore, KaranteeniPerms, WorldGuard]

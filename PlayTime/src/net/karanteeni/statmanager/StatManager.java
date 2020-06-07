@@ -5,7 +5,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
-import net.karanteeni.core.command.defaultcomponent.TimeComponent;
+import net.karanteeni.core.command.defaultcomponent.TimeLoader;
 import net.karanteeni.core.config.YamlConfig;
 import net.karanteeni.statmanager.commands.AddComponent;
 import net.karanteeni.statmanager.commands.PlayTimeCommand;
@@ -157,7 +157,7 @@ public class StatManager extends KaranteeniPlugin {
 		PlayerLoader pl = new PlayerLoader(true, false, true, true, true);
 		ptc.setLoader(pl);
 		
-		TimeComponent timeComponent = new TimeComponent(true, true);
+		TimeLoader timeComponent = new TimeLoader(true, true);
 		
 		SetComponent setComponent = new SetComponent();
 		setComponent.setPermission("statmanager.set");

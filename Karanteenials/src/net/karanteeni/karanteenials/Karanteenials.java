@@ -1,7 +1,7 @@
 package net.karanteeni.karanteenials;
 
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.core.command.defaultcomponent.BinaryComponent;
+import net.karanteeni.core.command.defaultcomponent.BinaryLoader;
 import net.karanteeni.core.command.defaultcomponent.MaterialLoader;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
 import net.karanteeni.karanteenials.enchant.EnchantCommand;
@@ -182,7 +182,7 @@ public class Karanteenials extends KaranteeniPlugin
 			lec.setLoader(playerLoader);
 			
 			PlayerLoader gcLoader = new PlayerLoader(false, false, false, false);
-			BinaryComponent ooc = new BinaryComponent(true, BinaryComponent.BINARY.ENABLE_DISABLE);
+			BinaryLoader ooc = new BinaryLoader(true, BinaryLoader.BINARY.ENABLE_DISABLE);
 			ooc.setLoader(gcLoader);
 			
 			InvincibleComponent gc = new InvincibleComponent();

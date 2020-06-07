@@ -258,7 +258,8 @@ public abstract class CommandComponent implements ChainerInterface {
 		}
 		
 		// if there is a loader running before this, run it
-		if(this.execComponent != null && this.execComponent.isBefore()) {
+		if(this.execComponent != null && this.execComponent.isBefore() && 
+				(components == null || (args != null && args.length > 0 && !components.containsKey(args[0].toLowerCase())))) {
 			CommandResult result = this.execComponent.exec(sender, cmd, label, args);
 			// if the command execution a success
 			if(!CommandResult.SUCCESS.equals(result) && !CommandResult.ASYNC_CALLBACK.equals(result)) 

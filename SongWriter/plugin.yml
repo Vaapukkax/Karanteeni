@@ -1,0 +1,17 @@
+main: net.karanteeni.songwriter.SongWriter
+name: SongWriter
+version: 1.0
+author: Nuubles
+description: Adds custom structures and mechanics to the game such as elevators
+api-version: 1.14
+depend: [KaranteeniCore,NoteBlockAPI]
+database: true
+
+permissions:
+  rodisongsaver.save:
+    default: op
+commands:
+  record:
+    description: Begins a recording of noteblocks
+    permission: rodisongsaver.save
+    usage: /record <song name> <file name>

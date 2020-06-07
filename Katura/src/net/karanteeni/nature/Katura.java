@@ -1,7 +1,7 @@
 package net.karanteeni.nature;
 
 import net.karanteeni.core.KaranteeniPlugin;
-import net.karanteeni.core.command.defaultcomponent.TimeComponent;
+import net.karanteeni.core.command.defaultcomponent.TimeLoader;
 import net.karanteeni.nature.block.commands.SpawnCommand;
 import net.karanteeni.nature.block.events.AutoGrass;
 import net.karanteeni.nature.block.events.BlowDandelion;
@@ -26,6 +26,7 @@ import net.karanteeni.nature.entity.events.SpreadCreeperExplosion;
 import net.karanteeni.nature.external_api.CoreProtectAccess;
 import net.karanteeni.nature.sit.SitArmorstandManager;
 import net.karanteeni.nature.sit.SitCommand;
+import net.karanteeni.nature.treemanager.TreeGrowEvent;
 import net.karanteeni.nature.worldguard.WorldGuardManager;
 
 public class Katura extends KaranteeniPlugin {
@@ -131,6 +132,9 @@ public class Katura extends KaranteeniPlugin {
 			getServer().getPluginManager().registerEvents(new SpawnerSpawn(), this);
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.HUNGER_MODIFICATION.toString()))
 			getServer().getPluginManager().registerEvents(new HungerPreventer(), this);
+		
+		// TODO FIX REGISTEr
+		this.getServer().getPluginManager().registerEvents(new TreeGrowEvent(), this);
 	}
 	
 	
@@ -163,7 +167,7 @@ public class Katura extends KaranteeniPlugin {
 		
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.WEATHER.toString())) {
 			Weather weather = new Weather();
-			weather.setLoader(new TimeComponent(true, false));
+			weather.setLoader(new TimeLoader(true, false));
 			weather.register();
 		}
 		

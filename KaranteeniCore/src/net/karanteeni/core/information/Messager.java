@@ -465,6 +465,7 @@ public class Messager {
      * @param parameters parameters for command
      * @param commandPrefix prefix to be put before command
      */
+    @Deprecated
     public static void sendList(CommandSender receiver, String command, String[] parameters, String commandPrefix, String commandSuffix) {
     	String txt = "";
     	//Onko komento mukana
