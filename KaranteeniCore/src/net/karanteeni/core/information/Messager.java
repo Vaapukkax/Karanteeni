@@ -6,8 +6,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_15_R1.entity.CraftPlayer;
-//import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
@@ -15,10 +14,10 @@ import net.karanteeni.core.information.bossbar.TimedBossBar;
 import net.karanteeni.core.information.sounds.SoundType;
 import net.karanteeni.core.information.text.TextUtil;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.minecraft.server.v1_15_R1.IChatBaseComponent;
-import net.minecraft.server.v1_15_R1.IChatBaseComponent.ChatSerializer;
-import net.minecraft.server.v1_15_R1.PacketPlayOutTitle;
-import net.minecraft.server.v1_15_R1.PacketPlayOutTitle.EnumTitleAction;
+import net.minecraft.server.v1_16_R1.IChatBaseComponent;
+import net.minecraft.server.v1_16_R1.IChatBaseComponent.ChatSerializer;
+import net.minecraft.server.v1_16_R1.PacketPlayOutTitle;
+import net.minecraft.server.v1_16_R1.PacketPlayOutTitle.EnumTitleAction;
 
 public class Messager {
 	

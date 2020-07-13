@@ -7,6 +7,11 @@ api-version: 1.15
 depend: [KaranteeniCore]
 softdepend: [WorldEdit, WorldGuard]
 
+commands:
+  cake:
+    description: lol
+    usage: /cake
+
 permissions:
   hello.world:
     description: prints hello world to the console

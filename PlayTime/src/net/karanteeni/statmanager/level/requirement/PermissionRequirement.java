@@ -3,6 +3,7 @@ package net.karanteeni.statmanager.level.requirement;
 import java.util.List;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import net.karanteeni.statmanager.StatManager;
 
 
 public class PermissionRequirement extends Requirement<String> {
