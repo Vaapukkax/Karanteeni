@@ -19,7 +19,7 @@ import net.karanteeni.core.particle.CoordinateMath;
  *
  */
 public class BlockEffects {
-	private HashMap<Effect, TriConsumer<Location, Particle, SoundType>> effectFunc = 
+	private HashMap<Effect, TriConsumer<Location, Particle, SoundType>> effectFunc =
 			new HashMap<Effect, TriConsumer<Location, Particle, SoundType>>();
 	
 	/**

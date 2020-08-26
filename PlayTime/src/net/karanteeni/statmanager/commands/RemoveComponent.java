@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 import net.karanteeni.core.command.CommandComponent;
 import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
-import net.karanteeni.core.command.defaultcomponent.TimeComponent;
+import net.karanteeni.core.command.defaultcomponent.TimeLoader;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.time.TimeData;
@@ -31,7 +31,7 @@ public class RemoveComponent extends CommandComponent implements TranslationCont
 		else if(chainer.hasData(PlayerLoader.PLAYER_KEY_SINGLE))
 			uuid = chainer.<Player>getObject(PlayerLoader.PLAYER_KEY_SINGLE).getUniqueId();
 		
-		TimeData timeToSet = this.chainer.getObject(TimeComponent.TIME_KEY);
+		TimeData timeToSet = this.chainer.getObject(TimeLoader.TIME_KEY);
 		String playerName = StatManager.getPlayerHandler().getName(uuid);
 		
 		Time playerTime = ((StatManager)chainer.getPlugin()).getManager().forceLoadTime(uuid);

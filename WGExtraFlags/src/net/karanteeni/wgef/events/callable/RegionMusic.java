@@ -176,9 +176,4 @@ public class RegionMusic implements Listener {
 		}
 		return flagValue;
 	}
-	
-	
-	public void playSong(Player player) {
-		
-	}
 }

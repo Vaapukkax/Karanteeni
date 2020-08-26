@@ -83,7 +83,7 @@ public abstract class CommandLoader extends CommandComponent {
 		}
 		
 		// if there is a loader running before this, run it
-		if(this.execComponent != null && this.execComponent.isBefore()) {
+		if(this.execComponent != null && this.execComponent.isBefore() && args != null && args.length > 0 && (components == null || !components.containsKey(args[0]))) {
 			CommandResult result = this.execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
 			// if the command execution a success
 			if(!CommandResult.SUCCESS.equals(result) && !CommandResult.ASYNC_CALLBACK.equals(result)) 

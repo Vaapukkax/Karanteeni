@@ -33,7 +33,7 @@ public class GameMusicMenu extends InventoryBase<Kurebox> {
 		setItem("icons.vanilla-music.survival", 	"game-music.survival", 		Sound.MUSIC_GAME, 		3, 1);
 		setItem("icons.vanilla-music.underwater", 	"game-music.underwater", 	Sound.MUSIC_UNDER_WATER, 5, 1);
 		setItem("icons.vanilla-music.dragon", 		"game-music.dragon", 		Sound.MUSIC_DRAGON, 	7, 1);
-		setItem("icons.vanilla-music.nether", 		"game-music.nether", 		Sound.MUSIC_NETHER, 	1, 3);
+		setItem("icons.vanilla-music.nether", 		"game-music.nether", 		Sound.MUSIC_NETHER_NETHER_WASTES, 	1, 3);
 		setItem("icons.vanilla-music.creative", 	"game-music.creative", 		Sound.MUSIC_CREATIVE, 	3, 3);
 		setItem("icons.vanilla-music.end", 			"game-music.end", 			Sound.MUSIC_END, 		5, 3);
 		setItem("icons.vanilla-music.end-screen", 	"game-music.end-screen", 	Sound.MUSIC_CREDITS, 	7, 3);

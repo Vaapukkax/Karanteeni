@@ -56,9 +56,9 @@ public class Teleporter {
 	public Location getSafePoint(Location location, boolean allowWater, int eyeHeight) {
 		Chunk chunk = location.getChunk();
 		ChunkSnapshot chunkShot = chunk.getChunkSnapshot();
-		double x = Math.abs(location.getX() % 16);
-		double y = Math.min(Math.max(location.getY(), 0), 256);
-		double z = Math.abs(location.getZ() % 16);
+		int x = Math.abs(location.getBlockX() % 16);
+		int y = Math.max(location.getBlockY(), 0);
+		int z = Math.abs(location.getBlockZ() % 16);
 		if(location.getZ() < 0)
 			z = 16 - z;
 		if(location.getX() < 0)
@@ -67,15 +67,15 @@ public class Teleporter {
 		// check if the location in the chunk is safe
 		SAFENESS safeness = null;
 		
-		if((int)y+eyeHeight <= 255)
-			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, Math.abs((int)y-1), (int)z), 
-					chunkShot.getBlockType((int)x, (int)y, (int)z), 
-					chunkShot.getBlockType((int)x, (int)(y+eyeHeight), (int)z));
-		else if((int)y+eyeHeight > 255 && (int)y <= 255)
-			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, Math.abs((int)y-1), (int)z), 
-					chunkShot.getBlockType((int)x, (int)y, (int)z));
+		if(y+eyeHeight <= 255)
+			safeness = isSafe(allowWater, chunkShot.getBlockType(x, y-1, z), 
+					chunkShot.getBlockType(x, y, z), 
+					chunkShot.getBlockType(x, (y+eyeHeight), z));
+		else if(y+eyeHeight > 255 && y <= 255)
+			safeness = isSafe(allowWater, chunkShot.getBlockType(x, y-1, z), 
+					chunkShot.getBlockType(x, y, z));
 		else
-			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, Math.abs((int)y-1), (int)z));
+			safeness = isSafe(allowWater, chunkShot.getBlockType(x, y-1, z));
 			
 		
 		// if safe, return the given location
@@ -83,43 +83,43 @@ public class Teleporter {
 			return location;
 		
 		// get the highest location to return if previous was unsafe
-		double highestY = chunkShot.getHighestBlockYAt((int)x, (int)z)+1;
+		int highestY = chunkShot.getHighestBlockYAt(x, z)+1;
 		// no blocks at the axis
 		if(highestY < 1) {
 			return null;
 		} else if(highestY + eyeHeight < 256) {
 			// normal location in world
-						safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, (int)highestY-1, (int)z), 
-								chunkShot.getBlockType((int)x, (int)highestY, (int)z), 
-								chunkShot.getBlockType((int)x, (int)(highestY+eyeHeight), (int)z));
-		} else if((int)highestY+eyeHeight > 255 && (int)highestY <= 255){
+			safeness = isSafe(allowWater, chunkShot.getBlockType(x, highestY-1, z), 
+					chunkShot.getBlockType(x, highestY, z), 
+					chunkShot.getBlockType(x, (highestY+eyeHeight), z));
+		} else if(highestY+eyeHeight > 255 && highestY <= 255){
 			// eye height above build limit, don't check eyeheight
-			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, (int)highestY-1, (int)z), 
-					chunkShot.getBlockType((int)x, (int)highestY, (int)z));
+			safeness = isSafe(allowWater, chunkShot.getBlockType(x, highestY-1, z), 
+					chunkShot.getBlockType(x, highestY, z));
 		} else {
 			// highest block at build limit
-			safeness = isSafe(allowWater, chunkShot.getBlockType((int)x, (int)highestY-1, (int)z));
+			safeness = isSafe(allowWater, chunkShot.getBlockType(x, highestY-1, z));
 		}
 		
 		// a safe location found, return it
 		if(safeness == SAFENESS.SAFE)
-			return new Location(location.getWorld(), location.getX(), highestY, location.getZ(), 
+			return new Location(location.getWorld(), location.getBlockX()+0.5, highestY, location.getBlockZ()+0.5, 
 					location.getYaw(), location.getPitch());
 		
 		// scan all the blocks below until a safe location is found
 		while(highestY > 1) {
 			--highestY;
 			
-			Material blockBelowFeet = chunkShot.getBlockType((int)x, (int)highestY-1, (int)z);
-			Material blockAtFeet = chunkShot.getBlockType((int)x, (int)highestY, (int)z);
+			Material blockBelowFeet = chunkShot.getBlockType(x, highestY-1, z);
+			Material blockAtFeet = chunkShot.getBlockType(x, highestY, z);
 			
-			if((int)(highestY + eyeHeight) <= 255) {
-				Material blockAtHead = chunkShot.getBlockType((int)x, (int)(highestY+eyeHeight), (int)z);
+			if((highestY + eyeHeight) <= 255) {
+				Material blockAtHead = chunkShot.getBlockType(x, (highestY+eyeHeight), z);
 				if(SAFENESS.SAFE == isSafe(allowWater, blockBelowFeet, blockAtFeet, blockAtHead))
-					return new Location(location.getWorld(), location.getX(), highestY, location.getZ(), location.getYaw(), location.getPitch());
+					return new Location(location.getWorld(), location.getBlockX()+0.5, highestY, location.getBlockZ()+0.5, location.getYaw(), location.getPitch());
 			} else {
 				if(SAFENESS.SAFE == isSafe(allowWater, blockBelowFeet, blockAtFeet))
-					return new Location(location.getWorld(), location.getX(), highestY, location.getZ(), location.getYaw(), location.getPitch());
+					return new Location(location.getWorld(), location.getBlockX()+0.5, highestY, location.getBlockZ()+0.5, location.getYaw(), location.getPitch());
 			}
 			
 		}

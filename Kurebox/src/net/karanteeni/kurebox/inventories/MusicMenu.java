@@ -86,7 +86,7 @@ public class MusicMenu extends InventoryBase<Kurebox> {
 			Sound.MUSIC_END,
 			Sound.MUSIC_GAME,
 			Sound.MUSIC_MENU,
-			Sound.MUSIC_NETHER,
+			Sound.MUSIC_NETHER_NETHER_WASTES,
 			Sound.MUSIC_UNDER_WATER
 		}), 7, 3);
 		

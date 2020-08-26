@@ -69,8 +69,8 @@ public class KaranteeniPerms extends KaranteeniPlugin {
 		try {
 			this.playerModel = new PlayerModel(this);
 			BungeeGroupBuilder builder = new BungeeGroupBuilder();
-			getServer().getMessenger().registerOutgoingPluginChannel(this, "karanteeniperms:groups");
-			getServer().getMessenger().registerIncomingPluginChannel(this, "karanteeniperms:groups", builder);
+			//getServer().getMessenger().registerOutgoingPluginChannel(this, "karanteeniperms:groups");
+			//getServer().getMessenger().registerIncomingPluginChannel(this, "karanteeniperms:groups", builder);
 			this.groupList = new GroupList(this, builder);
 		} catch (Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, 

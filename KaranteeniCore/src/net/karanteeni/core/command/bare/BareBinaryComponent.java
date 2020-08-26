@@ -7,7 +7,7 @@ import org.bukkit.command.CommandSender;
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.command.CommandResult.ResultType;
-import net.karanteeni.core.command.defaultcomponent.BinaryComponent.BINARY;
+import net.karanteeni.core.command.defaultcomponent.BinaryLoader.BINARY;
 import net.karanteeni.core.information.sounds.Sounds;
 
 public class BareBinaryComponent implements BareComponent<Boolean> {

@@ -5,6 +5,7 @@ import org.bukkit.Bukkit;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.wgef.events.LazyRegionChecker;
 import net.karanteeni.wgef.events.callable.RegionMusic;
+import net.karanteeni.wgef.events.callable.SurvivalFly;
 import net.karanteeni.wgef.worldguard.WorldGuardManager;
 
 public class WGEF extends KaranteeniPlugin {
@@ -19,6 +20,7 @@ public class WGEF extends KaranteeniPlugin {
 	public void onLoad() {
 		wgm = new WorldGuardManager();
 		wgm.addStringFlag(RegionMusic.ENTER_PLAY_DIR_SONGS);
+		wgm.addFlagToRegister(SurvivalFly.ALLOW_SURVIVAL_FLY, true);
 		wgm.registerFlags();
 	}
 	
@@ -49,6 +51,7 @@ public class WGEF extends KaranteeniPlugin {
 	private void registerEvents() {
 		// music player
 		this.getServer().getPluginManager().registerEvents(new RegionMusic(this), this);
+		this.getServer().getPluginManager().registerEvents(new SurvivalFly(this), this);
 	}
 	
 	

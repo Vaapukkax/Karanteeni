@@ -8,5 +8,10 @@ depend: [KaranteeniCore]
 softdepend: [WorldEdit, WorldGuard]
 
 commands:
-  createaction:
-    description: "yeet"
+  cake:
+    description: lol
+    usage: /cake
+
+permissions:
+  hello.world:
+    description: prints hello world to the console
