@@ -104,14 +104,18 @@ public class MusicManager implements TranslationContainer {
 	 * Stops the vanilla music for this player
 	 */
 	public void stopGameMusic(final Player player) {
-		player.stopSound(Sound.MUSIC_CREATIVE, 		SoundCategory.MASTER);
-		player.stopSound(Sound.MUSIC_CREDITS, 		SoundCategory.MASTER);
-		player.stopSound(Sound.MUSIC_END, 			SoundCategory.MASTER);
-		player.stopSound(Sound.MUSIC_GAME, 			SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_CREATIVE, 					SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_CREDITS, 					SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_END, 						SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_GAME, 						SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_NETHER_BASALT_DELTAS, 		SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_NETHER_CRIMSON_FOREST, 	SoundCategory.MASTER);
 		player.stopSound(Sound.MUSIC_NETHER_NETHER_WASTES, 		SoundCategory.MASTER);
-		player.stopSound(Sound.MUSIC_DRAGON, 		SoundCategory.MASTER);
-		player.stopSound(Sound.MUSIC_UNDER_WATER, 	SoundCategory.MASTER);
-		player.stopSound(Sound.MUSIC_MENU, 			SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_NETHER_SOUL_SAND_VALLEY, 	SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_NETHER_WARPED_FOREST, 		SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_DRAGON, 					SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_UNDER_WATER, 				SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_MENU, 						SoundCategory.MASTER);
 	}
 	
 	

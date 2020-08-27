@@ -2,12 +2,10 @@ package net.karanteeni.core.block;
 
 import java.util.HashMap;
 import java.util.List;
-
 import org.apache.logging.log4j.util.TriConsumer;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
-
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.information.sounds.SoundType;
 import net.karanteeni.core.information.sounds.Sounds;

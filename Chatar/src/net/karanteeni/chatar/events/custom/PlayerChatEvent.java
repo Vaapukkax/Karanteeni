@@ -110,6 +110,9 @@ public class PlayerChatEvent extends Event implements Cancellable {
 		return recipients.get(player);
 	}
 	
+	public Set<Entry<Player, BaseComponent>> getMessages() {
+		return recipients.entrySet();
+	}
 	
 	/**
 	 * Sets the format of this event

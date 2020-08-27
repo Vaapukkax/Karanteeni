@@ -1,10 +1,15 @@
 package net.karanteeni.tester;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Damageable;
+import org.bukkit.entity.Player;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.core.command.defaultcomponent.EntityTypeLoader;
 import net.karanteeni.core.command.defaultcomponent.IntegerLoader;
 import net.karanteeni.core.command.defaultcomponent.UUIDLoader;
+import net.karanteeni.karanteeniperms.KaranteeniPerms;
+import net.karanteeni.karanteeniperms.groups.player.Group;
+import net.karanteeni.karanteeniperms.groups.player.GroupList;
 import net.karanteeni.tester.commands.HelloWorld;
 import net.karanteeni.tester.commands.entity.EntityCommand;
 import net.karanteeni.tester.commands.entity.components.EntityHeal;
@@ -17,6 +22,7 @@ import net.karanteeni.tester.events.LeverSound;
 import net.karanteeni.tester.events.RedstoneLampSound;
 
 public class TesterMain extends KaranteeniPlugin {
+	private CakeEvent cakeEvent; 
 	
 	public TesterMain() {
 		super(true);
@@ -31,9 +37,15 @@ public class TesterMain extends KaranteeniPlugin {
 	
 	@Override
 	public void onEnable() {
+		this.getCommand("cake").setExecutor(new ScoreboardCmd());
+		
+		this.cakeEvent = new CakeEvent();
+		getServer().getPluginManager().registerEvents(this.cakeEvent, this);
+		
 		registerCommands();
 		registerEvents();
 	}
+	
 	
 	
 	@Override
@@ -111,5 +123,10 @@ public class TesterMain extends KaranteeniPlugin {
 	private void registerEvents() {
 		getServer().getPluginManager().registerEvents(new LeverSound(), this);
 		getServer().getPluginManager().registerEvents(new RedstoneLampSound(), this);
+  }
+	
+	
+	public CakeEvent getCakeEvent() {
+		return this.cakeEvent;
 	}
 }

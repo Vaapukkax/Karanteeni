@@ -9,6 +9,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import net.karanteeni.core.inventory.InventoryBase;
 import net.karanteeni.core.inventory.preset.PresetActionItems;
 import net.karanteeni.kurebox.Kurebox;
+import net.karanteeni.kurebox.inventoryitems.RandomGameMusicItem;
 import net.karanteeni.kurebox.inventoryitems.VanillaMusicItem;
 
 public class GameMusicMenu extends InventoryBase<Kurebox> {
@@ -33,7 +34,14 @@ public class GameMusicMenu extends InventoryBase<Kurebox> {
 		setItem("icons.vanilla-music.survival", 	"game-music.survival", 		Sound.MUSIC_GAME, 		3, 1);
 		setItem("icons.vanilla-music.underwater", 	"game-music.underwater", 	Sound.MUSIC_UNDER_WATER, 5, 1);
 		setItem("icons.vanilla-music.dragon", 		"game-music.dragon", 		Sound.MUSIC_DRAGON, 	7, 1);
-		setItem("icons.vanilla-music.nether", 		"game-music.nether", 		Sound.MUSIC_NETHER_NETHER_WASTES, 	1, 3);
+		setRandomMusicItem("icons.vanilla-music.nether", "game-music.nether", 
+				new Sound[] {
+					Sound.MUSIC_NETHER_BASALT_DELTAS,
+					Sound.MUSIC_NETHER_CRIMSON_FOREST,
+					Sound.MUSIC_NETHER_NETHER_WASTES,
+					Sound.MUSIC_NETHER_SOUL_SAND_VALLEY,
+					Sound.MUSIC_NETHER_WARPED_FOREST
+				 }, 1, 3);
 		setItem("icons.vanilla-music.creative", 	"game-music.creative", 		Sound.MUSIC_CREATIVE, 	3, 3);
 		setItem("icons.vanilla-music.end", 			"game-music.end", 			Sound.MUSIC_END, 		5, 3);
 		setItem("icons.vanilla-music.end-screen", 	"game-music.end-screen", 	Sound.MUSIC_CREDITS, 	7, 3);
@@ -60,6 +68,12 @@ public class GameMusicMenu extends InventoryBase<Kurebox> {
 				music), x, y);
 	}
 	
+	private void setRandomMusicItem(String material, String nameKey, Sound[] music, int x, int y) {
+		Material loadedMaterial = Material.valueOf(plugin.getConfig().getString(material));
+		this.setAction(new RandomGameMusicItem(
+				renameItem(new ItemStack(loadedMaterial, 1), nameKey), 
+				music), x, y);
+	}
 	
 	/**
 	 * Renames the given item with a translation found with the given key

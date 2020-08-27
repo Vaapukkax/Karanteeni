@@ -86,7 +86,11 @@ public class MusicMenu extends InventoryBase<Kurebox> {
 			Sound.MUSIC_END,
 			Sound.MUSIC_GAME,
 			Sound.MUSIC_MENU,
+			Sound.MUSIC_NETHER_BASALT_DELTAS, // TODO fix nether music odds
+			Sound.MUSIC_NETHER_CRIMSON_FOREST,
 			Sound.MUSIC_NETHER_NETHER_WASTES,
+			Sound.MUSIC_NETHER_SOUL_SAND_VALLEY,
+			Sound.MUSIC_NETHER_WARPED_FOREST,
 			Sound.MUSIC_UNDER_WATER
 		}), 7, 3);
 		
