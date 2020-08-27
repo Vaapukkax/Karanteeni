@@ -237,7 +237,7 @@ public abstract class CommandChainer extends AbstractCommand implements ChainerI
 				}
 				
 				// if the loader should be run before this and parameters have been given, run it
-				if (execComponent != null && execComponent.isBefore() && args.length > 0) {
+				if (execComponent != null && execComponent.isBefore() && args.length > 0 && (components == null || !components.containsKey(args[0].toLowerCase()))) {
 					CommandResult result = execComponent.exec(sender, cmd, label, cutArgs(args, parameterLength));
 					//args = cutArgs(args, parameterLength);
 					// if no component was found, run the excess components which run with any parameters

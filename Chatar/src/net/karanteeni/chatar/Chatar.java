@@ -3,8 +3,10 @@ package net.karanteeni.chatar;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import net.karanteeni.chatar.command.broadcast.BroadcastCommand;
 import net.karanteeni.chatar.command.ignore.Ignore;
@@ -64,7 +66,8 @@ public class Chatar extends KaranteeniPlugin {
 			pChecker = new PermissionChecker();
 		
 		socialSpy = new SocialSpy();
-		registerChannels();
+		Bukkit.getLogger().log(Level.WARNING, "This is a stabilized build, please finalize the plugin soon");
+		//registerChannels();
 		registerEvents();
 		registerCommands();
 		registerTags();

@@ -1,0 +1,53 @@
+main: net.karanteeni.utilika.Utilika
+name: Utilika
+version: 1.0
+author: Nuubles
+description: Adds custom structures and mechanics to the game such as elevators
+api-version: 1.16
+depend: [KaranteeniCore]
+softdepend: [WorldGuard]
+database: true
+
+permissions:
+  #all permissions
+  utilika.elevator.use:
+    description: allows to use blocks as elevators
+  utilika.repair:
+    description: repair the item in your hand
+  utilika.easeinventory:
+    description: replace blocks with new ones when they run out or breaking items. similiar to inventory tweaks
+
+  utilika.name.color:
+    description: use color in item names
+  utilika.name.format:
+    description: use format in item names
+  utilika.name.random:
+    description: use random in item names
+  utilika.name.use:
+    description: use item renamer
+  utilika.name.reset:
+    description: reset item names
+
+  utilika.setsign.color:
+    description: use color in sign lines
+  utilika.setsign.format:
+    description: use format in sign lines
+  utilika.setsign.random:
+    description: use random in sign lines
+  utilika.setsign.use:
+    description: use sign editor
+    
+  #wildcards
+  utilika.name.*:
+    children:
+      utilika.name.color: true
+      utilika.name.use: true
+      utilika.name.random: true
+      utilika.name.format: true
+      utilika.name.reset: true
+  utilika.setsign.*:
+    children:
+      utilika.setsign.color: true
+      utilika.setsign.use: true
+      utilika.setsign.random: true
+      utilika.setsign.format: true

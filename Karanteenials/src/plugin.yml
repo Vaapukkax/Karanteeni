@@ -1,0 +1,277 @@
+main: net.karanteeni.karanteenials.Karanteenials
+name: Karanteenials
+version: 1.0
+author: Nuubles
+description: Takes care of simple tasks like fly, messages, homes etc.
+api-version: 1.16
+depend: [KaranteeniCore, KaranteeniPerms]
+database: true
+
+permissions:
+  #all permissions
+  karanteenials.home.own.set:
+    description: allows to set a home
+  karanteenials.home.own.use:
+    description: allows to set a home
+  karanteenials.home.own.remove:
+    description: allows to set a home
+  karanteenials.home.other.set:
+    description: allows to set other player's home
+  karanteenials.home.other.use:
+    description: allows to use other player's home
+  karanteenials.home.other.remove:
+    description: allows to remove other player's home
+  karanteenials.home.bypass-limit:
+    description: bypass home limits
+
+  karanteenials.teleport.back:
+    description: allows teleport to previous location
+  karanteenials.teleport.toggle:
+    description: toggles the ability of lower level players to teleport to you
+  karanteenials.teleport.ask:
+    description: asks permission to teleport to other player
+  karanteenials.teleport.askhere:
+    description: asks permission to teleport other player to here
+  karanteenials.teleport.itself.location:
+    description: teleports player to a given location
+  karanteenials.teleport.itself.player:
+    description: teleports player to a given player
+  karanteenials.teleport.others.location:
+    description: teleports player to a given location
+  karanteenials.teleport.others.player:
+    description: teleports player to a given player
+    
+  karanteenials.player.speed.self.walk:
+    description: sets the walking speed of player
+  karanteenials.player.speed.self.fly:
+    description: sets the flying speed of player
+  karanteenials.player.speed.other.walk:
+    description: sets the walking speed of player
+  karanteenials.player.speed.other.fly:
+    description: sets the flying speed of player
+    
+  karanteenials.player.death.back:
+    description: use back on death
+    
+  karanteenials.player.fly.self:
+    description: toggles the fly state of player
+  karanteenials.player.fly.other:
+    description: toggles the fly state of another player
+    
+  karanteenials.player.gamemode.survival.self:
+    description: change your own gamemode to survival
+  karanteenials.player.gamemode.survival.other:
+    description: change someones gamemode to survival
+  karanteenials.player.gamemode.creative.self:
+    description: change your own gamemode to creative
+  karanteenials.player.gamemode.creative.other:
+    description: change someones gamemode to creative
+  karanteenials.player.gamemode.adventure.self:
+    description: change your own gamemode to adventure
+  karanteenials.player.gamemode.adventure.other:
+    description: change someones gamemode to adventure
+  karanteenials.player.gamemode.spectator.self:
+    description: change your own gamemode to spectator
+  karanteenials.player.gamemode.spectator.other:
+    description: change someones gamemode to spectator
+
+  karanteenials.nick.color:
+    description: allows to use colors in nickname
+  karanteenials.nick.change.self:
+    description: allows to change own nickname
+  karanteenials.nick.change.other:
+    description: allows to change other players nickname
+  karanteenials.nick.format:
+    description: allows to use bold italics and underline in nickname
+  karanteenials.nick.scramble:
+    description: allows to use random characters in nickname
+
+  karanteenials.hat.item_type:
+    description: set the current item in your hand to your head 
+  karanteenials.inventory.workbench:
+    description: open workbench anywhere
+  karanteenials.inventory.enderchest:
+    description: open enderchest anywhere
+  karanteenials.inventory.clear:
+    description: clear inventory one player at a time
+  karanteenials.inventory.clear-multiple:
+    description: clear inventory of multiple players at a time
+  
+  karanteenials.player.command.feed.self:
+    description: feed yourself
+  karanteenials.player.command.feed.other:
+    description: feed someone else
+  karanteenials.player.command.starve.self:
+    description: starve yourself 
+  karanteenials.player.command.starve.other:
+    description: starve someone else
+  karanteenials.player.command.heal.self:
+    description: heal yourself
+  karanteenials.player.command.heal.other:
+    description: heal someone else
+  karanteenials.player.command.invincible.self:
+    description: make yourself invincible
+  karanteenials.player.command.invincible.other:
+    description: make someone else invincible
+  karanteenials.player.command.kill.self:
+    description: kill yourself
+  karanteenials.player.command.kill.other:
+    description: kill someone else
+  karanteenials.player.command.burn.self:
+    description: burn yourself
+  karanteenials.player.command.burn.other:
+    description: burn someone else
+  karanteenials.player.command.extinguish.self:
+    description: extinguish yourself
+  karanteenials.player.command.extinguish.other:
+    description: extinguish someone else
+  karanteenials.player.command.lightning.self:
+    description: strike lightning at yourself
+  karanteenials.player.command.lightning.other:
+    description: strike lightning at someone else
+  karanteenials.enchant.take:
+    description: remove enchantment from item
+  karanteenials.enchant.set:
+    description: set enchantment to item
+  
+  #karanteenials.nick.self:
+   # description: set your nick
+  #karanteenials.nick.other:
+    #description: set someones nickname
+  #karanteenials.nick.colors:
+   # description: use colors in your nick
+  #karanteenials.nick.format:
+   # description: format your nick
+  #karanteenials.nick.magic:
+    #description: use random characters in nick
+
+  karanteenials.rtp.use:
+    description: use random teleport
+  karanteenials.rtp.admin:
+    description: bypass time limit and send other players with rtp
+    
+  karanteenials.near:
+    description: show nearby players whose power level is equal to or less than yours
+  #unimplemented  
+  karanteenials.antiblock:
+    description: players with this permission cannot be blocked
+    
+   
+  #wildcards
+  karanteenials.home.other.*: #access to others homes
+    children:
+      karanteenials.home.other.use: true
+      karanteenials.home.other.set: true
+      karanteenials.home.other.remove: true
+  karanteenials.home.own.*: #access to own homes
+    children:
+      karanteenials.home.own.use: true
+      karanteenials.home.own.set: true
+  karanteenials.home.*: ##access to all home commands
+    children:
+      karanteenials.home.own.*: true
+      karanteenials.home.other.*: true
+  
+  karanteenials.teleport.itself.*:
+    children:
+      karanteenials.teleport.itself.location: true
+      karanteenials.teleport.itself.player: true
+  karanteenials.teleport.others.*:
+    children:
+      karanteenials.teleport.others.location: true
+      karanteenials.teleport.others.player: true
+  karanteenials.teleport.*: #access to all teleport based commands
+    children:
+      karanteenials.teleport.toggle: true
+      karanteenials.teleport.ask: true
+      karanteenials.teleport.askhere: true
+      karanteenials.teleport.back: true
+      karanteenials.teleport.itself.*: true
+      karanteenials.teleport.others.*: true
+  
+  karanteenials.player.speed.*:
+    children:
+      karanteenials.player.speed.self.walk: true
+      karanteenials.player.speed.self.fly: true
+      karanteenials.player.speed.other.walk: true
+      karanteenials.player.speed.other.fly: true
+  
+  karanteenials.player.fly.*:
+    children:
+      karanteenials.player.fly.self: true
+      karanteenials.player.fly.other: true
+  
+  karanteenials.player.gamemode.survival.*:
+    children:
+      karanteenials.player.gamemode.survival.self: true
+      karanteenials.player.gamemode.survival.other: true
+  karanteenials.player.gamemode.creative.*:
+    children:
+      karanteenials.player.gamemode.creative.self: true
+      karanteenials.player.gamemode.creative.other: true
+  karanteenials.player.gamemode.adventure.*:
+    children:
+      karanteenials.player.gamemode.adventure.self: true
+      karanteenials.player.gamemode.adventure.other: true
+  karanteenials.player.gamemode.spectator.*:
+    children:
+      karanteenials.player.gamemode.spectator.self: true
+      karanteenials.player.gamemode.spectator.other: true
+  karanteenials.player.gamemode.*:
+    children:
+      karanteenials.player.gamemode.survival.*: true
+      karanteenials.player.gamemode.creative.*: true
+      karanteenials.player.gamemode.adventure.*: true
+      karanteenials.player.gamemode.spectator.*: true
+  
+  karanteenials.player.command.feed.*: # feed self or others
+    children:
+      karanteenials.player.command.feed.self: true
+      karanteenials.player.command.feed.other: true
+  karanteenials.player.command.starve.*: # heal self or others
+    children:
+      karanteenials.player.command.starve.self: true
+      karanteenials.player.command.starve.other: true
+  karanteenials.player.command.heal.*: # heal self or others
+    children:
+      karanteenials.player.command.heal.self: true
+      karanteenials.player.command.heal.other: true
+  karanteenials.player.command.invincible.*: # enable invincible for self or others
+    children:
+      karanteenials.player.command.invincible.self: true
+      karanteenials.player.command.invincible.other: true
+  karanteenials.player.command.kill.*: # kill self or others
+    children:
+      karanteenials.player.command.kill.self: true
+      karanteenials.player.command.kill.other: true
+  karanteenials.player.command.burn.*: # set self or others on fire
+    children:
+      karanteenials.player.command.burn.self: true
+      karanteenials.player.command.burn.other: true
+  karanteenials.player.command.extinguish.*: # extinguish self or others
+    children:
+      karanteenials.player.command.extinguish.self: true
+      karanteenials.player.command.extinguish.other: true
+  karanteenials.player.command.lightning.*: # lightning
+    children:
+      karanteenials.player.command.lightning.self: true
+      karanteenials.player.command.lightning.other: true
+  karanteenials.player.command.*:
+    children:
+      karanteenials.player.command.feed.*: true
+      karanteenials.player.command.starve.*: true
+      karanteenials.player.command.heal.*: true
+      karanteenials.player.command.invincible.*: true
+      karanteenials.player.command.kill.*: true
+      karanteenials.player.command.burn.*: true
+      karanteenials.player.command.extinguish.*: true
+      karanteenials.player.command.lightning.*: true
+  karanteenials.player.*:
+    children:
+      karanteenials.player.fly.*: true
+      karanteenials.player.speed.*: true
+      karanteenials.player.gamemode.*: true
+      karanteenials.player.command.*: true
+      
+      
+      

@@ -248,7 +248,7 @@ public class CarpetHandler implements KaranteeniTimer {
 		return result;
 	}
 	
-	
+	// TODO
 	/**
 	 * Sets the layout for a given player
 	 * @param uuid

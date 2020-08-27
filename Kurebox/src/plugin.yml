@@ -1,0 +1,7 @@
+main: net.karanteeni.kurebox.Kurebox
+name: Kurebox
+version: 1.0
+author: Nuubles
+description: Music player
+api-version: 1.16
+depend: [KaranteeniCore,NoteBlockAPI]

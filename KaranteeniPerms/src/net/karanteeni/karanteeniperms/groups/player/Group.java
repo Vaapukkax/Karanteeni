@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.logging.Level;
+
+import net.karanteeni.core.players.KPlayer;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -604,8 +606,14 @@ public class Group implements Comparable<Group> {
 			// add permissions to this player
 			for(ExtendedPermission perm : this.groupData.getPermissions())
 				attch.setPermission(perm.getPermission(), perm.isPositive());
-				
+
 			attachments.put(player.getUniqueId(), new ObjectPair<Integer, PermissionAttachment>(1, attch));
+		}
+
+		KPlayer kp = KPlayer.getKPlayer(player.getUniqueId());
+		if(kp != null) {
+			KaranteeniPerms plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+			kp.setCacheData(plugin, PermissionPlayer.GROUP_KEY, this);
 		}
 	}
 	
@@ -627,6 +635,12 @@ public class Group implements Comparable<Group> {
 			
 			for(Group group : inheritedGroups)
 				group.unregisterUser(player);
+		}
+
+		KPlayer kp = KPlayer.getKPlayer(player.getUniqueId());
+		if(kp != null) {
+			KaranteeniPerms plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
+			kp.removeCacheData(plugin, PermissionPlayer.GROUP_KEY);
 		}
 		
 		return true;

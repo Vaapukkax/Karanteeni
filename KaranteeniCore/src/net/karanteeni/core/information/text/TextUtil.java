@@ -89,6 +89,7 @@ public class TextUtil {
 	 * @param msg viesti josta poistetaan linkit
 	 * @return viesti josta on poistettu linkit
 	 */
+	@Deprecated
 	public static String parseLinks(String msg)
 	{
 		String msg2 = msg.replace(',', '.');
@@ -138,6 +139,7 @@ public class TextUtil {
 	 * @param msg
 	 * @return
 	 */
+	@Deprecated
 	public static String censor(String msg)
 	{
 		String original = msg;
@@ -317,28 +319,41 @@ public class TextUtil {
 	 */
 	public static String getRandomString(int length, boolean allowCase)
 	{
-		String str = "";
+		StringBuffer str = new StringBuffer();
 		char[] allowed = new char[] {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
 		Random random = new Random();
 		
 		if(allowCase)
 		{
 			for(int i = 0; i <= length; ++i)
-				str = str + allowed[random.nextInt(allowed.length-1)];
+				str.append(allowed[random.nextInt(allowed.length-1)]);
 		}
 		else
 		{
 			for(int i = 0; i <= length; ++i)
 			{
 				if(random.nextBoolean())
-					str = str + allowed[random.nextInt(allowed.length-1)];
+					str.append(allowed[random.nextInt(allowed.length-1)]);
 				else
-					str = str + Character.toUpperCase(allowed[random.nextInt(allowed.length-1)]);
+					str.append(Character.toUpperCase(allowed[random.nextInt(allowed.length-1)]));
 			}
 		}
 		
-		return str;
+		return str.toString();
 	}
+	
+	
+	public static String getRandomString(int length, char min, char max)
+	{
+		StringBuffer str = new StringBuffer();
+		Random random = new Random();
+		
+		for(int i = 0; i <= length; ++i)
+			str.append((char)(min + random.nextInt(max - min)));
+		
+		return str.toString();
+	}
+	
 	
 	/**
 	 * Returns a double value from string

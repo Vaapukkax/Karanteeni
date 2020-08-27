@@ -1,0 +1,8 @@
+main: net.karanteeni.core.KaranteeniCore
+name: KaranteeniCore
+version: 1.0
+author: Nuubles
+description: The Core plugin for other Karanteeni plugins
+api-version: 1.16
+depend: []
+database: true

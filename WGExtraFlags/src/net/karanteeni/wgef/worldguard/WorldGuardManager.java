@@ -6,6 +6,7 @@ import org.bukkit.World;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.flags.BooleanFlag;
 import com.sk89q.worldguard.protection.flags.DoubleFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.IntegerFlag;
@@ -26,8 +27,8 @@ public class WorldGuardManager {
 	}
 	
 	
-	public void addBooleanFlag(String name, String defaultState) {
-		flags.put(name, new StringFlag(name, defaultState));
+	public void addBooleanFlag(String name) {
+		flags.put(name, new BooleanFlag(name));
 	}
 	
 	

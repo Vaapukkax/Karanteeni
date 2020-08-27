@@ -13,7 +13,7 @@ import net.karanteeni.core.command.CommandResult.ResultType;
 import net.karanteeni.core.command.bare.BareBinaryComponent;
 import net.karanteeni.core.command.bare.BareCommand;
 import net.karanteeni.core.command.bare.BarePlayerComponent;
-import net.karanteeni.core.command.defaultcomponent.BinaryComponent.BINARY;
+import net.karanteeni.core.command.defaultcomponent.BinaryLoader.BINARY;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;

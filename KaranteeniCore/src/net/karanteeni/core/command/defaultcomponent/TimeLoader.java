@@ -23,7 +23,7 @@ import net.karanteeni.core.information.translation.TranslationContainer;
  * @author Nuubles
  *
  */
-public class TimeComponent extends CommandLoader implements TranslationContainer {
+public class TimeLoader extends CommandLoader implements TranslationContainer {
 	private static final Pattern DIGITS = Pattern.compile("^\\d+");
 	public final static String TIME_KEY = "core.time";
 	// allow malformed input
@@ -34,7 +34,7 @@ public class TimeComponent extends CommandLoader implements TranslationContainer
 	 * @param before should this be run before next component
 	 * @param strict can the code continue even if no valid time format given
 	 */
-	public TimeComponent(boolean before, boolean strict) {
+	public TimeLoader(boolean before, boolean strict) {
 		super(before);
 		this.strict = strict;
 	}
@@ -46,7 +46,7 @@ public class TimeComponent extends CommandLoader implements TranslationContainer
 	 * @param before load before the attached component
 	 * @param strict can the code continue even if no valid time format given
 	 */
-	public TimeComponent(CommandLoader loader, boolean before, boolean strict) {
+	public TimeLoader(CommandLoader loader, boolean before, boolean strict) {
 		super(loader, before);
 		this.strict = strict;
 	}

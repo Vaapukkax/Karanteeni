@@ -1,0 +1,6 @@
+main: net.karanteeni.bungee.KaranteeniBungeeCore
+name: KaranteeniBungee
+version: 1.0
+author: Nuubles
+description: Similiar core plugin to KaranteeniCore except for Bungee plugins
+api-version: 1.13

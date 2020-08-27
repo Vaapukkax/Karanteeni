@@ -1,0 +1,12 @@
+main: net.karanteeni.tester.TesterMain
+name: KaranteeniPluginTester
+version: 1.0
+author: Nuubles
+description: The Core plugin for other Karanteeni plugins
+api-version: 1.16
+depend: [KaranteeniCore]
+softdepend: [WorldEdit, WorldGuard]
+
+permissions:
+  hello.world:
+    description: prints hello world to the console

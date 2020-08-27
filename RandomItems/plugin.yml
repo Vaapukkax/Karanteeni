@@ -1,0 +1,7 @@
+main: net.karanteeni.randomitems.RandomItems
+name: RandomItems
+version: 1.0
+author: Nuubles
+description: jouluballit
+api-version: 1.14
+depend: []

@@ -66,11 +66,12 @@ public class KaranteeniPerms extends KaranteeniPlugin {
 	
 	@Override
 	public void onEnable() {
-		try {
+		Bukkit.getLogger().log(Level.WARNING, "This is a stabilized build, please finalize the plugin soon");
+		/*try {
 			this.playerModel = new PlayerModel(this);
 			BungeeGroupBuilder builder = new BungeeGroupBuilder();
-			getServer().getMessenger().registerOutgoingPluginChannel(this, "karanteeniperms:groups");
-			getServer().getMessenger().registerIncomingPluginChannel(this, "karanteeniperms:groups", builder);
+			//getServer().getMessenger().registerOutgoingPluginChannel(this, "karanteeniperms:groups");
+			//getServer().getMessenger().registerIncomingPluginChannel(this, "karanteeniperms:groups", builder);
 			this.groupList = new GroupList(this, builder);
 		} catch (Exception e) {
 			Bukkit.getLogger().log(Level.SEVERE, 
@@ -78,7 +79,7 @@ public class KaranteeniPerms extends KaranteeniPlugin {
 			
 			this.getPluginLoader().disablePlugin(this); //Disable this plugin to prevent further damage!
 			return;
-		}
+		}*/
 		
 		registerEvents();
 		registerCommands();
