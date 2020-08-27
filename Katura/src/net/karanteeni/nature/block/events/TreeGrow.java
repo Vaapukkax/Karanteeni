@@ -3,7 +3,7 @@ package net.karanteeni.nature.block.events;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,8 +11,8 @@ import org.bukkit.event.world.StructureGrowEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 import net.karanteeni.nature.Katura;
-import net.minecraft.server.v1_16_R1.PacketPlayOutWorldParticles;
-import net.minecraft.server.v1_16_R1.Particles;
+import net.minecraft.server.v1_16_R2.PacketPlayOutWorldParticles;
+import net.minecraft.server.v1_16_R2.Particles;
 
 public class TreeGrow implements Listener{
 

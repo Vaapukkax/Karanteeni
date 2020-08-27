@@ -72,7 +72,6 @@ public class TesterMain extends KaranteeniPlugin {
 	
 	
 	private void registerCommands() {
-		
 		HelloWorld helloWorld = new HelloWorld(this);
 		helloWorld.setPermission("hello.world");
 		helloWorld.register();
@@ -124,7 +123,7 @@ public class TesterMain extends KaranteeniPlugin {
 	private void registerEvents() {
 		getServer().getPluginManager().registerEvents(new LeverSound(), this);
 		getServer().getPluginManager().registerEvents(new RedstoneLampSound(), this);
-	}
+  }
 	
 	
 	public CakeEvent getCakeEvent() {

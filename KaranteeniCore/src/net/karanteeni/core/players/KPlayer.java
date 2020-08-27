@@ -266,6 +266,10 @@ public class KPlayer implements Listener {
 	public Object setCacheData(final NamespacedKey key, final Object data) {
 		return playerData.put(key, new SimpleEntry<Object,Boolean>(data,true));
 	}
+
+	public Object removeCacheData(final NamespacedKey key) {
+		return playerData.remove(key);
+	}
 	
 	
 	/**
@@ -277,7 +281,11 @@ public class KPlayer implements Listener {
 	 */
 	public Object setCacheData(final KaranteeniPlugin plugin, final String key, final Object data) {
 		return playerData.put(new NamespacedKey(plugin, key), new SimpleEntry<Object,Boolean>(data,true));
-	}	
+	}
+
+	public Object removeCacheData(final KaranteeniPlugin plugin, final String key) {
+		return removeCacheData(new NamespacedKey(plugin, key));
+	}
 	
 	
 	/**

@@ -19,7 +19,7 @@ import net.karanteeni.karanteeniperms.KaranteeniPerms;
  */
 public class PermissionPlayer {
 	private final static String GROUP_DATA_KEY = "GROUP_DATA";
-	private final static String GROUP_KEY = "GROUP";
+	public final static String GROUP_KEY = "GROUP";
 	private final KaranteeniPerms plugin = KaranteeniPerms.getPlugin(KaranteeniPerms.class);
 	private GroupData groupData;
 	private PermissionAttachment pAttachment = null;

@@ -43,11 +43,11 @@ public class GroupList {
 			this.groups.put(g.getID(), g);
 		}
 		
-		List<BungeeGroup> bungeeGroups = builder.requestBungeeGroupData();
+		/*List<BungeeGroup> bungeeGroups = builder.requestBungeeGroupData();
 		// put all of the groups to the map
 		for(BungeeGroup g : bungeeGroups) {
 			this.bungeeGroups.put(g.getID(), g);
-		}
+		} */
 	}
 	
 	
@@ -103,14 +103,14 @@ public class GroupList {
 	 * and then refreshes players bungeegroups from spigot side
 	 */
 	public void refreshBungeeGroups() throws IOException {
-		BungeeGroupBuilder builder = new BungeeGroupBuilder();
+		/*BungeeGroupBuilder builder = new BungeeGroupBuilder();
 		List<BungeeGroup> bungeeGroups = builder.requestBungeeGroupData();
 		this.bungeeGroups.clear();
 		
 		// put all of the groups to the map
 		for(BungeeGroup g : bungeeGroups) {
 			this.bungeeGroups.put(g.getID(), g);
-		}
+		} */
 		
 		// TODO refresh PermissionPlayers
 	}

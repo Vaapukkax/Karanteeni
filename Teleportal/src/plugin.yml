@@ -1,0 +1,39 @@
+main: net.karanteeni.teleportal.Teleportal
+name: Teleportal
+version: 1.0
+author: Nuubles
+description: Manages teleportation extensions such as portals and warps 
+api-version: 1.16
+depend: [KaranteeniCore]
+
+permissions:
+  #all permissions
+  teleportal.warp.edit.create:
+    description: create a new warp
+  teleportal.warp.edit.rename:
+    description: rename an existing warp
+  teleportal.warp.edit.move:
+    description: move warp to another location
+  teleportal.warp.edit.delete:
+    description: deletes an existing warp
+  teleportal.warp.edit.permission:
+    description: set permission to use warp
+  teleportal.warp.use:
+    description: teleport to a warp
+  teleportal.warp.send:
+    description: teleport another player to this warp
+    
+  teleportal.spawn.teleport.self:
+    description: teleport to this worlds spawn location
+  teleportal.spawn.teleport.other:
+    description: teleport to this worlds spawn location
+  teleportal.spawn.set:
+    description: set the spawn location of this world
+  teleportal.spawn.delete:
+    description: delets the spawn location of this world
+  teleportal.noobspawn.set:
+    description: sets the first join spawn
+  teleportal.respawn.delete:
+    description: delete the respawn location
+  teleportal.respawn.set:
+    description: set the respawn location

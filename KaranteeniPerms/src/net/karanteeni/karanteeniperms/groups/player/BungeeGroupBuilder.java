@@ -38,7 +38,7 @@ public class BungeeGroupBuilder implements PluginMessageListener {
 		
 		// wait until response
 		long requestStartTime = System.currentTimeMillis();
-		try {
+		/*try {
 			while((loadedBungeeGroups == null || loadedBungeeGroups.isEmpty()) && 
 					System.currentTimeMillis() - requestStartTime < 10000) {
 				wait(10000l - (System.currentTimeMillis() - requestStartTime)); // wait up to 10 seconds for response
@@ -46,7 +46,7 @@ public class BungeeGroupBuilder implements PluginMessageListener {
 				if(loadedBungeeGroups == null || loadedBungeeGroups.isEmpty())
 					throw new IOException("Failed to retrieve data from bungee");
 			}
-		} catch(InterruptedException e) {}
+		} catch(InterruptedException e) {} */
 		
 		// send the loaded groups and clear memory
 		List<BungeeGroup> loadedGroups = loadedBungeeGroups;

@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -34,7 +34,7 @@ public class JoinEvent implements Listener{
 			Bukkit.getLogger().log(Level.SEVERE, "Could not load player permissions for " + event.getUniqueId().toString());
 			return;
 		}
-		
+
 		perms.getPlayerModel().loadPermissionPlayerData(event.getUniqueId());
 		
 		kp.addPlayerJoinModifier(EventPriority.LOW, this::setPlayerData);

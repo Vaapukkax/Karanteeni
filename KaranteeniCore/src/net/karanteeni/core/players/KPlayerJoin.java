@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.UUID;
+
+import org.apache.logging.log4j.core.net.Priority;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -99,7 +101,7 @@ public class KPlayerJoin implements Listener{
 	 * Sets the player to the players data holder class
 	 * @param event player joined server
 	 */
-	@EventHandler
+	@EventHandler (priority = EventPriority.MONITOR)
 	private void onLogin(PlayerLoginEvent event) {
 		KPlayer kp = KPlayer.getKPlayer(event.getPlayer());
 		if(kp == null) return;
