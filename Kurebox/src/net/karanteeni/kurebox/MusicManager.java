@@ -135,6 +135,7 @@ public class MusicManager implements TranslationContainer {
 		player.stopSound(Sound.MUSIC_DISC_MALL, 	SoundCategory.MASTER);
 		player.stopSound(Sound.MUSIC_DISC_STAL, 	SoundCategory.MASTER);
 		player.stopSound(Sound.MUSIC_DISC_STRAD, 	SoundCategory.MASTER);
+		player.stopSound(Sound.MUSIC_DISC_PIGSTEP, 	SoundCategory.MASTER);
 	}
 	
 	
@@ -168,7 +169,7 @@ public class MusicManager implements TranslationContainer {
 	 * @param pitch pitch of music
 	 */
 	public void playMusic(final Player player, final Sound music, final float pitch) {
-		player.playSound(player.getLocation(), music, SoundCategory.MASTER, 10000000, pitch);
+		player.playSound(player.getLocation().add(0, 10000, 0), music, SoundCategory.MASTER, 10000000, pitch);
 		
 		// display the played music for player
 		if(displayActionbar)

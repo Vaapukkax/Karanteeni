@@ -21,12 +21,12 @@ import net.karanteeni.nature.entity.events.EntitySpawn;
 import net.karanteeni.nature.entity.events.ExplosionEffects;
 import net.karanteeni.nature.entity.events.FeedSheep;
 import net.karanteeni.nature.entity.events.HungerPreventer;
+import net.karanteeni.nature.entity.events.IronGolemHit;
 import net.karanteeni.nature.entity.events.OnLightning;
 import net.karanteeni.nature.entity.events.SpreadCreeperExplosion;
 import net.karanteeni.nature.external_api.CoreProtectAccess;
 import net.karanteeni.nature.sit.SitArmorstandManager;
 import net.karanteeni.nature.sit.SitCommand;
-import net.karanteeni.nature.treemanager.TreeGrowEvent;
 import net.karanteeni.nature.worldguard.WorldGuardManager;
 
 public class Katura extends KaranteeniPlugin {
@@ -118,7 +118,8 @@ public class Katura extends KaranteeniPlugin {
 			getServer().getPluginManager().registerEvents(new SpreadCreeperExplosion(), this);
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.SIT.toString()))
 			getServer().getPluginManager().registerEvents(new SitArmorstandManager(), this);
-		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.IRON_GOLEM_SCARES.toString()))
+			getServer().getPluginManager().registerEvents(new IronGolemHit(), this);
 		
 		//Long config lists, create last
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.ENTITY_CARRY.toString()))
@@ -133,8 +134,9 @@ public class Katura extends KaranteeniPlugin {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.HUNGER_MODIFICATION.toString()))
 			getServer().getPluginManager().registerEvents(new HungerPreventer(), this);
 		
+		
 		// TODO FIX REGISTEr
-		this.getServer().getPluginManager().registerEvents(new TreeGrowEvent(), this);
+		//this.getServer().getPluginManager().registerEvents(new TreeGrowEvent(), this);
 	}
 	
 	
@@ -230,7 +232,8 @@ public class Katura extends KaranteeniPlugin {
 		HUNGER_MODIFICATION,
 		SET_SPAWNER,
 		ENTITY_CARRY,
-		SIT
+		SIT,
+		IRON_GOLEM_SCARES
 	}
 }
 

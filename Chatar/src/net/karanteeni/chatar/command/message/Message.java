@@ -10,14 +10,11 @@ import net.karanteeni.chatar.events.custom.PlayerMessageEvent;
 import net.karanteeni.core.command.CommandChainer;
 import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.command.CommandResult.ResultType;
+import net.karanteeni.core.information.ChatColor;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.translation.TranslationContainer;
 
 public class Message extends CommandChainer implements TranslationContainer {
-	private static char[] COLORS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-	private static char[] FORMATS = {'o', 'n', 'm', 'r', 'l'};
-	private static char RANDOM = 'k';
-	
 	public Message() {
 		super(Chatar.getPlugin(Chatar.class), 
 				"message", 
@@ -54,23 +51,24 @@ public class Message extends CommandChainer implements TranslationContainer {
 		}
 		
 		
-		String message = args[1];
+		String message;
+		StringBuilder builder = new StringBuilder(args[1]);
 		// format the args into a message
 		for(int i = 2; i < args.length; ++i) {
-			message += " " + args[i]; 
+			builder.append(" ");
+			builder.append(args[i]); 
 		}
+		message = builder.toString();
 		
-		// set message colors
+		// translate color codes
 		if(sender.hasPermission("chatar.message.color"))
-			for(char c : COLORS)
-				message = message.replace("&"+c, "§"+c);
-		// set message format
+			message = ChatColor.translateColor(message);
 		if(sender.hasPermission("chatar.message.format"))
-			for(char c : FORMATS)
-				message = message.replace("&"+c, "§"+c);
-		// set message random chars
+			message = ChatColor.translateFormat(message);
 		if(sender.hasPermission("chatar.message.magic"))
-			message = message.replace("&"+RANDOM, "§"+RANDOM);
+			message = ChatColor.translateMagic(message);
+		if(sender.hasPermission("chatar.message.rgb"))
+			message = ChatColor.translateHexColorCodes(message);
 		
 		// convert the message to basecomponent
 		/*BaseComponent msg = new TextComponent(TextComponent.fromLegacyText(message));

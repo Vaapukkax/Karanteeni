@@ -1,20 +1,29 @@
 package net.karanteeni.utilika;
 
 import java.util.Arrays;
+import org.bukkit.Bukkit;
 import net.karanteeni.core.KaranteeniPlugin;
 import net.karanteeni.utilika.block.setsign.LineLoader;
 import net.karanteeni.utilika.block.setsign.SetSignCommand;
 import net.karanteeni.utilika.block.setsign.SetSignComponent;
+import net.karanteeni.utilika.calculator.CalculatorCommand;
 import net.karanteeni.utilika.events.EasyBridge;
+import net.karanteeni.utilika.external.CoreProtectAccessor;
 import net.karanteeni.utilika.inventory.InventoryTweaks;
+import net.karanteeni.utilika.inventory.InventoryUtilities;
 import net.karanteeni.utilika.items.RepairCommand;
 import net.karanteeni.utilika.items.setname.SetNameCommand;
 import net.karanteeni.utilika.items.setname.SetNameComponent;
+import net.karanteeni.utilika.structure.PuddleSplash;
+import net.karanteeni.utilika.structure.builder.BuildersWand;
+import net.karanteeni.utilika.structure.builder.WandBuilder;
 import net.karanteeni.utilika.structure.elevator.Elevator;
 import net.karanteeni.utilika.worldguard.WorldGuardManager;
 
 public class Utilika extends KaranteeniPlugin {
 	private WorldGuardManager wgm;
+	private InventoryUtilities invUtil;
+	private CoreProtectAccessor coreProtectAccessor;
 	private static String KEY_PREFIX = "Plugin-functionality.";
 	
 	public Utilika() {
@@ -24,6 +33,7 @@ public class Utilika extends KaranteeniPlugin {
 	
 	@Override
 	public void onLoad() {
+		invUtil = new InventoryUtilities();
 		try {
 			wgm = new WorldGuardManager();
 		} catch (NoClassDefFoundError e) {
@@ -35,8 +45,10 @@ public class Utilika extends KaranteeniPlugin {
 	
 	@Override
 	public void onEnable() {
+		enableDependencies();
 		registerEvents();
 		registerCommands();
+		registerRecipies();
 		boolean save = false;
 		//Check that all possible values are set in the config
 		for(KEYS key : KEYS.values()) {
@@ -57,6 +69,29 @@ public class Utilika extends KaranteeniPlugin {
 	}
 	
 	
+	private void registerRecipies() {
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.BUILDERS_WAND.toString()))
+			Bukkit.addRecipe(BuildersWand.getRecipe());
+	}
+	
+	
+	private void enableDependencies() {
+		if(this.getServer().getPluginManager().getPlugin("CoreProtect") != null) {
+			this.coreProtectAccessor = new CoreProtectAccessor(this);
+		}
+	}
+	
+	
+	public CoreProtectAccessor getCoreProtectAccessor() {
+		return this.coreProtectAccessor;
+	}
+	
+	
+	public InventoryUtilities getInventoryUtilities() {
+		return invUtil;
+	}
+	
+	
 	public WorldGuardManager getWorldGuardManager() {
 		return this.wgm;
 	}
@@ -68,11 +103,19 @@ public class Utilika extends KaranteeniPlugin {
 		}
 		
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.INVENTORY_TWEAKS.toString())) {
-			getServer().getPluginManager().registerEvents(new InventoryTweaks(), this);
+			getServer().getPluginManager().registerEvents(new InventoryTweaks(this), this);
 		}
 		
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.EASYBRIDGE.toString())) {
 			getServer().getPluginManager().registerEvents(new EasyBridge(), this);
+		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.BUILDERS_WAND.toString())) {
+			getServer().getPluginManager().registerEvents(new WandBuilder(this), this);
+		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.THROWABLE_PUDDLE.toString())) {
+			getServer().getPluginManager().registerEvents(new PuddleSplash(this), this);
 		}
 	}
 	
@@ -109,6 +152,12 @@ public class Utilika extends KaranteeniPlugin {
 			linel.setLoader(sco);
 			snc.register();
 		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.CALCULATOR.toString())) {
+			CalculatorCommand calc = new CalculatorCommand(this);
+			calc.setPermission("utilika.calculate");
+			calc.register();
+		}
 	}
 	
 	
@@ -122,6 +171,9 @@ public class Utilika extends KaranteeniPlugin {
 		INVENTORY_TWEAKS,
 		SETNAME,
 		SETSIGN,
-		EASYBRIDGE
+		EASYBRIDGE,
+		BUILDERS_WAND,
+		THROWABLE_PUDDLE,
+		CALCULATOR
 	}
 }

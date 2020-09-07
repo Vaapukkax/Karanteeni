@@ -1,5 +1,6 @@
 package net.karanteeni.core.information;
 
+import java.util.LinkedList;
 import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
@@ -14,7 +15,6 @@ import net.karanteeni.core.information.bossbar.TimedBossBar;
 import net.karanteeni.core.information.sounds.SoundType;
 import net.karanteeni.core.information.text.TextUtil;
 import net.md_5.bungee.api.chat.BaseComponent;
-
 import net.minecraft.server.v1_16_R2.IChatBaseComponent;
 import net.minecraft.server.v1_16_R2.IChatBaseComponent.ChatSerializer;
 import net.minecraft.server.v1_16_R2.PacketPlayOutTitle;
@@ -26,7 +26,8 @@ public class Messager {
 	 * Sends a message to a player with sound
 	 * @param player
 	 */
-	public void sendMessage(final CommandSender player, final SoundType sound, final String prefix, final String message) {
+	public void sendMessage(final CommandSender player, final SoundType sound, final String prefix, String message) {
+		message = ChatColor.translateHexColorCodes(message);
 		player.sendMessage(prefix + message);
 		if(player instanceof Player)
 			KaranteeniCore.getSoundHandler().playSound((Player)player, sound);
@@ -37,7 +38,8 @@ public class Messager {
 	 * Sends a message to a player with sound
 	 * @param player
 	 */
-	public void sendMessage(final CommandSender player, final SoundType sound,final  String message) {
+	public void sendMessage(final CommandSender player, final SoundType sound, String message) {
+		message = ChatColor.translateHexColorCodes(message);
 		player.sendMessage(message);
 		if(player instanceof Player)
 			KaranteeniCore.getSoundHandler().playSound((Player)player, sound);
@@ -51,7 +53,8 @@ public class Messager {
 	 * @param prefix
 	 * @param message
 	 */
-	public void sendMessage(final List<Player> players, final SoundType sound, final String prefix, final String message) {
+	public void sendMessage(final List<Player> players, final SoundType sound, final String prefix, String message) {
+		message = ChatColor.translateHexColorCodes(message);
 		for(Player player : players) {
 			player.sendMessage(prefix + message);
 			KaranteeniCore.getSoundHandler().playSound(player, sound);
@@ -65,7 +68,8 @@ public class Messager {
 	 * @param sound
 	 * @param message
 	 */
-	public void sendMessage(final List<Player> players, final SoundType sound, final String message) {
+	public void sendMessage(final List<Player> players, final SoundType sound, String message) {
+		message = ChatColor.translateHexColorCodes(message);
 		for(Player player : players) {
 			player.sendMessage(message);
 			KaranteeniCore.getSoundHandler().playSound(player, sound);
@@ -257,8 +261,13 @@ public class Messager {
 			boolean animated, 
 			final BossBar bar, 
 			List<String> texts) {
+		List<String> animation = new LinkedList<String>();
+		for(String text : texts) {
+			animation.add(ChatColor.translateHexColorCodes(text));
+		}
+		
 		//Luodaan ajastettu bossbar
-		TimedBossBar tbar = new TimedBossBar(player, bar, stay, texts, animated);
+		TimedBossBar tbar = new TimedBossBar(player, bar, stay, animation, animated);
 		//Sammutetaan ajastettu bossbar
 		KaranteeniCore.getTimerHandler().registerTimer(tbar, updateFreq);
 		
@@ -283,8 +292,13 @@ public class Messager {
 			boolean animated, 
 			final BossBar bar, 
 			List<String> texts) {
+		List<String> animation = new LinkedList<String>();
+		for(String text : texts) {
+			animation.add(ChatColor.translateHexColorCodes(text));
+		}
+		
 		//Luodaan ajastettu bossbar
-		TimedBossBar tbar = new TimedBossBar(players, bar, stay, texts, animated);
+		TimedBossBar tbar = new TimedBossBar(players, bar, stay, animation, animated);
 		//Sammutetaan ajastettu bossbar
 		KaranteeniCore.getTimerHandler().registerTimer(tbar, updateFreq);
 		
@@ -306,7 +320,8 @@ public class Messager {
 			final float stay, 
 			int updateFreq, 
 			boolean animated, 
-			final String text) {
+			String text) {
+		text = ChatColor.translateHexColorCodes(text);
 		
 		if(sender instanceof Player) {
 			BossBar bar = Bukkit.createBossBar(text, BarColor.YELLOW, BarStyle.SOLID);

@@ -3,6 +3,13 @@ name: KaranteeniCore
 version: 1.0
 author: Nuubles
 description: The Core plugin for other Karanteeni plugins
-api-version: 1.15
+api-version: 1.16
 depend: []
 database: true
+permissions:
+  karanteenicore.translation.set:
+    description: sets the translation
+  karanteenicore.translation.get:
+    description: displays the current translation
+  karanteenicore.clear-player-cache:
+    description: clears the cache of player and kicks them 

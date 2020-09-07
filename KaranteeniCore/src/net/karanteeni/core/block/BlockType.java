@@ -124,7 +124,9 @@ public class BlockType {
 			Material.DARK_OAK_LOG,
 			Material.JUNGLE_LOG,
 			Material.OAK_LOG,
-			Material.SPRUCE_LOG
+			Material.SPRUCE_LOG,
+			Material.CRIMSON_STEM,
+			Material.WARPED_STEM
 	);
 	
 	
@@ -137,7 +139,9 @@ public class BlockType {
 			Material.STRIPPED_DARK_OAK_LOG,
 			Material.STRIPPED_JUNGLE_LOG,
 			Material.STRIPPED_OAK_LOG,
-			Material.STRIPPED_SPRUCE_LOG
+			Material.STRIPPED_SPRUCE_LOG,
+			Material.STRIPPED_CRIMSON_STEM,
+			Material.STRIPPED_WARPED_STEM
 	);
 	
 	
@@ -150,7 +154,9 @@ public class BlockType {
 			Material.DARK_OAK_PLANKS,
 			Material.JUNGLE_PLANKS,
 			Material.OAK_PLANKS,
-			Material.SPRUCE_PLANKS
+			Material.SPRUCE_PLANKS,
+			Material.CRIMSON_PLANKS,
+			Material.WARPED_PLANKS
 	);
 	
 	
@@ -163,7 +169,9 @@ public class BlockType {
 			Material.DARK_OAK_TRAPDOOR,
 			Material.JUNGLE_TRAPDOOR,
 			Material.OAK_TRAPDOOR,
-			Material.SPRUCE_TRAPDOOR
+			Material.SPRUCE_TRAPDOOR,
+			Material.WARPED_TRAPDOOR,
+			Material.CRIMSON_TRAPDOOR
 	);
 	
 	
@@ -177,7 +185,9 @@ public class BlockType {
 			Material.JUNGLE_BUTTON,
 			Material.OAK_BUTTON,
 			Material.SPRUCE_BUTTON,
-			Material.STONE_BUTTON
+			Material.STONE_BUTTON,
+			Material.CRIMSON_BUTTON,
+			Material.WARPED_BUTTON
 	);
 	
 	/**
@@ -189,7 +199,9 @@ public class BlockType {
 			Material.DARK_OAK_DOOR,
 			Material.JUNGLE_DOOR,
 			Material.OAK_DOOR,
-			Material.SPRUCE_DOOR
+			Material.SPRUCE_DOOR,
+			Material.CRIMSON_DOOR,
+			Material.WARPED_DOOR
 	);
 	
 	
@@ -202,7 +214,9 @@ public class BlockType {
 			Material.DARK_OAK_FENCE_GATE,
 			Material.JUNGLE_FENCE_GATE,
 			Material.OAK_FENCE_GATE,
-			Material.SPRUCE_FENCE_GATE
+			Material.SPRUCE_FENCE_GATE,
+			Material.CRIMSON_FENCE_GATE,
+			Material.WARPED_FENCE_GATE
 	);
 	
 	
@@ -215,7 +229,9 @@ public class BlockType {
 			Material.DARK_OAK_FENCE,
 			Material.JUNGLE_FENCE,
 			Material.OAK_FENCE,
-			Material.SPRUCE_FENCE
+			Material.SPRUCE_FENCE,
+			Material.CRIMSON_FENCE,
+			Material.SPRUCE_FENCE_GATE
 	);
 	
 	
@@ -256,7 +272,9 @@ public class BlockType {
 			Material.DARK_OAK_SIGN,
 			Material.JUNGLE_SIGN,
 			Material.OAK_SIGN,
-			Material.SPRUCE_SIGN
+			Material.SPRUCE_SIGN,
+			Material.CRIMSON_SIGN,
+			Material.WARPED_SIGN
 	);
 	
 	
@@ -269,7 +287,58 @@ public class BlockType {
 			Material.DARK_OAK_WALL_SIGN,
 			Material.JUNGLE_WALL_SIGN,
 			Material.OAK_WALL_SIGN,
-			Material.SPRUCE_WALL_SIGN
+			Material.SPRUCE_WALL_SIGN,
+			Material.WARPED_WALL_SIGN,
+			Material.CRIMSON_WALL_SIGN
+	);
+	
+	
+	public static final Set<Material> REPLACEABLE = EnumSet.of(
+			Material.AIR,
+			Material.CAVE_AIR,
+			Material.GRASS,
+			Material.WATER,
+			Material.LAVA,
+			Material.TALL_GRASS,
+			Material.FERN,
+			Material.LARGE_FERN,
+			Material.DEAD_BUSH,
+			Material.CRIMSON_ROOTS,
+			Material.WARPED_ROOTS,
+			Material.NETHER_SPROUTS,
+			Material.VINE,
+			Material.TALL_SEAGRASS,
+			Material.SEAGRASS,
+			Material.BRAIN_CORAL,
+			Material.BRAIN_CORAL_FAN,
+			Material.BRAIN_CORAL_WALL_FAN,
+			Material.BUBBLE_CORAL,
+			Material.BUBBLE_CORAL_FAN,
+			Material.BUBBLE_CORAL_WALL_FAN,
+			Material.FIRE_CORAL,
+			Material.FIRE_CORAL_FAN,
+			Material.FIRE_CORAL_WALL_FAN,
+			Material.HORN_CORAL,
+			Material.HORN_CORAL_FAN,
+			Material.HORN_CORAL_WALL_FAN,
+			Material.TUBE_CORAL,
+			Material.TUBE_CORAL_FAN,
+			Material.TUBE_CORAL_WALL_FAN,
+			Material.DEAD_BRAIN_CORAL,
+			Material.DEAD_BRAIN_CORAL_FAN,
+			Material.DEAD_BRAIN_CORAL_WALL_FAN,
+			Material.DEAD_BUBBLE_CORAL,
+			Material.DEAD_BUBBLE_CORAL_FAN,
+			Material.DEAD_BUBBLE_CORAL_WALL_FAN,
+			Material.DEAD_FIRE_CORAL,
+			Material.DEAD_FIRE_CORAL_FAN,
+			Material.DEAD_FIRE_CORAL_WALL_FAN,
+			Material.DEAD_HORN_CORAL,
+			Material.DEAD_HORN_CORAL_FAN,
+			Material.DEAD_HORN_CORAL_WALL_FAN,
+			Material.DEAD_TUBE_CORAL,
+			Material.DEAD_TUBE_CORAL_FAN,
+			Material.DEAD_TUBE_CORAL_WALL_FAN
 	);
 	
 	

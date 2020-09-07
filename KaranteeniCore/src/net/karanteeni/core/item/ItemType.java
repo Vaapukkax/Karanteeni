@@ -11,6 +11,7 @@ public class ItemType {
 	 * All picaxe type materials
 	 */
 	public static final Set<Material> PICKAXE = EnumSet.of(
+			Material.NETHERITE_PICKAXE,
 			Material.DIAMOND_PICKAXE,
 			Material.GOLDEN_PICKAXE,
 			Material.IRON_PICKAXE,
@@ -22,6 +23,7 @@ public class ItemType {
 	 * All shovel type materials
 	 */
 	public static final Set<Material> SHOVEL = EnumSet.of(
+			Material.NETHERITE_SHOVEL,
 			Material.DIAMOND_SHOVEL,
 			Material.GOLDEN_SHOVEL,
 			Material.IRON_SHOVEL,
@@ -33,6 +35,7 @@ public class ItemType {
 	 * All sword type materials
 	 */
 	public static final Set<Material> SWORD = EnumSet.of(
+			Material.NETHERITE_SWORD,
 			Material.DIAMOND_SWORD,
 			Material.GOLDEN_SWORD,
 			Material.IRON_SWORD,
@@ -44,6 +47,7 @@ public class ItemType {
 	 * All axe type materials
 	 */
 	public static final Set<Material> AXE = EnumSet.of(
+			Material.NETHERITE_AXE,
 			Material.DIAMOND_AXE,
 			Material.GOLDEN_AXE,
 			Material.IRON_AXE,
@@ -55,6 +59,7 @@ public class ItemType {
 	 * All hoe type materials
 	 */
 	public static final Set<Material> HOE = EnumSet.of(
+			Material.NETHERITE_HOE,
 			Material.DIAMOND_HOE,
 			Material.GOLDEN_HOE,
 			Material.IRON_HOE,

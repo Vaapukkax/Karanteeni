@@ -63,6 +63,10 @@ public class Teleporter {
 			z = 16 - z;
 		if(location.getX() < 0)
 			x = 16 - x;
+		if(z == 16)
+			z = 0;
+		if(x == 16)
+			x = 0;
 		
 		// check if the location in the chunk is safe
 		SAFENESS safeness = null;

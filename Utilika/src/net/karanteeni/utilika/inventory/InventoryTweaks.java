@@ -15,6 +15,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 import net.karanteeni.utilika.Utilika;
 
 public class InventoryTweaks implements Listener {
+	private Utilika plugin;
+	
+	
+	public InventoryTweaks(Utilika plugin) {
+		this.plugin = plugin;
+	}
+	
 	
 	@EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = false)
 	public void onItemBreak(PlayerItemBreakEvent event) {
@@ -47,7 +54,7 @@ public class InventoryTweaks implements Listener {
 				// replace the item only if the hand is empty
 				if(event.getPlayer().getInventory().getItemInMainHand() == null ||
 						event.getPlayer().getInventory().getItemInMainHand().getType() == Material.AIR)
-					searchAndReplace(event.getPlayer(), heldItemSlot_, type_, heldSlot_);
+					plugin.getInventoryUtilities().searchAndReplace(event.getPlayer(), heldItemSlot_, type_, heldSlot_);
 			}
 		};
 		
@@ -67,54 +74,14 @@ public class InventoryTweaks implements Listener {
 			if(event.getPlayer().getInventory().getItem(40) != null && 
 					!event.getPlayer().getInventory().getItem(40).getType().isBlock()) return;
 			
-			searchAndReplace(event.getPlayer(), 40, event.getPlayer().getInventory().getItemInOffHand().getType(), false);
+			plugin.getInventoryUtilities().searchAndReplace(event.getPlayer(), 40, event.getPlayer().getInventory().getItemInOffHand().getType(), false);
 		} else if(event.getHand().equals(EquipmentSlot.HAND)) {
 			// verify we're not modifying a block using item
 			if(event.getPlayer().getInventory().getItemInMainHand() != null && 
 					!event.getPlayer().getInventory().getItemInMainHand().getType().isBlock()) return;
 			
-			searchAndReplace(event.getPlayer(), event.getPlayer().getInventory().getHeldItemSlot(), 
+			plugin.getInventoryUtilities().searchAndReplace(event.getPlayer(), event.getPlayer().getInventory().getHeldItemSlot(), 
 					event.getPlayer().getInventory().getItemInMainHand().getType(), true);
 		}
-	}
-	
-
-	/**
-	 * Searches and replaces the item at the given slot with another item from inventory
-	 * @param player player in whose inventory the iten replacement will happen
-	 * @param slotId slot to replace
-	 * @param material item to search for
-	 */
-	public void searchAndReplace(Player player, int slotId, Material material, boolean heldItemSlot) {
-		if(slotId == -1) return;
-		
-		if(!player.hasPermission("utilika.easeinventory")) return;
-		
-		// loop all items in inventory
-		for(int i = 0; i <= 40; ++i) {
-			// if we're at the location to be replaced don't replace
-			if(i == slotId) continue;
-			
-			// check if the items found are similar
-			if(player.getInventory().getItem(i) != null && player.getInventory().getItem(i).getType() == material) {
-				ItemStack replacementStack = player.getInventory().getItem(i);
-				player.getInventory().setItem(i, null);
-				if(heldItemSlot)
-					player.getInventory().setItemInMainHand(replacementStack);
-				else
-					player.getInventory().setItem(slotId, replacementStack);
-				playDisplaceSound(player);
-				break;
-			}
-		}
-	}
-	
-	
-	/**
-	 * Plays the item displaced sound for player when items are empty or breaks and is replaced
-	 * @param player player to whom the sound is placed
-	 */
-	public void playDisplaceSound(Player player) {
-		player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_BOTTLE_THROW, 0.5f, 1.7f);
 	}
 }

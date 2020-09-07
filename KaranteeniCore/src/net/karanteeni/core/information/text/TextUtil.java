@@ -36,20 +36,24 @@ public class TextUtil {
 	}
 	
 	/**
+	 * Use ChatColor
 	 * Turns all &k to §k in the string
 	 * @param msg
 	 * @return
 	 */
+	@Deprecated
 	public static String formatMagic(String msg)
 	{
 		return msg.replace("&k", "§k");
 	}
 	
 	/**
+	 * Use ChatColor
 	 * Enables all format from text
 	 * @param msg
 	 * @return
 	 */
+	@Deprecated
 	public static String formatFormat(String msg)
 	{
 		msg = msg.replace("&o", "§o");
@@ -60,10 +64,12 @@ public class TextUtil {
 	}
 	
 	/**
+	 * Use ChatColor
 	 * Enables all colors from text
 	 * @param msg
 	 * @return
 	 */
+	@Deprecated
 	public static String formatColor(String msg)
 	{
 		msg = msg.replace("&0", "§0");

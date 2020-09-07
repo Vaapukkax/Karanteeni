@@ -1,0 +1,16 @@
+Plugin-functionality:
+  REPAIR: true
+  ELEVATOR: true
+  INVENTORY_TWEAKS: true
+  SETNAME: true
+  SETSIGN: true
+  EASYBRIDGE: false
+  BUILDERS_WAND: false
+Command:
+  repair:
+    aliases: []
+  setname:
+    aliases:
+    - nimeä
+  setsign:
+    aliases: []

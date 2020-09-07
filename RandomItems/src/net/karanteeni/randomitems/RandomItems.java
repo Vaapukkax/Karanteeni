@@ -1,61 +1,70 @@
 package net.karanteeni.randomitems;
 
-import java.util.HashMap;
-import java.util.Random;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
+import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.randomitems.events.FortuneCookieCrack;
+import net.karanteeni.randomitems.items.FortuneCookie;
 
-public class RandomItems extends JavaPlugin {
-	BukkitRunnable runnable = null;
+public class RandomItems extends KaranteeniPlugin {
+	private static String KEY_PREFIX = "Plugin-functionality.";
 	
-	@EventHandler
+	public RandomItems() {
+		super(true);
+	}
+	
+	@Override
+	public void onLoad() {
+
+	}
+	
+	
+	@Override
 	public void onEnable() {
-		runnable = new BukkitRunnable() {
-			Random random = new Random();
-			Material[] materials = Material.values();
-			Enchantment[] enchantments = Enchantment.values();
-			PotionEffectType[] effects = PotionEffectType.values();
-			
-			@Override
-			public void run() {
-				for(Player player : Bukkit.getOnlinePlayers()) {
-					try {
-						ItemStack item = new ItemStack(materials[random.nextInt(materials.length)], 1);
-						
-						if(item.getType() == Material.ENCHANTED_BOOK) {
-							Enchantment ench = enchantments[random.nextInt(enchantments.length)];
-							item.addEnchantment(ench, random.nextInt(ench.getMaxLevel()));
-						} else if (item.getType() == Material.POTION || item.getType() == Material.LINGERING_POTION || item.getType() == Material.SPLASH_POTION) {
-							PotionEffectType type = effects[random.nextInt(effects.length)];
-							PotionEffect effect = new PotionEffect(type, random.nextInt(4000), random.nextInt(3));
-							PotionMeta meta = (PotionMeta)item.getItemMeta();
-							meta.addCustomEffect(effect, true);
-							item.setItemMeta(meta);
-						}
-						
-						HashMap<Integer, ItemStack> items = player.getInventory().addItem(item);
-						player.updateInventory();
-						// drop all overflow items to ground
-						for(ItemStack item_ : items.values()) {
-							player.getLocation().getWorld().dropItem(player.getLocation(), item_);
-						}
-						
-					} catch(Exception e) {
-						Bukkit.broadcastMessage(player.getName() + " yritti saada itemiä muttei saanut :c");
-					}
-				}
+		registerEvents();
+		registerCommands();
+		registerRecipies();
+		boolean save = false;
+		//Check that all possible values are set in the config
+		for(KEYS key : KEYS.values()) {
+			if(!getSettings().isSet(KEY_PREFIX+key.toString())) {
+				getSettings().set(KEY_PREFIX+key.toString(), true);
+				save = true;
 			}
-		};
+		}
 		
-		runnable.runTaskTimer(this, 30l, 600l);
+		if(save)
+			saveSettings();
+	}
+	
+	
+	@Override
+	public void onDisable() {
+		
+	}
+	
+	
+	public void registerCommands() {
+		
+	}
+	
+	
+	public void registerEvents() {
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.FORTUNE_COOKIES.toString()))
+			getServer().getPluginManager().registerEvents(new FortuneCookieCrack(), this);
+	}
+	
+	
+	private void registerRecipies() {
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.FORTUNE_COOKIES.toString()))
+			Bukkit.addRecipe(FortuneCookie.getRecipe());
+	}
+	
+	
+	/**
+	 * Keys to access data in config. Which features of the plugin are enabled
+	 * @author Nuubles
+	 */
+	private static enum KEYS {
+		FORTUNE_COOKIES
 	}
 }

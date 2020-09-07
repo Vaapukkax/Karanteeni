@@ -254,7 +254,11 @@ public class EntityGrief implements Listener{
 			if(!pl.getConfig().getBoolean(tntExplosion))
 			{ event.blockList().clear(); return; }
 		case FIREBALL:
-			Fireball ball = (Fireball)event.getEntity();
+			Fireball ball = null;
+			if(event.getEntity() instanceof Fireball)
+				ball = (Fireball)event.getEntity();
+			else
+				return;
 			
 			if(!pl.getConfig().getBoolean(fireballGrief) && 
 					!(ball.getShooter() instanceof Ghast))

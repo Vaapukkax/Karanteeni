@@ -1,0 +1,8 @@
+main: net.karanteeni.wgef.WGEF
+name: WGExtraFlags
+version: 1.0
+author: Nuubles
+description: provdes extra flags to worldguard
+api-version: 1.16
+depend: [KaranteeniCore, WorldGuard]
+softdepend: [NoteBlockAPI]

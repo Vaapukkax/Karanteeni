@@ -27,7 +27,11 @@ import net.karanteeni.chatar.component.permissioncomponents.LocalGroupPrefix;
 import net.karanteeni.chatar.component.permissioncomponents.LocalGroupShortName;
 import net.karanteeni.chatar.component.permissioncomponents.LocalGroupSuffix;
 import net.karanteeni.chatar.component.preset.PlayerComponent;
+import net.karanteeni.chatar.events.ChatFormatter;
 import net.karanteeni.chatar.events.JoinQuitMessages;
+import net.karanteeni.chatar.events.MessageSound;
+import net.karanteeni.chatar.events.PlayerTagged;
+import net.karanteeni.chatar.events.ReplaceText;
 import net.karanteeni.chatar.events.custom.PlayerChatEvent;
 import net.karanteeni.chatar.events.custom.PlayerMessageEvent;
 import net.karanteeni.chatar.events.custom.implementing.RemoveIgnoringRecipients;
@@ -136,10 +140,14 @@ public class Chatar extends KaranteeniPlugin {
 	
 	
 	private void registerEvents() {
+		this.getServer().getPluginManager().registerEvents(new ReplaceText(this), this);
+		this.getServer().getPluginManager().registerEvents(new MessageSound(this), this);
 		PlayerChatEvent.register(this);
 		PlayerMessageEvent.register(this);
 		this.getServer().getPluginManager().registerEvents(new JoinQuitMessages(this), this);
 		this.getServer().getPluginManager().registerEvents(new RemoveIgnoringRecipients(this), this);
+		this.getServer().getPluginManager().registerEvents(new ChatFormatter(), this);
+		this.getServer().getPluginManager().registerEvents(new PlayerTagged(this), this);
 	}
 	
 	

@@ -10,6 +10,7 @@ import net.karanteeni.core.command.CommandResult;
 import net.karanteeni.core.command.CommandResult.ResultType;
 import net.karanteeni.core.command.bare.BareCommand;
 import net.karanteeni.core.command.bare.BarePlayerComponent;
+import net.karanteeni.core.information.ChatColor;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.karanteenials.Karanteenials;
 
@@ -23,6 +24,7 @@ public class NickCommand extends BareCommand {
 	private static char[] FORMATS = {'o', 'n', 'm', 'r', 'l'};
 	private static char RANDOM = 'k';
 	private static char[] ILLEGAL_CHARACTERS = {'@', ',', ':', ';', '%'};
+	private static int NICK_LENGTH_LIMIT = 128;
 	private BarePlayerComponent playerComponent = new BarePlayerComponent(false);
 	
 	public NickCommand() {
@@ -61,6 +63,11 @@ public class NickCommand extends BareCommand {
 			} else {
 				if(!sender.hasPermission("karanteenials.nick.change.other")) return CommandResult.NO_PERMISSION;
 				String nick = formatNick(sender, args[1]);
+				
+				// Limit length to 128 characters
+				if(nick.length() > NICK_LENGTH_LIMIT)
+					nick = nick.substring(0, NICK_LENGTH_LIMIT);
+				
 				// set a new nickname
 				NickSetEvent event = new NickSetEvent(players.get(0).getUniqueId(), nick, sender);
 				Bukkit.getPluginManager().callEvent(event);
@@ -95,16 +102,15 @@ public class NickCommand extends BareCommand {
 	 * @return
 	 */
 	private String formatNick(CommandSender sender, String name) {
+		if(sender.hasPermission("karanteenials.nick.rgb"))
+			name = ChatColor.translateHexColorCodes(name);
 		if(sender.hasPermission("karanteenials.nick.color"))
-		for(char c : COLORS)
-			name = name.replace("&"+c, "§"+c);
+			name = ChatColor.translateColor(name);
 		if(sender.hasPermission("karanteenials.nick.format"))
-		// set message format
-		for(char c : FORMATS)
-			name = name.replace("&"+c, "§"+c);
-		// set message random chars
+			name = ChatColor.translateFormat(name);
 		if(sender.hasPermission("karanteenials.nick.scramble"))
-		name = name.replace("&"+RANDOM, "§"+RANDOM);
+			name = ChatColor.translateMagic(name);
+		
 		
 		// remove illegal characters
 		for(char c : ILLEGAL_CHARACTERS)

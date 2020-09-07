@@ -77,6 +77,8 @@ permissions:
 
   karanteenials.nick.color:
     description: allows to use colors in nickname
+  karanteenials.nick.rgb:
+    description: allows to use colors in nickname
   karanteenials.nick.change.self:
     description: allows to change own nickname
   karanteenials.nick.change.other:

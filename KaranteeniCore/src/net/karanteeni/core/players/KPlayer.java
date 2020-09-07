@@ -10,10 +10,12 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import net.karanteeni.core.KaranteeniCore;
@@ -191,6 +193,17 @@ public class KPlayer implements Listener {
 	
 	
 	/**
+	 * Clears the cache held by KPlayer but may not clear all cache data in
+	 * other places
+	 * @param uuid UUID of player to remove the cache
+	 * @return cached data
+	 */
+	public HashMap<NamespacedKey, Entry<Object,Boolean>> clearCache() {
+		return cache.remove(uuid);
+	}
+	
+	
+	/**
 	 * Fades in a red screen effect to player
 	 * @param percentage
 	 */
@@ -216,6 +229,49 @@ public class KPlayer implements Listener {
 		(new RedScreenTint()).setBorder(player, percentage);
 	}
 
+	
+	/**
+    * Removes the items of type from an inventory.
+    * @param inventory Inventory to modify
+    * @param type The type of Material to remove
+    * @param amount The amount to remove, or {@link Integer.MAX_VALUE} to remove all
+    * @return The amount of items that could not be removed, 0 for success, or -1 for failures
+    */
+    public int removeItems(Material type, int amount) {
+        if(type == null)
+            return -1;       
+        if (amount <= 0)
+            return -1;
+        Inventory inventory = this.player.getInventory();
+        if (amount == Integer.MAX_VALUE) {
+            inventory.remove(type);
+            return 0;
+        }
+ 
+        HashMap<Integer,ItemStack> retVal = inventory.removeItem(new ItemStack(type,amount));
+ 
+        int notRemoved = 0;
+        for(ItemStack item : retVal.values()) {
+            notRemoved += item.getAmount();
+        }
+        return notRemoved;
+    }
+    
+    
+    /**
+     * Retrieves the amount of specified items in the players inventory
+     * @param type
+     * @return
+     */
+    public int getAmountOfType(Material type) {
+    	Inventory inventory = player.getInventory();
+    	int count = 0;
+    	for(ItemStack item : inventory.all(type).values()) {
+    		count += item.getAmount();
+    	}
+    	return count;
+    }
+	
 	
 	/**
 	 * Check if this player is invincible

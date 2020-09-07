@@ -74,7 +74,8 @@ public class MusicMenu extends InventoryBase<Kurebox> {
 			Sound.MUSIC_DISC_STAL,
 			Sound.MUSIC_DISC_STRAD,
 			Sound.MUSIC_DISC_WAIT,
-			Sound.MUSIC_DISC_WARD
+			Sound.MUSIC_DISC_WARD,
+			Sound.MUSIC_DISC_PIGSTEP
 		}), 1, 3);
 		this.setAction(new RandomSongMusicItem(
 				setItemName(new ItemStack(random, 1), "icon.random"), plugin.getMusicManager().getSongs()), 4, 3);

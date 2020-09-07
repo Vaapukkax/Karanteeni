@@ -2,11 +2,11 @@ package net.karanteeni.karanteenials.player.misc;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import net.karanteeni.core.information.ChatColor;
 import net.karanteeni.core.information.sounds.Sounds;
 import net.karanteeni.core.information.text.Prefix;
 import net.karanteeni.core.information.translation.TranslationContainer;
 import net.karanteeni.karanteenials.Karanteenials;
-import net.md_5.bungee.api.ChatColor;
 
 public class NickLimitLength implements Listener, TranslationContainer {
 	private int maxLength;
@@ -33,7 +33,7 @@ public class NickLimitLength implements Listener, TranslationContainer {
 	
 	@EventHandler
 	public void nickSet(NickSetEvent event) {
-		if(ChatColor.stripColor(event.getNick()).length() > maxLength) { // check if nick is too long
+		if(ChatColor.stripColors(event.getNick()).length() > maxLength) { // check if nick is too long
 			event.setCancelled(true);
 			
 			Karanteenials.getMessager().sendMessage(event.getSetter(), 
@@ -41,7 +41,7 @@ public class NickLimitLength implements Listener, TranslationContainer {
 					Prefix.NEGATIVE +
 					Karanteenials.getTranslator().getTranslation(Karanteenials.getPlugin(Karanteenials.class), 
 							event.getSetter(), "nick.too-long"));
-		} else if(ChatColor.stripColor(event.getNick()).length() < minLength) { // check if nick is too short
+		} else if(ChatColor.stripColors(event.getNick()).length() < minLength) { // check if nick is too short
 			event.setCancelled(true);
 			
 			Karanteenials.getMessager().sendMessage(event.getSetter(), 

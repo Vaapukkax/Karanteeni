@@ -11,8 +11,16 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import net.karanteeni.core.block.BlockManager;
 import net.karanteeni.core.block.executable.ActionBlockManager;
 import net.karanteeni.core.command.ShortcutCommand;
+import net.karanteeni.core.command.defaultcomponent.IntegerLoader;
+import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
+import net.karanteeni.core.commands.CacheClearCommand;
+import net.karanteeni.core.commands.DisplayTranslationComponent;
 import net.karanteeni.core.commands.LanguageCommand;
 import net.karanteeni.core.commands.LanguageComponent;
+import net.karanteeni.core.commands.RemoveTranslationComponent;
+import net.karanteeni.core.commands.SetTranslationComponent;
+import net.karanteeni.core.commands.TranslationCommand;
+import net.karanteeni.core.commands.TranslationKeyLoader;
 import net.karanteeni.core.config.ConfigManager;
 import net.karanteeni.core.data.ArrayFormat;
 import net.karanteeni.core.database.DatabaseConnector;
@@ -62,7 +70,8 @@ public class KaranteeniCore extends KaranteeniPlugin {
 				dbConnector = createDatabaseConnector();
 				createTables();
 			} catch (SQLException e) {
-				Bukkit.getLogger().log(Level.SEVERE, "COULD NOT CONNECT TO DATABASE! SOME OPERATIONS WILL NOT WORK!", e);
+				Bukkit.getLogger().log(Level.SEVERE, "COULD NOT CONNECT TO DATABASE! SHUTTING DOWN THE SERVER TO PREVENT IRREVERSIBLE DAMAGE!", e);
+				Bukkit.getServer().shutdown();
 				e.printStackTrace();
 			}
 		}
@@ -87,6 +96,13 @@ public class KaranteeniCore extends KaranteeniPlugin {
 		//MUST COME FIRST! DO NOT CHANGE ORDER
 		translator = new Translator();
 		cfgm = new ConfigManager();
+
+		// Load translations now as the translator and cfm have been initialized
+		for(KaranteeniPlugin plugin : kPluginInstances.values()) {
+			if(plugin.pluginUsesTranslator()) {
+				getTranslator().loadPluginTranslations(plugin);
+			}
+		}
 		
 		// after connecting to the database create language tables
 		Translator.initTable();
@@ -250,11 +266,37 @@ public class KaranteeniCore extends KaranteeniPlugin {
 		// initialize shortcuts
 		ShortcutCommand.initializeShortcuts(this);
 		
+		// Chance language
 		LanguageCommand lc = new LanguageCommand();
 		LanguageComponent lcomp = new LanguageComponent();
-		
 		lc.setLoader(lcomp);
 		lc.register();
+		
+		// Clear cache
+		CacheClearCommand ccc = new CacheClearCommand(this);
+		ccc.setLoader(new PlayerLoader(true, false, true, true, true));
+		ccc.register();
+		
+		// Edit translation
+		TranslationCommand trCommand = new TranslationCommand(this);
+		trCommand.setPermission("karanteenicore.translation.set");
+		SetTranslationComponent stc = new SetTranslationComponent();
+		stc.setPermission("karanteenicore.translation.set");
+		trCommand.addComponent("set", stc);
+		DisplayTranslationComponent dtc = new DisplayTranslationComponent();
+		dtc.setPermission("karanteenicore.translation.get");
+		trCommand.addComponent("display", dtc);
+		RemoveTranslationComponent rtc = new RemoveTranslationComponent();
+		rtc.setPermission("karanteenicore.translation.set");
+		trCommand.addComponent("remove", rtc);
+		TranslationKeyLoader tkl1 = new TranslationKeyLoader(true, false);
+		stc.setLoader(tkl1);
+		dtc.setLoader(tkl1);
+		TranslationKeyLoader tkl2 = new TranslationKeyLoader(true, true);
+		rtc.setLoader(tkl2);
+		IntegerLoader intLoader = new IntegerLoader(RemoveTranslationComponent.INT_KEY, true, 0, 1024);
+		tkl2.setLoader(intLoader);
+		trCommand.register();
 	}
 	
 	

@@ -6,11 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-
 import net.karanteeni.core.KaranteeniCore;
 import net.karanteeni.core.KaranteeniPlugin;
 
@@ -18,7 +15,7 @@ public class ConfigManager {
 	private static String dataFolder; 
 	private static HashMap<Plugin, String> subDataFolders = new HashMap<Plugin, String>();
 	// <Plugin, <Name of locale, file of said locale translations>>
-	private static HashMap<Plugin, HashMap<Locale, FileConfiguration> > translations = new HashMap<Plugin, HashMap<Locale, FileConfiguration>>();
+	//private static HashMap<Plugin, HashMap<Locale, FileConfiguration> > translations = new HashMap<Plugin, HashMap<Locale, FileConfiguration>>();
 	private static String TRANSLATIONS = "Translations";
 	
 	public ConfigManager()
@@ -76,14 +73,14 @@ public class ConfigManager {
 				if(!configFile.exists())
 					configFile.createNewFile();
 				
-				FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+				//FileConfiguration config = YamlConfiguration.loadConfiguration(configFile);
 				
 				//If the hashmap does not have this key already then add it
-				if(!translations.containsKey(plugin))
-					translations.put(plugin, new HashMap<Locale, FileConfiguration>());
+				//if(!translations.containsKey(plugin))
+				//	translations.put(plugin, new HashMap<Locale, FileConfiguration>());
 				
 				//Add the current translation to plugins translation list
-				translations.get(plugin).put(locale, config);
+				//translations.get(plugin).put(locale, config);
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -92,14 +89,21 @@ public class ConfigManager {
 		}
 	}
 	
+	
 	/**
 	 * Returns the file which has the translations to messages
 	 * @param plugin
 	 * @return
 	 */
-	public FileConfiguration getPluginTranslationYML(KaranteeniPlugin plugin, Locale locale)
+	public YamlConfiguration getPluginTranslationYML(KaranteeniPlugin plugin, Locale locale)
 	{
-		return translations.get(plugin).get(locale);
+		String datafolder = plugin.getDataFolder().getPath();
+		
+		File dir = new File(datafolder + File.separator + TRANSLATIONS);
+		
+		File configFile = new File(dir + File.separator + locale.toLanguageTag() + ".yml");
+
+		return YamlConfiguration.loadConfiguration(configFile);
 	}
 	
 	/**
@@ -107,9 +111,24 @@ public class ConfigManager {
 	 * @param plugin
 	 * @return
 	 */
-	public Map<Locale, FileConfiguration> getPluginTranslationYMLs(KaranteeniPlugin plugin)
+	public Map<Locale, YamlConfiguration> getPluginTranslationYMLs(KaranteeniPlugin plugin)
 	{
-		return translations.get(plugin);
+		HashMap<Locale, YamlConfiguration> translations = new HashMap<Locale, YamlConfiguration>();
+		for(Locale locale : KaranteeniCore.getTranslator().getLocales()){
+			String datafolder = plugin.getDataFolder().getPath();
+			
+			File dir = new File(datafolder + File.separator + TRANSLATIONS);
+			
+			File configFile = new File(dir + File.separator + locale.toLanguageTag() + ".yml");
+	
+			translations.put(locale, YamlConfiguration.loadConfiguration(configFile));
+		}
+		return translations;
+	}
+	
+	
+	public File getPluginTranslationYMLFile(KaranteeniPlugin plugin, Locale locale) {
+		return new File(subDataFolders.get(plugin) + File.separator + TRANSLATIONS + File.separator + locale.toLanguageTag() + ".yml");
 	}
 	
 	/**
@@ -117,9 +136,10 @@ public class ConfigManager {
 	 * @param plugin
 	 * @return
 	 */
-	public boolean savePluginTranslationYML(KaranteeniPlugin plugin, Locale locale)
+	public boolean savePluginTranslationYML(KaranteeniPlugin plugin, Locale locale) throws Error
 	{
-		try {
+		throw new Error("Plugin translation YML is now being saved automatically once modified");
+		/*try {
 			//Save the plugin translation file
 			translations.get(plugin).get(locale).save(new File(subDataFolders.get(plugin) + 
 					File.separator + TRANSLATIONS + File.separator + locale.toLanguageTag() + ".yml"));
@@ -129,6 +149,6 @@ public class ConfigManager {
 			e.printStackTrace();
 		}
 		
-		return false;
+		return false;*/
 	}
 }

@@ -77,7 +77,8 @@ public class Music extends CommandChainer implements TranslationContainer {
 				new VanillaMusicItem(new ItemStack(Material.MUSIC_DISC_STAL, 1), Sound.MUSIC_DISC_STAL),
 				new VanillaMusicItem(new ItemStack(Material.MUSIC_DISC_STRAD, 1), Sound.MUSIC_DISC_STRAD),
 				new VanillaMusicItem(new ItemStack(Material.MUSIC_DISC_WAIT, 1), Sound.MUSIC_DISC_WAIT),
-				new VanillaMusicItem(new ItemStack(Material.MUSIC_DISC_WARD, 1), Sound.MUSIC_DISC_WARD))); 
+				new VanillaMusicItem(new ItemStack(Material.MUSIC_DISC_WARD, 1), Sound.MUSIC_DISC_WARD),
+				new VanillaMusicItem(new ItemStack(Material.MUSIC_DISC_PIGSTEP, 1), Sound.MUSIC_DISC_PIGSTEP))); 
 		discInventory.setSelectable(discItems);
 		
 		// inventory for server music

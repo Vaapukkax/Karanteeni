@@ -5,7 +5,7 @@ author: Nuubles
 description: Adds custom structures and mechanics to the game such as elevators
 api-version: 1.16
 depend: [KaranteeniCore]
-softdepend: [WorldGuard]
+softdepend: [WorldGuard, CoreProtect]
 database: true
 
 permissions:
@@ -36,6 +36,12 @@ permissions:
     description: use random in sign lines
   utilika.setsign.use:
     description: use sign editor
+    
+  utilika.calculate:
+    description: use a simple calculator
+    
+  utilika.builderswand.use:
+    description: use builders wand
     
   #wildcards
   utilika.name.*:

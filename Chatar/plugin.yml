@@ -3,7 +3,7 @@ name: Chatar
 version: 1.0
 author: Nuubles
 description: Manages messaging and chat in the game
-api-version: 1.15
+api-version: 1.16
 depend: [KaranteeniCore]
 softdepend: [KaranteeniPerms]
 database: true
@@ -17,9 +17,21 @@ permissions:
     description: use formatting in /message
   chatar.message.magic:
     description: use random text in /message
+  chatar.message.rgb:
+    description: use rgb text in /message
   chatar.reply:
     description: gives access reply instantly to a message using /reply
-    
+  chatar.chat.color:
+    description: use colors in chat
+  chatar.chat.format:
+    description: use formatting in chat
+  chatar.chat.magic:
+    description: use random text in chat
+  chatar.chat.rgb:
+    description: use rgb text in chat
+  chatar.chat.tag:
+    description: allows the user to tag other players
+
   chatar.socialspy:
     description: listen to other peoples messages
   chatar.party.create:

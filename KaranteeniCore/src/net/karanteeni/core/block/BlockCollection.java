@@ -6,9 +6,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
-
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 /**
  * A collection that holds a collection of blocks.
@@ -17,7 +19,23 @@ import org.bukkit.block.Block;
  *
  */
 public class BlockCollection implements Iterable<Block>{
+	public static enum Axis {
+		X,
+		Y,
+		Z;
+		
+		public static Axis fromBlockFace(BlockFace blockFace) {
+			if(blockFace == BlockFace.EAST || blockFace == BlockFace.WEST)
+				return X;
+			else if(blockFace == BlockFace.SOUTH || blockFace == BlockFace.NORTH)
+				return Z;
+			else
+				return Y;
+		}
+	}
+	
 	private HashSet<Block> blocks = new HashSet<Block>();
+	private Location initialLocation;
 	
 	/**
 	 * Create a new BlockCollection from blocks
@@ -26,10 +44,16 @@ public class BlockCollection implements Iterable<Block>{
 	public BlockCollection(Collection<Block> blocks)
 	{ this.blocks = new HashSet<Block>(blocks); }
 	
+	public BlockCollection(Collection<Block> blocks, Location initialLocation) {
+		this.blocks = new HashSet<Block>(blocks);
+		this.initialLocation = initialLocation;
+	}
+	
 	/**
 	 * Creates a new empty block collection
 	 */
 	public BlockCollection() { }
+	
 	
 	/**
 	 * Removes all blocks of type from collection
@@ -49,13 +73,204 @@ public class BlockCollection implements Iterable<Block>{
 		{
 			if(block.getType().equals(material))
 			{
-				blocks.remove(block);
 				collection.add(block);
 			}
 		}
 		
 		return collection;
 	}
+	
+	public BlockCollection removeBlockNotOfType(Material material)
+	{
+		//Store the removed blocks
+		BlockCollection collection = new BlockCollection();
+		
+		//If material is not block don't even try to remove
+		if(!material.isBlock())
+			return collection;
+		
+		for(Block block : blocks)
+		{
+			if(!block.getType().equals(material))
+			{
+				collection.add(block);
+			}
+		}
+		
+		return collection;
+	}
+	
+	public Collection<Block> getBlocks() {
+		return this.blocks;
+	}
+	
+	/**
+	 * Reselects the blocks in the related to current selection
+	 * @param x
+	 * @param y
+	 * @param z
+	 */
+	public void shiftSelection(int x, int y, int z) {
+		HashSet<Block> newBlocks = new HashSet<Block>();
+		this.initialLocation.add(x, y, z);
+
+		for(Block block : blocks) {
+			Block b = block.getRelative(x, y, z);
+			if(b != null)
+				newBlocks.add(b);
+		}
+		this.blocks = newBlocks;
+	}
+	
+	public static BlockCollection scanBlockTypesFlat(Block block, Axis direction, int limit) {
+		BlockCollection coll = new BlockCollection();
+		coll.initialLocation = block.getLocation();
+		
+		Queue<Block> q = new LinkedList<Block>();
+		q.add(block);
+		coll.add(block);
+		
+		while(!q.isEmpty() && coll.size() < limit)
+		{
+			Block b = q.remove();
+			
+			Block[] blocks = new Block[4];
+			//Check all blocks around the current block
+			switch(direction) {
+			case X:
+				blocks[0] = b.getRelative(0, 1, 0);
+				blocks[1] = b.getRelative(0, 0, 1);
+				blocks[2] = b.getRelative(0, -1, 0);
+				blocks[3] = b.getRelative(0, 0, -1);
+				break;
+			case Y:
+				blocks[0] = b.getRelative(1, 0, 0);
+				blocks[1] = b.getRelative(0, 0, 1);
+				blocks[2] = b.getRelative(-1, 0, 0);
+				blocks[3] = b.getRelative(0, 0, -1);
+				break;
+			case Z:
+				blocks[0] = b.getRelative(0, 1, 0);
+				blocks[1] = b.getRelative(1, 0, 0);
+				blocks[2] = b.getRelative(0, -1, 0);
+				blocks[3] = b.getRelative(-1, 0, 0);
+				break;
+			}
+			
+			for(Block foundBlock : blocks)
+			if(foundBlock.getType() == block.getType() && !q.contains(foundBlock) && !coll.contains(foundBlock)) {
+				if(coll.size() >= limit) break;
+
+				coll.add(foundBlock);
+				q.add(foundBlock);
+			}
+		}
+		
+		return coll;
+	}
+	
+	
+	/**
+	 * If a simple bucket fill cannot reach a block in the collection, the
+	 * block will be removed.
+	 * @param direction
+	 * @param limit
+	 */
+	public void scanAndFilterByUnplaceableFlatByDistance(Axis direction, int limit) {
+		Block block = initialLocation.getBlock();
+		
+		HashSet<Block> coll = new HashSet<Block>();
+		Queue<Block> q = new LinkedList<Block>();
+		q.add(block);
+		coll.add(block);
+		
+		while(!q.isEmpty())
+		{
+			Block b = q.remove();
+			
+			Block[] blocks = new Block[4];
+			//Check all blocks around the current block
+			switch(direction) {
+			case X:
+				blocks[0] = b.getRelative(0, 1, 0);
+				blocks[1] = b.getRelative(0, 0, 1);
+				blocks[2] = b.getRelative(0, -1, 0);
+				blocks[3] = b.getRelative(0, 0, -1);
+				break;
+			case Y:
+				blocks[0] = b.getRelative(1, 0, 0);
+				blocks[1] = b.getRelative(0, 0, 1);
+				blocks[2] = b.getRelative(-1, 0, 0);
+				blocks[3] = b.getRelative(0, 0, -1);
+				break;
+			case Z:
+				blocks[0] = b.getRelative(0, 1, 0);
+				blocks[1] = b.getRelative(1, 0, 0);
+				blocks[2] = b.getRelative(0, -1, 0);
+				blocks[3] = b.getRelative(-1, 0, 0);
+				break;
+			}
+			
+			for(Block foundBlock : blocks)
+			if(BlockType.REPLACEABLE.contains(foundBlock.getType()) && !q.contains(foundBlock) && !coll.contains(foundBlock)) {
+				if(foundBlock.getLocation().distance(block.getLocation()) > limit) continue;
+
+				coll.add(foundBlock);
+				q.add(foundBlock);
+			}
+		}
+		
+		this.blocks.retainAll(coll);
+	}
+	
+	
+	public static BlockCollection scanBlockTypesFlatByDistance(Block block, Axis direction, int limit) {
+		BlockCollection coll = new BlockCollection();
+		coll.initialLocation = block.getLocation();
+		Queue<Block> q = new LinkedList<Block>();
+		q.add(block);
+		coll.add(block);
+		
+		while(!q.isEmpty())
+		{
+			Block b = q.remove();
+			
+			Block[] blocks = new Block[4];
+			//Check all blocks around the current block
+			switch(direction) {
+			case X:
+				blocks[0] = b.getRelative(0, 1, 0);
+				blocks[1] = b.getRelative(0, 0, 1);
+				blocks[2] = b.getRelative(0, -1, 0);
+				blocks[3] = b.getRelative(0, 0, -1);
+				break;
+			case Y:
+				blocks[0] = b.getRelative(1, 0, 0);
+				blocks[1] = b.getRelative(0, 0, 1);
+				blocks[2] = b.getRelative(-1, 0, 0);
+				blocks[3] = b.getRelative(0, 0, -1);
+				break;
+			case Z:
+				blocks[0] = b.getRelative(0, 1, 0);
+				blocks[1] = b.getRelative(1, 0, 0);
+				blocks[2] = b.getRelative(0, -1, 0);
+				blocks[3] = b.getRelative(-1, 0, 0);
+				break;
+			}
+			
+			for(Block foundBlock : blocks)
+			if(foundBlock.getType() == block.getType() && !q.contains(foundBlock) && !coll.contains(foundBlock)) {
+				// if the block is too far away don't add it
+				if(foundBlock.getLocation().distance(block.getLocation()) > limit) continue;
+				
+				coll.add(foundBlock);
+				q.add(foundBlock);
+			}
+		}
+		
+		return coll;
+	}
+	
 	
 	/**
 	 * Scans all the blocks of same type in 3D space
@@ -78,7 +293,7 @@ public class BlockCollection implements Iterable<Block>{
 	public static BlockCollection scanBlockTypes(Block block, boolean corners, boolean goDown, ArrayList<Block> connectedBlocks)
 	{
 		BlockCollection coll = new BlockCollection();
-		
+		coll.initialLocation = block.getLocation();
 		Queue<Block> q = new LinkedList<Block>();
 		q.add(block);
 		
