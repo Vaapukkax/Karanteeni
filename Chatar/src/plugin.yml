@@ -46,3 +46,10 @@ permissions:
     description: ignore other players
   chatar.ignore.immune:
     description: players with this permission cannot be ignored
+
+  chatar.mail.read:
+    description: read mail
+  chatar.mail.read-others:
+    description: read mail from others
+  chatar.mail.send:
+    description: send mail

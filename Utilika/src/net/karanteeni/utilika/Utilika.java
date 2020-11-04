@@ -8,6 +8,7 @@ import net.karanteeni.utilika.block.setsign.SetSignCommand;
 import net.karanteeni.utilika.block.setsign.SetSignComponent;
 import net.karanteeni.utilika.calculator.CalculatorCommand;
 import net.karanteeni.utilika.events.EasyBridge;
+import net.karanteeni.utilika.events.InvisibleItemFrame;
 import net.karanteeni.utilika.external.CoreProtectAccessor;
 import net.karanteeni.utilika.inventory.InventoryTweaks;
 import net.karanteeni.utilika.inventory.InventoryUtilities;
@@ -117,6 +118,10 @@ public class Utilika extends KaranteeniPlugin {
 		if(getSettings().getBoolean(KEY_PREFIX+KEYS.THROWABLE_PUDDLE.toString())) {
 			getServer().getPluginManager().registerEvents(new PuddleSplash(this), this);
 		}
+		
+		if(getSettings().getBoolean(KEY_PREFIX+KEYS.INVISIBLE_ITEMFRAME.toString())) {
+			getServer().getPluginManager().registerEvents(new InvisibleItemFrame(), this);
+		}
 	}
 	
 	
@@ -174,6 +179,7 @@ public class Utilika extends KaranteeniPlugin {
 		EASYBRIDGE,
 		BUILDERS_WAND,
 		THROWABLE_PUDDLE,
-		CALCULATOR
+		CALCULATOR,
+		INVISIBLE_ITEMFRAME
 	}
 }

@@ -5,7 +5,7 @@
 	<classpathentry kind="lib" path="../dependencies/worldguard-bukkit-7.0.0.jar"/>
 	<classpathentry kind="lib" path="../dependencies/worldedit-bukkit-7.0.0.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/KaranteeniCore"/>
-	<classpathentry kind="lib" path="F:/GIT/Karanteeni/dependencies/Spigot/spigot-api-1.16.2-R0.1-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="F:/GIT/Karanteeni/dependencies/Spigot/spigot-api-1.16.2-R0.1-SNAPSHOT-shaded.jar"/>
+	<classpathentry kind="lib" path="F:/GIT/Karanteeni/dependencies/Spigot/spigot-1.16.4-R0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="F:/GIT/Karanteeni/dependencies/Spigot/spigot-api-1.16.4-R0.1-SNAPSHOT-shaded.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -8,9 +8,9 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_16_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,22 +19,21 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.BlockIterator;
 import net.karanteeni.core.event.NoActionEvent;
 import net.karanteeni.utilika.Utilika;
-
-import net.minecraft.server.v1_16_R2.BlockPosition;
-import net.minecraft.server.v1_16_R2.EntityHuman;
-import net.minecraft.server.v1_16_R2.EntityPlayer;
-import net.minecraft.server.v1_16_R2.EnumDirection;
-import net.minecraft.server.v1_16_R2.EnumHand;
-import net.minecraft.server.v1_16_R2.EnumInteractionResult;
-import net.minecraft.server.v1_16_R2.ItemActionContext;
-import net.minecraft.server.v1_16_R2.ItemStack;
-import net.minecraft.server.v1_16_R2.MinecraftKey;
-import net.minecraft.server.v1_16_R2.MovingObjectPositionBlock;
-import net.minecraft.server.v1_16_R2.PacketPlayOutAnimation;
-import net.minecraft.server.v1_16_R2.SoundEffect;
-import net.minecraft.server.v1_16_R2.SoundEffectType;
-import net.minecraft.server.v1_16_R2.Vec3D;
-import net.minecraft.server.v1_16_R2.World;
+import net.minecraft.server.v1_16_R3.BlockPosition;
+import net.minecraft.server.v1_16_R3.EntityHuman;
+import net.minecraft.server.v1_16_R3.EntityPlayer;
+import net.minecraft.server.v1_16_R3.EnumDirection;
+import net.minecraft.server.v1_16_R3.EnumHand;
+import net.minecraft.server.v1_16_R3.EnumInteractionResult;
+import net.minecraft.server.v1_16_R3.ItemActionContext;
+import net.minecraft.server.v1_16_R3.ItemStack;
+import net.minecraft.server.v1_16_R3.MinecraftKey;
+import net.minecraft.server.v1_16_R3.MovingObjectPositionBlock;
+import net.minecraft.server.v1_16_R3.PacketPlayOutAnimation;
+import net.minecraft.server.v1_16_R3.SoundEffect;
+import net.minecraft.server.v1_16_R3.SoundEffectType;
+import net.minecraft.server.v1_16_R3.Vec3D;
+import net.minecraft.server.v1_16_R3.World;
 
 
 public class EasyBridge implements Listener {
@@ -289,7 +288,7 @@ public class EasyBridge implements Listener {
 		
 		try {
             World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
-            net.minecraft.server.v1_16_R2.Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
+            net.minecraft.server.v1_16_R3.Block nmsBlock = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ())).getBlock();
             SoundEffectType soundEffectType = nmsBlock.getStepSound(nmsBlock.getBlockData());
 
             //Field breakSound = SoundEffectType.class.getDeclaredField("y");

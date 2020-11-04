@@ -25,7 +25,7 @@ public class InventoryList<T extends KaranteeniPlugin> extends InventoryBase<T> 
 	private int page = 0;
 	private boolean singleItem;
 	private boolean requiresItem;
-	public final String ITEM_STORE;
+	public final String ITEM_STORE; // if null not a select list
 	
 	/**
 	 * Initializes the list of items to select with given parameters. The title will be the inventory name
@@ -50,6 +50,26 @@ public class InventoryList<T extends KaranteeniPlugin> extends InventoryBase<T> 
 		this.ITEM_STORE = storeKey;
 		this.requiresItem = requiresItem;
 		this.singleItem = singleItem;
+	}
+	
+	
+	/**
+	 * Creates a new inventory list that does not require an item to be picked
+	 * @param plugin
+	 * @param emptyItem
+	 * @param player
+	 * @param allowClose
+	 * @param title
+	 */
+	public InventoryList(T plugin,
+			ItemStack emptyItem,
+			Player player,
+			boolean allowClose,
+			String title) {
+		super(plugin, emptyItem, player, InventoryType.CHEST, 6, allowClose, title);
+		this.ITEM_STORE = null;
+		this.singleItem = false;
+		this.requiresItem = true;
 	}
 
 	
@@ -95,6 +115,23 @@ public class InventoryList<T extends KaranteeniPlugin> extends InventoryBase<T> 
 		
 		int counter = 0;
 		for(ActionToggle item : items) {
+			this.selectableItems[counter / 45][(counter % 45) % 9][(counter % 45) / 9] = item;
+			++counter;
+		}
+		
+		setPage(page);
+	}
+	
+	
+	/**
+	 * Sets the selectable items
+	 * @param items items the player is able to select
+	 */
+	public void setClickable(Collection<? extends ActionItem> items) {
+		this.selectableItems = new ActionItem[1 + items.size() / 44][9][5];
+		
+		int counter = 0;
+		for(ActionItem item : items) {
 			this.selectableItems[counter / 45][(counter % 45) % 9][(counter % 45) / 9] = item;
 			++counter;
 		}

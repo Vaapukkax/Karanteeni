@@ -14,6 +14,10 @@ import net.karanteeni.chatar.command.ignore.IgnoreAddComponent;
 import net.karanteeni.chatar.command.ignore.IgnoreData;
 import net.karanteeni.chatar.command.ignore.IgnoreListComponent;
 import net.karanteeni.chatar.command.ignore.IgnoreRemoveComponent;
+import net.karanteeni.chatar.command.mail.ClearComponent;
+import net.karanteeni.chatar.command.mail.MailCommand;
+import net.karanteeni.chatar.command.mail.ReadComponent;
+import net.karanteeni.chatar.command.mail.SendComponent;
 import net.karanteeni.chatar.command.message.Message;
 import net.karanteeni.chatar.command.message.Reply;
 import net.karanteeni.chatar.command.message.SocialSpy;
@@ -32,11 +36,14 @@ import net.karanteeni.chatar.events.JoinQuitMessages;
 import net.karanteeni.chatar.events.MessageSound;
 import net.karanteeni.chatar.events.PlayerTagged;
 import net.karanteeni.chatar.events.ReplaceText;
+import net.karanteeni.chatar.events.custom.MailSendEvent;
 import net.karanteeni.chatar.events.custom.PlayerChatEvent;
 import net.karanteeni.chatar.events.custom.PlayerMessageEvent;
 import net.karanteeni.chatar.events.custom.implementing.RemoveIgnoringRecipients;
 import net.karanteeni.core.KaranteeniPlugin;
+import net.karanteeni.core.command.defaultcomponent.IntegerLoader;
 import net.karanteeni.core.command.defaultcomponent.PlayerLoader;
+import net.karanteeni.core.command.defaultcomponent.StringCombinerLoader;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
@@ -148,6 +155,7 @@ public class Chatar extends KaranteeniPlugin {
 		this.getServer().getPluginManager().registerEvents(new RemoveIgnoringRecipients(this), this);
 		this.getServer().getPluginManager().registerEvents(new ChatFormatter(), this);
 		this.getServer().getPluginManager().registerEvents(new PlayerTagged(this), this);
+		MailSendEvent.register(this);
 	}
 	
 	
@@ -182,6 +190,27 @@ public class Chatar extends KaranteeniPlugin {
 		ignoreRemove.setLoader(ignoreLoader);
 		ignore.setPermission("chatar.ignore.use");
 		ignore.register();
+		
+		// /mail command
+		MailCommand mailCommand = new MailCommand(this);
+		ReadComponent readComponent = new ReadComponent(); // Todo: Add paging
+		readComponent.setPermission("chatar.mail.read");
+		SendComponent sendComponent = new SendComponent();
+		readComponent.setPermission("chatar.mail.send");
+		ClearComponent clearComponent = new ClearComponent();
+		clearComponent.setPermission("chatar.mail.read");
+		mailCommand.addComponent("read", readComponent);
+		mailCommand.addComponent("send", sendComponent);
+		mailCommand.addComponent("clear", clearComponent);
+		PlayerLoader playerReadLoader = new PlayerLoader(true, true, true, false, true);
+		readComponent.setLoader(playerReadLoader);
+		PlayerLoader playerSendLoader = new PlayerLoader(true, false, true, true, true);
+		sendComponent.setLoader(playerSendLoader);
+		StringCombinerLoader str = new StringCombinerLoader(false);
+		playerSendLoader.setLoader(str);
+		IntegerLoader mailIndex = new IntegerLoader(ClearComponent.IntegerKey, true, 1, Integer.MAX_VALUE, false);
+		clearComponent.setLoader(mailIndex);
+		mailCommand.register();
 	}
 	
 	

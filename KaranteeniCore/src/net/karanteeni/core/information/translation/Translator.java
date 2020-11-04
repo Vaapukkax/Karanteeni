@@ -240,16 +240,18 @@ public class Translator {
 			for(Locale locale : locales) {
 				// Add translation to translations
 				String translationKey = getTranslationKey(plugin, locale, key);
+				List<String> list = new ArrayList<String>();
 				if(randomTranslations.containsKey(translationKey)) {				
 					continue;
 				} else {
-					randomTranslations.put(translationKey, Arrays.asList(defaultText));
+					list.add(defaultText);
+					randomTranslations.put(translationKey, list);
 				}
 				
 				// Add translation to config
 				YamlConfiguration config = KaranteeniCore.getConfigManager().getPluginTranslationYML(plugin, locale);
 				if(config.isSet(key)) {
-					config.set(key, Arrays.asList(defaultText));
+					config.set(key, list);
 				}
 				config.save(KaranteeniCore.getConfigManager().getPluginTranslationYMLFile(plugin, locale));
 			}
@@ -450,7 +452,8 @@ public class Translator {
 	
 	
 	/**
-	 * Returns a list of all random translations
+	 * Returns a list of all random translations. This can also be used as a method
+	 * to save and retrieve a list of translations without the need for extra keys
 	 * @param plugin
 	 * @param locale
 	 * @param key

@@ -11,20 +11,19 @@ public class StringCombinerLoader extends CommandLoader {
 	
 	public StringCombinerLoader(boolean before) {
 		super(before);
-		// TODO Auto-generated constructor stub
 	}
 
 	
 	@Override
 	protected void onRegister() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	
 	@Override
 	protected CommandResult runComponent(CommandSender sender, Command cmd, String label, String[] args) {
-		// TODO Auto-generated method stub
-		return null;
+		if(args.length == 0)
+			return CommandResult.INVALID_ARGUMENTS;
+		this.chainer.setObject(STRING_COMBINER_RESULT, String.join(" ", args));
+		return CommandResult.SUCCESS;
 	}
 }

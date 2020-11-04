@@ -56,17 +56,20 @@ public class Teleporter {
 	public Location getSafePoint(Location location, boolean allowWater, int eyeHeight) {
 		Chunk chunk = location.getChunk();
 		ChunkSnapshot chunkShot = chunk.getChunkSnapshot();
-		int x = Math.abs(location.getBlockX() % 16);
-		int y = Math.max(location.getBlockY(), 0);
-		int z = Math.abs(location.getBlockZ() % 16);
-		if(location.getZ() < 0)
-			z = 16 - z;
-		if(location.getX() < 0)
-			x = 16 - x;
-		if(z == 16)
-			z = 0;
-		if(x == 16)
-			x = 0;
+		//int x = Math.abs(location.getBlockX() % 16);
+		int x = Math.abs(location.getBlockX() - (location.getBlockX() >> 4) * 16);
+		int y = Math.max(location.getBlockY() + 1, 0); // by default check block at feet
+		int z = Math.abs(location.getBlockZ() - (location.getBlockZ() >> 4) * 16); 
+		// location is level with block borders, get the block below player
+		if(Math.abs(location.getY() - (int)location.getY()) < 0.01) --y;
+		
+		// If in air, scan below until ground
+		for(int tempY = y; tempY > 0; --tempY) {
+			if(chunkShot.getBlockType(x, tempY - 1, z).isSolid()) {
+				y = tempY;
+				break;
+			}
+		}
 		
 		// check if the location in the chunk is safe
 		SAFENESS safeness = null;
@@ -131,7 +134,7 @@ public class Teleporter {
 		// no safe location found
 		return null;
 	}
-	
+
 	
 	/**
 	 * Teleports an entity to this destination and sets

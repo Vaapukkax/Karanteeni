@@ -143,13 +143,6 @@ public class WandBuilder implements Listener {
 		if(!event.canBuild())
 			return;
 		
-		if(!event.getPlayer().hasPermission("utilika.builderswand.use")) {
-			Utilika.getMessager().sendMessage(event.getPlayer(),
-					Sounds.NO.get(),
-					Prefix.NEGATIVE + Utilika.getDefaultMsgs().noPermission(event.getPlayer()));
-			return;
-		}
-		
 		if(Utilika.getBlockManager().isBeingProcessed(event.getBlock()))
 			return;
 		
@@ -160,6 +153,14 @@ public class WandBuilder implements Listener {
 		BlockFace placeDirection = event.getBlockAgainst().getFace(event.getBlock());
 		
 		if(wand.isTowerWand(wandItem)) { // tower wand place
+			if(!event.getPlayer().hasPermission("utilika.builderswand.use")) {
+				Utilika.getMessager().sendMessage(event.getPlayer(),
+						Sounds.NO.get(),
+						Prefix.NEGATIVE + Utilika.getDefaultMsgs().noPermission(event.getPlayer()));
+				return;
+			}
+
+			
 			Collection<Block> blocks = new LinkedList<Block>();
 			Block placingAgainst = event.getBlockAgainst();
 			for(int i = 0; i < towerSizeLimit; ++i) {
@@ -168,6 +169,13 @@ public class WandBuilder implements Listener {
 			}
 			placeBlocks(event.getBlock().getType(), blocks, event.getPlayer(), true, event.getBlockPlaced().getBlockData());
 		} else if(wand.isExtendWand(wandItem)) { // extend wand place
+			if(!event.getPlayer().hasPermission("utilika.builderswand.use")) {
+				Utilika.getMessager().sendMessage(event.getPlayer(),
+						Sounds.NO.get(),
+						Prefix.NEGATIVE + Utilika.getDefaultMsgs().noPermission(event.getPlayer()));
+				return;
+			}
+
 			BlockCollection.Axis axis = BlockCollection.Axis.fromBlockFace(placeDirection);
 			BlockCollection shapedAgainst = BlockCollection.scanBlockTypesFlatByDistance(event.getBlockAgainst(), axis, extendSizeLimit);
 			
@@ -214,12 +222,6 @@ public class WandBuilder implements Listener {
 		if(event.getItem() == null || !event.getItem().getType().isBlock())
 			return;
 		
-		if(!event.getPlayer().hasPermission("utilika.builderswand.use")) {
-			Utilika.getMessager().sendMessage(event.getPlayer(),
-					Sounds.NO.get(),
-					Prefix.NEGATIVE + Utilika.getDefaultMsgs().noPermission(event.getPlayer()));
-			return;
-		}
 		
 		if(event.getBlock() != null) {
 			if(illegalTypes.contains(event.getBlock().getType()))
@@ -234,6 +236,13 @@ public class WandBuilder implements Listener {
 		
 		if(!wand.isLevitationWand(wandItem))
 			return;
+
+		if(!event.getPlayer().hasPermission("utilika.builderswand.use")) {
+			Utilika.getMessager().sendMessage(event.getPlayer(),
+					Sounds.NO.get(),
+					Prefix.NEGATIVE + Utilika.getDefaultMsgs().noPermission(event.getPlayer()));
+			return;
+		}
 		
 		Location blockLocation = event.getPlayer().getEyeLocation().add(event.getPlayer().getEyeLocation().getDirection().multiply(3));
 
